@@ -1,0 +1,78 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background: linear-gradient(180deg, #1A1B23 0%, #0F1015 100%);
+  background-attachment: fixed;
+  color: #FFFFFF;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+/* Custom scrollbar - Dark theme */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #1A1B23;
+  border-radius: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #AB9FF2 0%, #8B7FD8 100%);
+  border-radius: 8px;
+  transition: background 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #C4B5FD 0%, #AB9FF2 100%);
+}
+
+/* Input autofill styling - Dark theme */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0px 1000px #27283A inset;
+  -webkit-text-fill-color: #FFFFFF;
+  transition: background-color 5000s ease-in-out 0s;
+  border: 2px solid #3D3F54 !important;
+}
+
+/* Smooth transitions for all interactive elements */
+button, a, input, select {
+  transition: all 0.2s ease;
+}
+
+/* Focus ring improvements - Dark theme */
+*:focus-visible {
+  outline: 2px solid #AB9FF2;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 3px rgba(171, 159, 242, 0.2);
+}
+
+/* Selection styling */
+::selection {
+  background: rgba(171, 159, 242, 0.3);
+  color: #FFFFFF;
+}
+
+/* Placeholder styling */
+::placeholder {
+  color: #75768B;
+  opacity: 1;
+}
+
