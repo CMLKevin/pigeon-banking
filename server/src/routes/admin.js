@@ -159,6 +159,130 @@ router.get('/activity', (req, res) => {
   }
 });
 
+// Get all invite codes
+router.get('/invite-codes', (req, res) => {
+  try {
+    const codes = db.prepare(`
+      SELECT ic.*, 
+        creator.username as created_by_username,
+        user.username as used_by_username
+      FROM invite_codes ic
+      LEFT JOIN users creator ON creator.id = ic.created_by
+      LEFT JOIN users user ON user.id = ic.used_by
+      ORDER BY ic.created_at DESC
+    `).all();
+    res.json({ codes });
+  } catch (e) {
+    console.error('Fetch invite codes error:', e);
+    res.status(500).json({ error: 'Failed to fetch invite codes' });
+  }
+});
+
+// Create new invite code
+router.post('/invite-codes', (req, res) => {
+  try {
+    const { code } = req.body;
+    
+    if (!code) {
+      return res.status(400).json({ error: 'Code is required' });
+    }
+
+    // Check if code already exists
+    const existing = db.prepare('SELECT id FROM invite_codes WHERE code = ?').get(code);
+    if (existing) {
+      return res.status(400).json({ error: 'This invite code already exists' });
+    }
+
+    // Create invite code
+    const result = db.prepare('INSERT INTO invite_codes (code, created_by) VALUES (?, ?)').run(code, req.user.id);
+    
+    // Log activity
+    db.prepare('INSERT INTO activity_logs (user_id, action, metadata) VALUES (?, ?, ?)')
+      .run(req.user.id, 'admin_create_invite_code', JSON.stringify({ code }));
+
+    // Fetch the created code with details
+    const newCode = db.prepare(`
+      SELECT ic.*, 
+        creator.username as created_by_username
+      FROM invite_codes ic
+      LEFT JOIN users creator ON creator.id = ic.created_by
+      WHERE ic.id = ?
+    `).get(result.lastInsertRowid);
+
+    res.status(201).json({ code: newCode });
+  } catch (e) {
+    console.error('Create invite code error:', e);
+    res.status(500).json({ error: 'Failed to create invite code' });
+  }
+});
+
+// Generate random invite code
+router.post('/invite-codes/generate', (req, res) => {
+  try {
+    // Generate a random 8-character alphanumeric code
+    const characters = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // Excluding similar-looking chars
+    let code = '';
+    for (let i = 0; i < 8; i++) {
+      code += characters.charAt(Math.floor(Math.random() * characters.length));
+    }
+
+    // Check if code already exists (unlikely but possible)
+    const existing = db.prepare('SELECT id FROM invite_codes WHERE code = ?').get(code);
+    if (existing) {
+      // Recursive retry if collision (very rare)
+      return router.post('/invite-codes/generate')(req, res);
+    }
+
+    // Create invite code
+    const result = db.prepare('INSERT INTO invite_codes (code, created_by) VALUES (?, ?)').run(code, req.user.id);
+    
+    // Log activity
+    db.prepare('INSERT INTO activity_logs (user_id, action, metadata) VALUES (?, ?, ?)')
+      .run(req.user.id, 'admin_generate_invite_code', JSON.stringify({ code }));
+
+    // Fetch the created code with details
+    const newCode = db.prepare(`
+      SELECT ic.*, 
+        creator.username as created_by_username
+      FROM invite_codes ic
+      LEFT JOIN users creator ON creator.id = ic.created_by
+      WHERE ic.id = ?
+    `).get(result.lastInsertRowid);
+
+    res.status(201).json({ code: newCode });
+  } catch (e) {
+    console.error('Generate invite code error:', e);
+    res.status(500).json({ error: 'Failed to generate invite code' });
+  }
+});
+
+// Delete invite code (only if unused)
+router.delete('/invite-codes/:id', (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const code = db.prepare('SELECT code, is_used FROM invite_codes WHERE id = ?').get(id);
+    if (!code) {
+      return res.status(404).json({ error: 'Invite code not found' });
+    }
+
+    if (code.is_used) {
+      return res.status(400).json({ error: 'Cannot delete used invite codes' });
+    }
+
+    db.prepare('DELETE FROM invite_codes WHERE id = ?').run(id);
+    
+    // Log activity
+    db.prepare('INSERT INTO activity_logs (user_id, action, metadata) VALUES (?, ?, ?)')
+      .run(req.user.id, 'admin_delete_invite_code', JSON.stringify({ code: code.code }));
+
+    res.json({ message: 'Invite code deleted successfully' });
+  } catch (e) {
+    console.error('Delete invite code error:', e);
+    res.status(500).json({ error: 'Failed to delete invite code' });
+  }
+});
+
 export default router;
 
 

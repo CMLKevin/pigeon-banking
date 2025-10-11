@@ -63,6 +63,21 @@ const initDatabase = () => {
     )
   `);
 
+  // Invite codes table - one-time use codes for user registration
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS invite_codes (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      code TEXT UNIQUE NOT NULL,
+      created_by INTEGER NOT NULL,
+      used_by INTEGER,
+      is_used INTEGER DEFAULT 0,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      used_at DATETIME,
+      FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE CASCADE,
+      FOREIGN KEY (used_by) REFERENCES users(id) ON DELETE SET NULL
+    )
+  `);
+
   // Create indexes for better query performance
   db.exec(`
     CREATE INDEX IF NOT EXISTS idx_transactions_from_user 
@@ -82,6 +97,12 @@ const initDatabase = () => {
 
     CREATE INDEX IF NOT EXISTS idx_activity_created_at 
     ON activity_logs(created_at);
+
+    CREATE INDEX IF NOT EXISTS idx_invite_codes_code 
+    ON invite_codes(code);
+
+    CREATE INDEX IF NOT EXISTS idx_invite_codes_used 
+    ON invite_codes(is_used);
   `);
 
   // Best-effort migration for existing databases: add columns if missing

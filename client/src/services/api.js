@@ -25,7 +25,7 @@ api.interceptors.request.use(
 
 // Auth endpoints
 export const authAPI = {
-  signup: (username, password) => api.post('/auth/signup', { username, password }),
+  signup: (username, password, inviteCode) => api.post('/auth/signup', { username, password, inviteCode }),
   login: (username, password) => api.post('/auth/login', { username, password }),
   getProfile: () => api.get('/auth/profile'),
 };
@@ -58,6 +58,10 @@ export const adminAPI = {
   toggleAdmin: (id) => api.post(`/admin/users/${id}/toggle-admin`),
   getMetrics: () => api.get('/admin/metrics'),
   getActivity: (limit = 50, offset = 0) => api.get('/admin/activity', { params: { limit, offset } }),
+  getInviteCodes: () => api.get('/admin/invite-codes'),
+  createInviteCode: (code) => api.post('/admin/invite-codes', { code }),
+  generateInviteCode: () => api.post('/admin/invite-codes/generate'),
+  deleteInviteCode: (id) => api.delete(`/admin/invite-codes/${id}`),
 };
 
 export default api;

@@ -7,11 +7,15 @@ const JWT_EXPIRES_IN = '7d';
 
 export const signup = async (req, res) => {
   try {
-    const { username, password } = req.body;
+    const { username, password, inviteCode } = req.body;
 
     // Validate input
     if (!username || !password) {
       return res.status(400).json({ error: 'Username and password are required' });
+    }
+
+    if (!inviteCode) {
+      return res.status(400).json({ error: 'Invite code is required' });
     }
 
     if (username.length < 3 || username.length > 16) {
@@ -28,6 +32,15 @@ export const signup = async (req, res) => {
       return res.status(400).json({ error: 'Username already exists' });
     }
 
+    // Validate invite code
+    const invite = db.prepare('SELECT id, is_used FROM invite_codes WHERE code = ?').get(inviteCode);
+    if (!invite) {
+      return res.status(400).json({ error: 'Invalid invite code' });
+    }
+    if (invite.is_used) {
+      return res.status(400).json({ error: 'This invite code has already been used' });
+    }
+
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -36,11 +49,14 @@ export const signup = async (req, res) => {
     const result = insertUser.run(username, hashedPassword);
     const userId = result.lastInsertRowid;
 
-    // Create wallet with initial balance (1000 of each currency)
+    // Mark invite code as used
+    db.prepare('UPDATE invite_codes SET is_used = 1, used_by = ?, used_at = CURRENT_TIMESTAMP WHERE id = ?').run(userId, invite.id);
+
+    // Create wallet with initial balance (100 of each currency)
     const insertWallet = db.prepare(
       'INSERT INTO wallets (user_id, phantom_coin, stoneworks_dollar) VALUES (?, ?, ?)'
     );
-    insertWallet.run(userId, 1000.0, 1000.0);
+    insertWallet.run(userId, 100.0, 100.0);
 
     // Generate token
     const fresh = db.prepare('SELECT id, username, is_admin FROM users WHERE id = ?').get(userId);

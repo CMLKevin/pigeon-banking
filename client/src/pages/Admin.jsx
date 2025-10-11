@@ -134,19 +134,24 @@ const Admin = () => {
   const [metrics, setMetrics] = useState(null);
   const [users, setUsers] = useState([]);
   const [activity, setActivity] = useState([]);
+  const [inviteCodes, setInviteCodes] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [newCode, setNewCode] = useState('');
+  const [codeError, setCodeError] = useState('');
 
   const load = async () => {
     try {
       setLoading(true);
-      const [m, u, a] = await Promise.all([
+      const [m, u, a, ic] = await Promise.all([
         adminAPI.getMetrics(),
         adminAPI.getUsers(),
         adminAPI.getActivity(20, 0),
+        adminAPI.getInviteCodes(),
       ]);
       setMetrics(m.data);
       setUsers(u.data.users);
       setActivity(a.data.activity);
+      setInviteCodes(ic.data.codes);
     } catch (error) {
       console.error('Failed to load admin data:', error);
     } finally {
@@ -171,6 +176,41 @@ const Admin = () => {
       load();
     } catch (error) {
       console.error('Failed to toggle admin:', error);
+    }
+  };
+
+  const createInviteCode = async () => {
+    try {
+      setCodeError('');
+      if (!newCode.trim()) {
+        setCodeError('Code cannot be empty');
+        return;
+      }
+      await adminAPI.createInviteCode(newCode.toUpperCase());
+      setNewCode('');
+      load();
+    } catch (error) {
+      setCodeError(error.response?.data?.error || 'Failed to create invite code');
+    }
+  };
+
+  const generateInviteCode = async () => {
+    try {
+      setCodeError('');
+      await adminAPI.generateInviteCode();
+      load();
+    } catch (error) {
+      setCodeError(error.response?.data?.error || 'Failed to generate invite code');
+    }
+  };
+
+  const deleteInviteCode = async (id) => {
+    try {
+      await adminAPI.deleteInviteCode(id);
+      load();
+    } catch (error) {
+      console.error('Failed to delete invite code:', error);
+      alert(error.response?.data?.error || 'Failed to delete invite code');
     }
   };
 
@@ -467,6 +507,113 @@ const Admin = () => {
                 ))}
               </tbody>
             </table>
+          </div>
+        </div>
+
+        {/* Invite Code Management */}
+        <div className="bg-phantom-bg-secondary/60 backdrop-blur-xl rounded-3xl shadow-card border border-phantom-border p-6">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="text-2xl font-bold text-phantom-text-primary">Invite Codes</h2>
+              <p className="text-sm text-phantom-text-tertiary">Manage one-time use registration codes</p>
+            </div>
+          </div>
+
+          {/* Create/Generate Invite Code */}
+          <div className="mb-6 space-y-4">
+            <div className="flex gap-3">
+              <input
+                type="text"
+                value={newCode}
+                onChange={(e) => setNewCode(e.target.value.toUpperCase())}
+                placeholder="Enter custom code (e.g., WELCOME2024)"
+                className="flex-1 px-4 py-3 rounded-2xl border-2 bg-phantom-bg-tertiary text-phantom-text-primary placeholder:text-phantom-text-tertiary border-phantom-border hover:border-phantom-border-light focus:border-phantom-accent-primary focus:shadow-input focus:outline-none transition-all"
+              />
+              <button
+                onClick={createInviteCode}
+                className="px-6 py-3 rounded-2xl bg-gradient-phantom text-white hover:shadow-glow transition-all font-semibold"
+              >
+                Create Code
+              </button>
+              <button
+                onClick={generateInviteCode}
+                className="px-6 py-3 rounded-2xl bg-phantom-bg-tertiary text-phantom-text-primary border-2 border-phantom-border hover:border-phantom-accent-primary hover:shadow-glow-sm transition-all font-semibold"
+              >
+                Generate Random
+              </button>
+            </div>
+            {codeError && (
+              <p className="text-sm text-phantom-error flex items-center gap-1.5">
+                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                </svg>
+                {codeError}
+              </p>
+            )}
+          </div>
+
+          {/* Invite Codes List */}
+          <div className="overflow-x-auto">
+            <table className="w-full text-left">
+              <thead className="text-phantom-text-tertiary text-sm border-b border-phantom-border">
+                <tr>
+                  <th className="py-3 font-semibold">Code</th>
+                  <th className="py-3 font-semibold">Created By</th>
+                  <th className="py-3 font-semibold">Status</th>
+                  <th className="py-3 font-semibold">Used By</th>
+                  <th className="py-3 font-semibold">Created</th>
+                  <th className="py-3 text-right font-semibold">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {inviteCodes.map(code => (
+                  <tr key={code.id} className="border-b border-phantom-border/50 hover:bg-phantom-bg-tertiary/50 transition-all">
+                    <td className="py-4">
+                      <span className="font-mono font-semibold text-phantom-accent-primary bg-phantom-bg-tertiary px-3 py-1.5 rounded-xl">
+                        {code.code}
+                      </span>
+                    </td>
+                    <td className="py-4 text-phantom-text-primary font-medium">{code.created_by_username}</td>
+                    <td className="py-4">
+                      {code.is_used ? (
+                        <span className="inline-flex items-center px-2.5 py-1 rounded-xl text-xs font-semibold bg-phantom-error/20 text-phantom-error">
+                          Used
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center px-2.5 py-1 rounded-xl text-xs font-semibold bg-phantom-success/20 text-phantom-success">
+                          Available
+                        </span>
+                      )}
+                    </td>
+                    <td className="py-4 text-phantom-text-secondary">
+                      {code.used_by_username || '-'}
+                    </td>
+                    <td className="py-4 text-phantom-text-secondary text-sm">
+                      {new Date(code.created_at).toLocaleString('en-US', { 
+                        month: 'short', 
+                        day: 'numeric',
+                        year: 'numeric'
+                      })}
+                    </td>
+                    <td className="py-4 text-right">
+                      {!code.is_used && (
+                        <button
+                          onClick={() => deleteInviteCode(code.id)}
+                          className="px-3 py-1.5 rounded-xl bg-phantom-error/20 text-phantom-error hover:bg-phantom-error/30 transition-all text-sm font-medium"
+                        >
+                          Delete
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {inviteCodes.length === 0 && (
+              <div className="text-center py-8 text-phantom-text-tertiary">
+                No invite codes yet. Create one to get started!
+              </div>
+            )}
           </div>
         </div>
 
