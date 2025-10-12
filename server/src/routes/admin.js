@@ -27,6 +27,35 @@ router.get('/users', (req, res) => {
   }
 });
 
+// Force-end an auction (admin testing utility)
+router.post('/auctions/:id/force-end', (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const auction = db.prepare('SELECT * FROM auctions WHERE id = ?').get(id);
+    if (!auction) {
+      return res.status(404).json({ error: 'Auction not found' });
+    }
+
+    if (auction.status !== 'active') {
+      return res.status(400).json({ error: 'Auction is not active' });
+    }
+
+    // Mark as ended if there is a highest bidder; else keep it active
+    db.prepare('UPDATE auctions SET status = ?, end_date = CURRENT_TIMESTAMP WHERE id = ?')
+      .run('ended', id);
+
+    // Log admin action
+    db.prepare('INSERT INTO activity_logs (user_id, action, metadata) VALUES (?, ?, ?)')
+      .run(req.user.id, 'admin_force_end_auction', JSON.stringify({ auctionId: id }));
+
+    res.json({ message: 'Auction force-ended for testing.' });
+  } catch (e) {
+    console.error('Force end auction error:', e);
+    res.status(500).json({ error: 'Failed to force end auction' });
+  }
+});
+
 // Toggle disable/enable user
 router.post('/users/:id/toggle-disabled', (req, res) => {
   try {
@@ -130,7 +159,7 @@ router.get('/metrics', (req, res) => {
 
     // Auction metrics
     const auctionTotals = db.prepare(`
-      SELECT
+      SELECT 
         (SELECT COUNT(1) FROM auctions) AS total_auctions,
         (SELECT COUNT(1) FROM auctions WHERE status = 'active') AS active_auctions,
         (SELECT COUNT(1) FROM auctions WHERE status = 'ended') AS ended_auctions,
@@ -139,8 +168,6 @@ router.get('/metrics', (req, res) => {
         (SELECT COUNT(DISTINCT bidder_id) FROM bids) AS unique_bidders,
         (SELECT AVG(current_bid) FROM auctions WHERE status IN ('completed', 'ended')) AS avg_final_bid,
         (SELECT SUM(current_bid) FROM auctions WHERE status = 'completed') AS total_auction_revenue,
-        (SELECT SUM(amount) FROM transactions WHERE transaction_type = 'commission') AS total_commissions,
-        (SELECT AVG(amount) FROM transactions WHERE transaction_type = 'commission') AS avg_commission,
         (SELECT AVG(bid_count) FROM (
           SELECT COUNT(1) as bid_count FROM bids GROUP BY auction_id
         )) AS avg_bids_per_auction
