@@ -128,13 +128,90 @@ router.get('/metrics', (req, res) => {
       LIMIT 20
     `).all();
 
+    // Auction metrics
+    const auctionTotals = db.prepare(`
+      SELECT 
+        (SELECT COUNT(1) FROM auctions) AS total_auctions,
+        (SELECT COUNT(1) FROM auctions WHERE status = 'active') AS active_auctions,
+        (SELECT COUNT(1) FROM auctions WHERE status = 'ended') AS ended_auctions,
+        (SELECT COUNT(1) FROM auctions WHERE status = 'completed') AS completed_auctions,
+        (SELECT COUNT(1) FROM bids) AS total_bids,
+        (SELECT COUNT(DISTINCT bidder_id) FROM bids) AS unique_bidders,
+        (SELECT AVG(current_bid) FROM auctions WHERE status IN ('completed', 'ended')) AS avg_final_bid,
+        (SELECT SUM(current_bid) FROM auctions WHERE status = 'completed') AS total_auction_revenue,
+        (SELECT AVG(bid_count) FROM (
+          SELECT COUNT(1) as bid_count FROM bids GROUP BY auction_id
+        )) AS avg_bids_per_auction
+    `).get();
+
+    const auctionsByDay = db.prepare(`
+      SELECT DATE(created_at) as day,
+        COUNT(1) as auctions_created,
+        SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as completed_count,
+        SUM(CASE WHEN status = 'completed' THEN current_bid ELSE 0 END) as revenue
+      FROM auctions
+      GROUP BY DATE(created_at)
+      ORDER BY day DESC
+      LIMIT 14
+    `).all();
+
+    const bidsByDay = db.prepare(`
+      SELECT DATE(created_at) as day,
+        COUNT(1) as bids_placed,
+        COUNT(DISTINCT bidder_id) as unique_bidders
+      FROM bids
+      GROUP BY DATE(created_at)
+      ORDER BY day DESC
+      LIMIT 14
+    `).all();
+
+    const topAuctions = db.prepare(`
+      SELECT a.id, a.item_name, a.rarity, a.starting_price, a.current_bid, a.status,
+        u.username as seller_username,
+        (SELECT COUNT(1) FROM bids WHERE auction_id = a.id) as bid_count
+      FROM auctions a
+      LEFT JOIN users u ON u.id = a.seller_id
+      ORDER BY a.current_bid DESC
+      LIMIT 10
+    `).all();
+
+    const topBidders = db.prepare(`
+      SELECT u.id, u.username,
+        COUNT(DISTINCT b.auction_id) as auctions_participated,
+        COUNT(b.id) as total_bids_placed,
+        SUM(b.amount) as total_bid_amount,
+        COUNT(CASE WHEN a.highest_bidder_id = u.id AND a.status = 'completed' THEN 1 END) as auctions_won
+      FROM users u
+      JOIN bids b ON b.bidder_id = u.id
+      LEFT JOIN auctions a ON a.id = b.auction_id
+      WHERE u.disabled = 0
+      GROUP BY u.id
+      ORDER BY auctions_won DESC, total_bids_placed DESC
+      LIMIT 10
+    `).all();
+
+    const rarityDistribution = db.prepare(`
+      SELECT rarity, COUNT(1) as count,
+        AVG(current_bid) as avg_price,
+        SUM(CASE WHEN status = 'completed' THEN current_bid ELSE 0 END) as total_revenue
+      FROM auctions
+      GROUP BY rarity
+      ORDER BY count DESC
+    `).all();
+
     res.json({ 
       totals, 
       activity24h, 
       volumeByDay, 
       userGrowth,
       topUsers,
-      recentTransactions
+      recentTransactions,
+      auctionTotals,
+      auctionsByDay,
+      bidsByDay,
+      topAuctions,
+      topBidders,
+      rarityDistribution
     });
   } catch (e) {
     console.error('Metrics error:', e);

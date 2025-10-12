@@ -2,6 +2,16 @@
 
 A modern, minimalistic payment system for the Stoneworks Minecraft server, built with React and Node.js.
 
+## ⚠️ IMPORTANT USAGE NOTICE
+
+**This code is publicly available for viewing and learning purposes ONLY.**
+
+**You MAY NOT deploy or use this software without explicit written permission from the copyright holder.**
+
+See the [LICENSE](LICENSE) file for complete terms and conditions.
+
+---
+
 ## Features
 
 - 🔐 **Secure Authentication** - JWT-based authentication with bcrypt password hashing
@@ -10,7 +20,8 @@ A modern, minimalistic payment system for the Stoneworks Minecraft server, built
 - 💸 **Peer-to-Peer Payments** - Send payments to other users
 - 📊 **Transaction History** - Track all your transactions
 - 👥 **User Directory** - Browse and search all registered users
-- 👑 **Admin Panel** - Comprehensive user management and analytics dashboard
+- 🏪 **Auction House** - Buy and sell Minecraft items with secure escrow system
+- 👑 **Admin Panel** - Comprehensive user management, analytics, and auction monitoring
 - 🎟️ **Invite System** - One-time use invite codes for controlled user registration
 - 🎨 **Modern UI** - Professional, minimalistic design inspired by Phantom wallet
 
@@ -131,12 +142,22 @@ Agon/
 - `GET /api/admin/users` - Get all users with detailed stats
 - `POST /api/admin/users/:id/toggle-disabled` - Enable/disable user account
 - `POST /api/admin/users/:id/toggle-admin` - Promote/demote admin status
-- `GET /api/admin/metrics` - Get system-wide metrics and analytics
+- `GET /api/admin/metrics` - Get system-wide metrics, analytics, and auction stats
 - `GET /api/admin/activity` - Get activity logs
 - `GET /api/admin/invite-codes` - Get all invite codes
 - `POST /api/admin/invite-codes` - Create custom invite code
 - `POST /api/admin/invite-codes/generate` - Generate random invite code
 - `DELETE /api/admin/invite-codes/:id` - Delete unused invite code
+
+### Auction House
+- `GET /api/auctions` - Get all auctions (with filters for status: active/ended/completed)
+- `GET /api/auctions/:id` - Get detailed auction information with bid history
+- `POST /api/auctions` - Create a new auction listing
+- `POST /api/auctions/:id/bid` - Place a bid on an auction (with automatic escrow)
+- `POST /api/auctions/:id/confirm-delivery` - Confirm item delivery and release payment
+- `GET /api/auctions/my-auctions` - Get your auction listings
+- `GET /api/auctions/my-bids` - Get auctions you've bid on
+- `DELETE /api/auctions/:id` - Cancel an auction (only if no bids)
 
 ## Usage
 
@@ -180,6 +201,29 @@ Currency swaps occur at a 1:1 ratio.
 3. Use the search bar to find specific users
 4. Click "Send Payment" next to any user to quickly send them funds
 
+### Using the Auction House
+
+**Creating an Auction:**
+1. Navigate to the Auction House
+2. Click "Create Auction"
+3. Enter item details (name, description, rarity, durability)
+4. Set a starting price in Agon
+5. Choose auction duration (in days)
+6. Submit the auction
+
+**Bidding on Items:**
+1. Browse active auctions
+2. Click on an item to view details
+3. Enter your bid amount (must be higher than current bid)
+4. Your Agon will be held in secure escrow
+5. If outbid, your funds are automatically refunded
+
+**Completing a Sale:**
+1. When the auction ends, the highest bidder wins
+2. Deliver the item to the winner in-game
+3. Winner confirms receipt by clicking "Confirm Delivery"
+4. Escrowed funds are released to the seller
+
 ## Database Schema
 
 ### Users Table
@@ -193,6 +237,7 @@ Currency swaps occur at a 1:1 ratio.
 - `user_id` - Foreign key to users table
 - `agon` - Agon balance
 - `stoneworks_dollar` - Stoneworks Dollar balance
+- `agon_escrow` - Agon held in escrow for active bids
 
 ### Transactions Table
 - `id` - Primary key
@@ -219,6 +264,29 @@ Currency swaps occur at a 1:1 ratio.
 - `is_used` - Boolean flag
 - `created_at` - Creation timestamp
 - `used_at` - Usage timestamp
+
+### Auctions Table
+- `id` - Primary key
+- `seller_id` - Foreign key to users table
+- `item_name` - Name of the item being sold
+- `item_description` - Detailed description
+- `rarity` - Item rarity tier
+- `durability` - Item durability percentage
+- `starting_price` - Initial bid price in Agon
+- `current_bid` - Current highest bid
+- `highest_bidder_id` - Foreign key to users table
+- `end_date` - Auction end timestamp
+- `status` - Auction status (active/ended/completed/cancelled)
+- `created_at` - Creation timestamp
+- `completed_at` - Completion timestamp
+
+### Bids Table
+- `id` - Primary key
+- `auction_id` - Foreign key to auctions table
+- `bidder_id` - Foreign key to users table
+- `amount` - Bid amount in Agon
+- `is_active` - Whether this bid is still active
+- `created_at` - Bid timestamp
 
 ## Future Enhancements
 
@@ -267,7 +335,17 @@ This will start the production server on port 3001.
 
 ## License
 
-MIT License - Feel free to use this project for your Minecraft server!
+**All Rights Reserved** - Copyright (c) 2025 Kevin Lin
+
+This source code is made publicly available for **viewing and learning purposes ONLY**.
+
+**Deployment, use, or modification for any purpose other than learning is strictly prohibited without explicit written permission from the copyright holder.**
+
+See the [LICENSE](LICENSE) file for complete terms and conditions.
+
+## Permission Requests
+
+To request permission to deploy or use this software, please open an issue in the repository with your use case. Permission must be granted explicitly in writing by the copyright holder.
 
 ## Support
 

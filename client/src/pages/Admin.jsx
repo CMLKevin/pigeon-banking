@@ -429,6 +429,256 @@ const Admin = () => {
                 </table>
               </div>
             </div>
+
+            {/* Auction Analytics Section */}
+            {metrics?.auctionTotals && (
+              <>
+                {/* Section Header */}
+                <div className="mt-12">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="w-10 h-10 rounded-2xl bg-gradient-phantom flex items-center justify-center shadow-glow">
+                      <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <h2 className="text-3xl font-bold bg-gradient-phantom bg-clip-text text-transparent">Auction House Analytics</h2>
+                      <p className="text-phantom-text-secondary">Monitor auction performance and bidding activity</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Auction Key Metrics */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <StatCard 
+                    title="Total Auctions" 
+                    value={metrics.auctionTotals.total_auctions || 0}
+                    sub={`${metrics.auctionTotals.active_auctions || 0} active • ${metrics.auctionTotals.completed_auctions || 0} completed`}
+                    icon={
+                      <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                      </svg>
+                    }
+                  />
+                  <StatCard 
+                    title="Total Bids" 
+                    value={metrics.auctionTotals.total_bids || 0}
+                    sub={`${metrics.auctionTotals.unique_bidders || 0} unique bidders • ${(metrics.auctionTotals.avg_bids_per_auction || 0).toFixed(1)} avg/auction`}
+                    icon={
+                      <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M7 11.5V14m0-2.5v-6a1.5 1.5 0 113 0m-3 6a1.5 1.5 0 00-3 0v2a7.5 7.5 0 0015 0v-5a1.5 1.5 0 00-3 0m-6-3V11m0-5.5v-1a1.5 1.5 0 013 0v1m0 0V11m0-5.5a1.5 1.5 0 013 0v3m0 0V11" />
+                      </svg>
+                    }
+                  />
+                  <StatCard 
+                    title="Auction Revenue" 
+                    value={formatCurrency(metrics.auctionTotals.total_auction_revenue || 0, 'Ⱥ')}
+                    sub={`Avg: ${formatCurrency(metrics.auctionTotals.avg_final_bid || 0, 'Ⱥ')}`}
+                    icon={
+                      <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z" />
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clipRule="evenodd" />
+                      </svg>
+                    }
+                  />
+                  <StatCard 
+                    title="Active Bidders" 
+                    value={metrics.auctionTotals.unique_bidders || 0}
+                    sub={`${((metrics.auctionTotals.unique_bidders / (metrics.totals.total_users || 1)) * 100).toFixed(0)}% of total users`}
+                    icon={
+                      <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" />
+                      </svg>
+                    }
+                  />
+                </div>
+
+                {/* Auction Charts */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {/* Auctions by Day Chart */}
+                  <div className="bg-phantom-bg-secondary/60 backdrop-blur-xl rounded-3xl shadow-card border border-phantom-border p-6 group">
+                    <div className="flex items-center justify-between mb-4">
+                      <div>
+                        <h2 className="text-xl font-bold text-phantom-text-primary">Auction Activity (14 days)</h2>
+                        <p className="text-sm text-phantom-text-tertiary">New auctions created per day</p>
+                      </div>
+                      <div className="w-10 h-10 rounded-xl bg-gradient-phantom/20 flex items-center justify-center">
+                        <svg className="w-5 h-5 text-phantom-accent-primary" fill="currentColor" viewBox="0 0 20 20">
+                          <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z" />
+                        </svg>
+                      </div>
+                    </div>
+                    <LineChart data={
+                      metrics.auctionsByDay?.slice().reverse().map(d => ({
+                        label: new Date(d.day).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+                        value: Number(d.auctions_created || 0)
+                      })) || []
+                    } />
+                  </div>
+
+                  {/* Bids by Day Chart */}
+                  <div className="bg-phantom-bg-secondary/60 backdrop-blur-xl rounded-3xl shadow-card border border-phantom-border p-6 group">
+                    <div className="flex items-center justify-between mb-4">
+                      <div>
+                        <h2 className="text-xl font-bold text-phantom-text-primary">Bidding Activity (14 days)</h2>
+                        <p className="text-sm text-phantom-text-tertiary">Total bids placed per day</p>
+                      </div>
+                      <div className="w-10 h-10 rounded-xl bg-gradient-phantom/20 flex items-center justify-center">
+                        <svg className="w-5 h-5 text-phantom-accent-primary" fill="currentColor" viewBox="0 0 20 20">
+                          <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z" />
+                        </svg>
+                      </div>
+                    </div>
+                    <LineChart data={
+                      metrics.bidsByDay?.slice().reverse().map(d => ({
+                        label: new Date(d.day).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+                        value: Number(d.bids_placed || 0)
+                      })) || []
+                    } />
+                  </div>
+                </div>
+
+                {/* Rarity Distribution & Top Bidders */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {/* Rarity Distribution */}
+                  <div className="bg-phantom-bg-secondary/60 backdrop-blur-xl rounded-3xl shadow-card border border-phantom-border p-6">
+                    <h2 className="text-xl font-bold text-phantom-text-primary mb-2">Item Rarity Distribution</h2>
+                    <p className="text-sm text-phantom-text-tertiary mb-4">Average prices by rarity tier</p>
+                    {metrics.rarityDistribution && metrics.rarityDistribution.length > 0 ? (
+                      <div className="space-y-3">
+                        {metrics.rarityDistribution.map((rarity, idx) => {
+                          const rarityColors = {
+                            'Common': 'bg-gray-500/20 text-gray-300',
+                            'Uncommon': 'bg-green-500/20 text-green-400',
+                            'Rare': 'bg-blue-500/20 text-blue-400',
+                            'Epic': 'bg-purple-500/20 text-purple-400',
+                            'Legendary': 'bg-orange-500/20 text-orange-400',
+                            'Mythic': 'bg-red-500/20 text-red-400'
+                          };
+                          const colorClass = rarityColors[rarity.rarity] || 'bg-phantom-accent-primary/20 text-phantom-accent-primary';
+                          
+                          return (
+                            <div key={idx} className="p-3 rounded-2xl hover:bg-phantom-bg-tertiary transition-all group">
+                              <div className="flex items-center justify-between mb-2">
+                                <span className={`inline-flex items-center px-3 py-1 rounded-xl text-sm font-semibold ${colorClass}`}>
+                                  {rarity.rarity}
+                                </span>
+                                <span className="text-sm text-phantom-text-secondary">{rarity.count} items</span>
+                              </div>
+                              <div className="flex items-center justify-between text-sm">
+                                <span className="text-phantom-text-tertiary">Avg Price:</span>
+                                <span className="font-semibold text-phantom-accent-primary">{formatCurrency(rarity.avg_price || 0, 'Ⱥ')}</span>
+                              </div>
+                              <div className="flex items-center justify-between text-sm">
+                                <span className="text-phantom-text-tertiary">Total Revenue:</span>
+                                <span className="font-semibold text-phantom-success">{formatCurrency(rarity.total_revenue || 0, 'Ⱥ')}</span>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <p className="text-phantom-text-tertiary text-sm">No auction data available</p>
+                    )}
+                  </div>
+
+                  {/* Top Bidders */}
+                  <div className="bg-phantom-bg-secondary/60 backdrop-blur-xl rounded-3xl shadow-card border border-phantom-border p-6">
+                    <h2 className="text-xl font-bold text-phantom-text-primary mb-2">Top Bidders</h2>
+                    <p className="text-sm text-phantom-text-tertiary mb-4">Most active auction participants</p>
+                    <div className="space-y-3">
+                      {metrics.topBidders?.slice(0, 5).map((bidder, idx) => (
+                        <div key={bidder.id} className="flex items-center gap-3 p-3 rounded-2xl hover:bg-phantom-bg-tertiary transition-all group">
+                          <div className="w-8 h-8 rounded-full bg-gradient-phantom flex items-center justify-center text-white font-bold text-sm shadow-glow-sm">
+                            {idx + 1}
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-sm font-semibold text-phantom-text-primary">{bidder.username}</p>
+                            <p className="text-xs text-phantom-text-tertiary">
+                              {bidder.total_bids_placed} bids • {bidder.auctions_won} won
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-sm font-semibold text-phantom-accent-primary">
+                              {formatCurrency(bidder.total_bid_amount || 0, 'Ⱥ')}
+                            </p>
+                            <p className="text-xs text-phantom-text-tertiary">{bidder.auctions_participated} auctions</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Top Auctions */}
+                <div className="bg-phantom-bg-secondary/60 backdrop-blur-xl rounded-3xl shadow-card border border-phantom-border p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <h2 className="text-2xl font-bold text-phantom-text-primary">Highest Value Auctions</h2>
+                      <p className="text-sm text-phantom-text-tertiary">Top auctions by current bid</p>
+                    </div>
+                  </div>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left">
+                      <thead className="text-phantom-text-tertiary text-sm border-b border-phantom-border">
+                        <tr>
+                          <th className="py-3 font-semibold">Item</th>
+                          <th className="py-3 font-semibold">Rarity</th>
+                          <th className="py-3 font-semibold">Seller</th>
+                          <th className="py-3 font-semibold">Starting Price</th>
+                          <th className="py-3 font-semibold">Current Bid</th>
+                          <th className="py-3 font-semibold">Bids</th>
+                          <th className="py-3 font-semibold">Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {metrics.topAuctions?.map(auction => {
+                          const rarityColors = {
+                            'Common': 'bg-gray-500/20 text-gray-300',
+                            'Uncommon': 'bg-green-500/20 text-green-400',
+                            'Rare': 'bg-blue-500/20 text-blue-400',
+                            'Epic': 'bg-purple-500/20 text-purple-400',
+                            'Legendary': 'bg-orange-500/20 text-orange-400',
+                            'Mythic': 'bg-red-500/20 text-red-400'
+                          };
+                          const rarityClass = rarityColors[auction.rarity] || 'bg-phantom-accent-primary/20 text-phantom-accent-primary';
+                          
+                          const statusColors = {
+                            'active': 'bg-phantom-success/20 text-phantom-success',
+                            'ended': 'bg-phantom-accent-secondary/20 text-phantom-accent-secondary',
+                            'completed': 'bg-phantom-accent-primary/20 text-phantom-accent-primary',
+                            'cancelled': 'bg-phantom-error/20 text-phantom-error'
+                          };
+                          const statusClass = statusColors[auction.status] || 'bg-phantom-bg-tertiary text-phantom-text-secondary';
+
+                          return (
+                            <tr key={auction.id} className="border-b border-phantom-border/50 hover:bg-phantom-bg-tertiary/50 transition-all">
+                              <td className="py-3 text-phantom-text-primary font-medium">{auction.item_name}</td>
+                              <td className="py-3">
+                                <span className={`inline-flex items-center px-2.5 py-1 rounded-xl text-xs font-semibold ${rarityClass}`}>
+                                  {auction.rarity}
+                                </span>
+                              </td>
+                              <td className="py-3 text-phantom-text-primary font-medium">{auction.seller_username}</td>
+                              <td className="py-3 text-phantom-text-secondary">{formatCurrency(auction.starting_price, 'Ⱥ')}</td>
+                              <td className="py-3 text-phantom-accent-primary font-semibold">
+                                {formatCurrency(auction.current_bid, 'Ⱥ')}
+                              </td>
+                              <td className="py-3 text-phantom-text-secondary">{auction.bid_count}</td>
+                              <td className="py-3">
+                                <span className={`inline-flex items-center px-2.5 py-1 rounded-xl text-xs font-semibold ${statusClass}`}>
+                                  {auction.status}
+                                </span>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </>
+            )}
           </>
         )}
 

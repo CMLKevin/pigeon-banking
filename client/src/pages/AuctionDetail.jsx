@@ -99,7 +99,7 @@ const AuctionDetail = () => {
       await loadData();
       
       setTimeout(() => {
-        navigate('/auctions/my-bids');
+        navigate('/auctions');
       }, 2000);
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to confirm delivery. Please try again.');
@@ -441,15 +441,65 @@ const AuctionDetail = () => {
               )}
             </div>
 
-            {/* Info Box */}
-            <div className="bg-gradient-card border border-phantom-border-light rounded-2xl p-4">
-              <div className="flex items-start gap-3">
-                <svg className="w-5 h-5 text-phantom-accent-primary flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            {/* Escrow Status */}
+            <div className="bg-phantom-bg-secondary/60 backdrop-blur-xl rounded-2xl shadow-card border border-phantom-border p-5">
+              <div className="flex items-center gap-2 mb-4">
+                <svg className="w-5 h-5 text-phantom-accent-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                 </svg>
-                <div className="text-xs text-phantom-text-secondary">
-                  <p className="font-semibold text-phantom-text-primary mb-1">Secure Escrow</p>
-                  <p>Your bid is held safely in escrow. If outbid, you'll be refunded automatically.</p>
+                <h3 className="font-bold text-phantom-text-primary">Escrow Protection</h3>
+              </div>
+
+              <div className="space-y-3">
+                {/* Step 1 */}
+                <div className="flex items-start gap-3">
+                  <div className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
+                    auction.status === 'active' ? 'bg-phantom-success text-white' : 'bg-phantom-bg-tertiary text-phantom-text-tertiary'
+                  }`}>
+                    {auction.status === 'active' ? '✓' : '1'}
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold text-phantom-text-primary">Place Bid</p>
+                    <p className="text-xs text-phantom-text-secondary">Funds held in secure escrow</p>
+                  </div>
+                </div>
+
+                {/* Step 2 */}
+                <div className="flex items-start gap-3">
+                  <div className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
+                    auction.status === 'ended' || auction.status === 'completed' ? 'bg-phantom-success text-white' : 'bg-phantom-bg-tertiary text-phantom-text-tertiary'
+                  }`}>
+                    {auction.status === 'ended' || auction.status === 'completed' ? '✓' : '2'}
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold text-phantom-text-primary">Auction Ends</p>
+                    <p className="text-xs text-phantom-text-secondary">Winner receives item from seller</p>
+                  </div>
+                </div>
+
+                {/* Step 3 */}
+                <div className="flex items-start gap-3">
+                  <div className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
+                    auction.status === 'completed' ? 'bg-phantom-success text-white' : 'bg-phantom-bg-tertiary text-phantom-text-tertiary'
+                  }`}>
+                    {auction.status === 'completed' ? '✓' : '3'}
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold text-phantom-text-primary">Confirm Delivery</p>
+                    <p className="text-xs text-phantom-text-secondary">Payment released to seller</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-4 pt-4 border-t border-phantom-border">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-phantom-text-tertiary">Protection</span>
+                  <span className="text-phantom-success font-semibold flex items-center gap-1">
+                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    </svg>
+                    Active
+                  </span>
                 </div>
               </div>
             </div>
