@@ -243,7 +243,7 @@ Currency swaps occur at a 1:1 ratio.
 - `id` - Primary key
 - `from_user_id` - Sender user ID
 - `to_user_id` - Recipient user ID (null for swaps)
-- `transaction_type` - Type: 'payment' or 'swap'
+- `transaction_type` - Type: 'payment', 'swap', 'auction', or 'commission'
 - `currency` - Currency used
 - `amount` - Transaction amount
 - `description` - Optional description

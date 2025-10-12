@@ -1,5 +1,11 @@
 import db from '../config/database.js';
 
+// Helper function to get admin user ID
+const getAdminUserId = () => {
+  const admin = db.prepare('SELECT id FROM users WHERE is_admin = 1 LIMIT 1').get();
+  return admin ? admin.id : null;
+};
+
 // Helper function to check and close expired auctions
 const closeExpiredAuctions = () => {
   try {
@@ -312,9 +318,24 @@ export const confirmDelivery = (req, res) => {
         throw new Error('No winning bid found');
       }
 
-      // Release escrow to seller
+      // Calculate 1% commission fee
+      const commissionRate = 0.01; // 1%
+      const commissionFee = auction.current_bid * commissionRate;
+      const sellerPayment = auction.current_bid - commissionFee;
+
+      // Get admin user ID
+      const adminId = getAdminUserId();
+      if (!adminId) {
+        throw new Error('No admin user found');
+      }
+
+      // Release escrow to seller (minus commission)
       db.prepare('UPDATE wallets SET agon = agon + ? WHERE user_id = ?')
-        .run(auction.current_bid, auction.seller_id);
+        .run(sellerPayment, auction.seller_id);
+
+      // Send commission to admin
+      db.prepare('UPDATE wallets SET agon = agon + ? WHERE user_id = ?')
+        .run(commissionFee, adminId);
 
       // Remove from bidder's escrow
       db.prepare('UPDATE wallets SET agon_escrow = agon_escrow - ? WHERE user_id = ?')
@@ -324,34 +345,57 @@ export const confirmDelivery = (req, res) => {
       db.prepare('UPDATE auctions SET status = ?, completed_at = CURRENT_TIMESTAMP WHERE id = ?')
         .run('completed', id);
 
-      // Create transaction record
+      // Create transaction records for seller payment and commission
       db.prepare(`
         INSERT INTO transactions (from_user_id, to_user_id, transaction_type, currency, amount, description)
         VALUES (?, ?, 'auction', 'agon', ?, ?)
       `).run(
         auction.highest_bidder_id,
         auction.seller_id,
-        auction.current_bid,
-        `Auction payment for ${auction.item_name}`
+        sellerPayment,
+        `Auction payment for ${auction.item_name} (seller)`
+      );
+
+      // Commission transaction
+      db.prepare(`
+        INSERT INTO transactions (from_user_id, to_user_id, transaction_type, currency, amount, description)
+        VALUES (?, ?, 'commission', 'agon', ?, ?)
+      `).run(
+        auction.seller_id,
+        adminId,
+        commissionFee,
+        `1% commission for auction ${auction.item_name}`
       );
 
       // Log activities
       db.prepare('INSERT INTO activity_logs (user_id, action, metadata) VALUES (?, ?, ?)')
-        .run(auction.seller_id, 'auction_completed', JSON.stringify({ 
-          auctionId: id, 
-          amount: auction.current_bid 
+        .run(auction.seller_id, 'auction_completed', JSON.stringify({
+          auctionId: id,
+          amount: sellerPayment,
+          commission: commissionFee
         }));
 
       db.prepare('INSERT INTO activity_logs (user_id, action, metadata) VALUES (?, ?, ?)')
-        .run(auction.highest_bidder_id, 'delivery_confirmed', JSON.stringify({ 
-          auctionId: id, 
-          amount: auction.current_bid 
+        .run(auction.highest_bidder_id, 'delivery_confirmed', JSON.stringify({
+          auctionId: id,
+          amount: auction.current_bid
+        }));
+
+      db.prepare('INSERT INTO activity_logs (user_id, action, metadata) VALUES (?, ?, ?)')
+        .run(adminId, 'commission_received', JSON.stringify({
+          auctionId: id,
+          amount: commissionFee,
+          sellerId: auction.seller_id
         }));
     });
 
     transaction();
 
-    res.json({ message: 'Delivery confirmed and payment released to seller' });
+    res.json({
+      message: `Delivery confirmed and payment released to seller (${commissionFee.toFixed(2)}Ⱥ commission deducted)`,
+      commission: commissionFee,
+      sellerPayment: sellerPayment
+    });
   } catch (error) {
     console.error('Confirm delivery error:', error);
     res.status(400).json({ error: error.message || 'Failed to confirm delivery' });

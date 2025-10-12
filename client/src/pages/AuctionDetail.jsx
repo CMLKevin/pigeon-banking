@@ -94,10 +94,11 @@ const AuctionDetail = () => {
     setConfirming(true);
 
     try {
-      await auctionAPI.confirmDelivery(id);
-      setSuccess('Delivery confirmed! Payment has been released to the seller.');
+      const response = await auctionAPI.confirmDelivery(id);
+      const { commission, sellerPayment } = response.data;
+      setSuccess(`Delivery confirmed! Payment of ${formatCurrency(sellerPayment, 'Ⱥ')} released to seller (${formatCurrency(commission, 'Ⱥ')} commission deducted).`);
       await loadData();
-      
+
       setTimeout(() => {
         navigate('/auctions');
       }, 2000);
