@@ -8,3 +8,4 @@ server/database.db
 server/database.db-journal
 
 database.db
+ADMIN_CREDENTIALS.md
