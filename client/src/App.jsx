@@ -9,6 +9,10 @@ import Send from './pages/Send';
 import Users from './pages/Users';
 import Admin from './pages/Admin';
 import AdminLogin from './pages/AdminLogin';
+import AuctionHouse from './pages/AuctionHouse';
+import CreateAuction from './pages/CreateAuction';
+import AuctionDetail from './pages/AuctionDetail';
+import MyAuctions from './pages/MyAuctions';
 
 function App() {
   return (
@@ -55,6 +59,46 @@ function App() {
             element={
               <ProtectedRoute adminOnly>
                 <Admin />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/auctions"
+            element={
+              <ProtectedRoute>
+                <AuctionHouse />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/auctions/create"
+            element={
+              <ProtectedRoute>
+                <CreateAuction />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/auctions/my-auctions"
+            element={
+              <ProtectedRoute>
+                <MyAuctions />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/auctions/my-bids"
+            element={
+              <ProtectedRoute>
+                <MyAuctions />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/auctions/:id"
+            element={
+              <ProtectedRoute>
+                <AuctionDetail />
               </ProtectedRoute>
             }
           />

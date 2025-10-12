@@ -64,5 +64,19 @@ export const adminAPI = {
   deleteInviteCode: (id) => api.delete(`/admin/invite-codes/${id}`),
 };
 
+// Auction endpoints
+export const auctionAPI = {
+  getAllAuctions: (status = 'active', limit = 50) => 
+    api.get('/auctions', { params: { status, limit } }),
+  getAuctionById: (id) => api.get(`/auctions/${id}`),
+  createAuction: (itemName, itemDescription, rarity, durability, startingPrice, daysUntilEnd) =>
+    api.post('/auctions', { itemName, itemDescription, rarity, durability, startingPrice, daysUntilEnd }),
+  placeBid: (id, amount) => api.post(`/auctions/${id}/bid`, { amount }),
+  confirmDelivery: (id) => api.post(`/auctions/${id}/confirm-delivery`),
+  getMyAuctions: () => api.get('/auctions/my-auctions'),
+  getMyBids: () => api.get('/auctions/my-bids'),
+  cancelAuction: (id) => api.delete(`/auctions/${id}`),
+};
+
 export default api;
 

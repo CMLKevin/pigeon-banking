@@ -110,6 +110,41 @@ const initDatabase = () => {
     )
   `);
 
+  // Auctions table - for auction house listings
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS auctions (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      seller_id INTEGER NOT NULL,
+      item_name TEXT NOT NULL,
+      item_description TEXT,
+      rarity TEXT NOT NULL,
+      durability INTEGER,
+      starting_price REAL NOT NULL,
+      current_bid REAL,
+      highest_bidder_id INTEGER,
+      end_date DATETIME NOT NULL,
+      status TEXT DEFAULT 'active',
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      completed_at DATETIME,
+      FOREIGN KEY (seller_id) REFERENCES users(id) ON DELETE CASCADE,
+      FOREIGN KEY (highest_bidder_id) REFERENCES users(id) ON DELETE SET NULL
+    )
+  `);
+
+  // Bids table - for tracking all bids on auctions
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS bids (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      auction_id INTEGER NOT NULL,
+      bidder_id INTEGER NOT NULL,
+      amount REAL NOT NULL,
+      is_active INTEGER DEFAULT 1,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (auction_id) REFERENCES auctions(id) ON DELETE CASCADE,
+      FOREIGN KEY (bidder_id) REFERENCES users(id) ON DELETE CASCADE
+    )
+  `);
+
   // Create indexes for better query performance
   db.exec(`
     CREATE INDEX IF NOT EXISTS idx_transactions_from_user 
@@ -135,12 +170,28 @@ const initDatabase = () => {
 
     CREATE INDEX IF NOT EXISTS idx_invite_codes_used 
     ON invite_codes(is_used);
+
+    CREATE INDEX IF NOT EXISTS idx_auctions_seller 
+    ON auctions(seller_id);
+
+    CREATE INDEX IF NOT EXISTS idx_auctions_status 
+    ON auctions(status);
+
+    CREATE INDEX IF NOT EXISTS idx_auctions_end_date 
+    ON auctions(end_date);
+
+    CREATE INDEX IF NOT EXISTS idx_bids_auction 
+    ON bids(auction_id);
+
+    CREATE INDEX IF NOT EXISTS idx_bids_bidder 
+    ON bids(bidder_id);
   `);
 
   // Best-effort migration for existing databases: add columns if missing
   // SQLite doesn't support IF NOT EXISTS for ADD COLUMN; attempt and ignore errors
   try { db.exec("ALTER TABLE users ADD COLUMN is_admin INTEGER DEFAULT 0"); } catch (e) {}
   try { db.exec("ALTER TABLE users ADD COLUMN disabled INTEGER DEFAULT 0"); } catch (e) {}
+  try { db.exec("ALTER TABLE wallets ADD COLUMN agon_escrow REAL DEFAULT 0.0"); } catch (e) {}
 
   console.log('Database initialized successfully');
 };
