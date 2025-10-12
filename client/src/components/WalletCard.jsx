@@ -2,12 +2,12 @@ import { formatCurrency, getCurrencySymbol, getCurrencyName } from '../utils/for
 
 const WalletCard = ({ currency, balance, gradient }) => {
   const gradients = {
-    phantom_coin: 'from-purple-600 via-purple-500 to-pink-500',
+    agon: 'from-purple-600 via-purple-500 to-pink-500',
     stoneworks_dollar: 'from-cyan-500 via-blue-500 to-indigo-600'
   };
 
   const icons = {
-    phantom_coin: (
+    agon: (
       <svg className="w-8 h-8 text-white/90" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
       </svg>

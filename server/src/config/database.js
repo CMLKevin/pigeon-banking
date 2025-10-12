@@ -29,11 +29,43 @@ const initDatabase = () => {
     CREATE TABLE IF NOT EXISTS wallets (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       user_id INTEGER UNIQUE NOT NULL,
-      phantom_coin REAL DEFAULT 0.0,
+      agon REAL DEFAULT 0.0,
       stoneworks_dollar REAL DEFAULT 0.0,
       FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
     )
   `);
+
+  // Migration: Rename phantom_coin to agon if it exists
+  try {
+    const tableInfo = db.pragma('table_info(wallets)');
+    const hasPhantomCoin = tableInfo.some(col => col.name === 'phantom_coin');
+    const hasAgon = tableInfo.some(col => col.name === 'agon');
+    
+    if (hasPhantomCoin && !hasAgon) {
+      // Create temporary table with new schema
+      db.exec(`
+        CREATE TABLE wallets_new (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          user_id INTEGER UNIQUE NOT NULL,
+          agon REAL DEFAULT 0.0,
+          stoneworks_dollar REAL DEFAULT 0.0,
+          FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+        )
+      `);
+      
+      // Copy data from old table to new
+      db.exec(`INSERT INTO wallets_new (id, user_id, agon, stoneworks_dollar)
+               SELECT id, user_id, phantom_coin, stoneworks_dollar FROM wallets`);
+      
+      // Drop old table and rename new one
+      db.exec(`DROP TABLE wallets`);
+      db.exec(`ALTER TABLE wallets_new RENAME TO wallets`);
+      
+      console.log('Successfully migrated phantom_coin to agon');
+    }
+  } catch (e) {
+    console.log('Migration check:', e.message);
+  }
 
   // Transactions table - for tracking all payments and swaps
   db.exec(`

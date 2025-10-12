@@ -64,7 +64,7 @@ const Users = () => {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 animate-fade-in">
         <div className="mb-10">
           <h1 className="text-4xl font-bold bg-gradient-phantom bg-clip-text text-transparent mb-3">Users</h1>
-          <p className="text-phantom-text-secondary text-lg">Browse all PhantomPay users</p>
+          <p className="text-phantom-text-secondary text-lg">Browse all Agon users</p>
         </div>
 
         <div className="bg-phantom-bg-secondary/60 backdrop-blur-xl rounded-3xl shadow-card border border-phantom-border p-8">

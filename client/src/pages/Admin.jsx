@@ -370,7 +370,7 @@ const Admin = () => {
                         <p className="text-xs text-phantom-text-tertiary">{user.sent_count + user.received_count} transactions</p>
                       </div>
                       <div className="text-right">
-                        <p className="text-sm font-semibold text-phantom-accent-primary">{formatCurrency(user.phantom_coin || 0, 'PC')}</p>
+                        <p className="text-sm font-semibold text-phantom-accent-primary">{formatCurrency(user.agon || 0, 'Ⱥ')}</p>
                         <p className="text-xs text-phantom-text-tertiary">SW$ {Number(user.stoneworks_dollar || 0).toFixed(0)}</p>
                       </div>
                     </div>
@@ -413,7 +413,7 @@ const Admin = () => {
                         <td className="py-3 text-phantom-text-primary font-medium">{tx.from_username}</td>
                         <td className="py-3 text-phantom-text-primary font-medium">{tx.to_username || '-'}</td>
                         <td className="py-3 text-phantom-accent-primary font-semibold">
-                          {formatCurrency(tx.amount, tx.currency === 'phantom_coin' ? 'PC' : 'SW$')}
+                          {formatCurrency(tx.amount, tx.currency === 'agon' ? 'Ⱥ' : 'SW$')}
                         </td>
                         <td className="py-3 text-phantom-text-secondary text-sm">
                           {new Date(tx.created_at).toLocaleString('en-US', { 
@@ -445,7 +445,7 @@ const Admin = () => {
               <thead className="text-phantom-text-tertiary text-sm border-b border-phantom-border">
                 <tr>
                   <th className="py-3 font-semibold">Username</th>
-                  <th className="py-3 font-semibold">PhantomCoin</th>
+                  <th className="py-3 font-semibold">Agon</th>
                   <th className="py-3 font-semibold">SW Dollar</th>
                   <th className="py-3 font-semibold">Transactions</th>
                   <th className="py-3 font-semibold">Role</th>
@@ -464,7 +464,7 @@ const Admin = () => {
                         <span className="font-semibold text-phantom-text-primary">{u.username}</span>
                       </div>
                     </td>
-                    <td className="py-4 text-phantom-text-primary font-medium">{Number(u.phantom_coin || 0).toFixed(2)}</td>
+                    <td className="py-4 text-phantom-text-primary font-medium">{Number(u.agon || 0).toFixed(2)}</td>
                     <td className="py-4 text-phantom-text-primary font-medium">{Number(u.stoneworks_dollar || 0).toFixed(2)}</td>
                     <td className="py-4 text-phantom-text-secondary">{u.transaction_count}</td>
                     <td className="py-4">

@@ -1,12 +1,12 @@
-export const formatCurrency = (amount, currency = 'phantom_coin') => {
+export const formatCurrency = (amount, currency = 'agon') => {
   const formatted = parseFloat(amount).toFixed(2);
   return formatted;
 };
 
 export const getCurrencySymbol = (currency) => {
   switch (currency) {
-    case 'phantom_coin':
-      return 'PC';
+    case 'agon':
+      return 'Ⱥ';
     case 'stoneworks_dollar':
       return 'SW$';
     default:
@@ -16,8 +16,8 @@ export const getCurrencySymbol = (currency) => {
 
 export const getCurrencyName = (currency) => {
   switch (currency) {
-    case 'phantom_coin':
-      return 'PhantomCoin';
+    case 'agon':
+      return 'Agon';
     case 'stoneworks_dollar':
       return 'Stoneworks Dollar';
     default:

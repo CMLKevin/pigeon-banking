@@ -18,7 +18,7 @@ app.use(express.json());
 
 // Health check
 app.get('/health', (req, res) => {
-  res.json({ status: 'ok', message: 'PhantomPay server is running' });
+  res.json({ status: 'ok', message: 'Agon server is running' });
 });
 
 // Routes
@@ -40,6 +40,6 @@ app.use((req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`PhantomPay server is running on port ${PORT}`);
+  console.log(`Agon server is running on port ${PORT}`);
 });
 

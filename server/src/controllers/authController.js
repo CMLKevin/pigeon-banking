@@ -54,7 +54,7 @@ export const signup = async (req, res) => {
 
     // Create wallet with initial balance (100 of each currency)
     const insertWallet = db.prepare(
-      'INSERT INTO wallets (user_id, phantom_coin, stoneworks_dollar) VALUES (?, ?, ?)'
+      'INSERT INTO wallets (user_id, agon, stoneworks_dollar) VALUES (?, ?, ?)'
     );
     insertWallet.run(userId, 100.0, 100.0);
 
@@ -126,7 +126,7 @@ export const getProfile = (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    const wallet = db.prepare('SELECT phantom_coin, stoneworks_dollar FROM wallets WHERE user_id = ?').get(req.user.id);
+    const wallet = db.prepare('SELECT agon, stoneworks_dollar FROM wallets WHERE user_id = ?').get(req.user.id);
 
     res.json({
       user,

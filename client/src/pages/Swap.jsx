@@ -9,7 +9,7 @@ import { formatCurrency, getCurrencyName } from '../utils/formatters';
 
 const Swap = () => {
   const [wallet, setWallet] = useState(null);
-  const [fromCurrency, setFromCurrency] = useState('phantom_coin');
+  const [fromCurrency, setFromCurrency] = useState('agon');
   const [toCurrency, setToCurrency] = useState('stoneworks_dollar');
   const [amount, setAmount] = useState('');
   const [loading, setLoading] = useState(false);
@@ -31,7 +31,7 @@ const Swap = () => {
   };
 
   const currencyOptions = [
-    { value: 'phantom_coin', label: 'PhantomCoin' },
+    { value: 'agon', label: 'Agon' },
     { value: 'stoneworks_dollar', label: 'Stoneworks Dollar' }
   ];
 
@@ -85,7 +85,7 @@ const Swap = () => {
       <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12 animate-fade-in">
         <div className="mb-10">
           <h1 className="text-4xl font-bold bg-gradient-phantom bg-clip-text text-transparent mb-3">Swap Currency</h1>
-          <p className="text-phantom-text-secondary text-lg">Exchange between PhantomCoin and Stoneworks Dollar at 1:1 ratio</p>
+          <p className="text-phantom-text-secondary text-lg">Exchange between Agon and Stoneworks Dollar at 1:1 ratio</p>
         </div>
 
         <div className="bg-phantom-bg-secondary/60 backdrop-blur-xl rounded-3xl shadow-card border border-phantom-border p-8">

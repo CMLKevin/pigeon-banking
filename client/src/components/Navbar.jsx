@@ -29,7 +29,7 @@ const Navbar = () => {
                 </svg>
               </div>
               <span className="text-xl font-bold bg-gradient-phantom bg-clip-text text-transparent">
-                PhantomPay
+                Agon
               </span>
             </Link>
             

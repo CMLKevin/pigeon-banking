@@ -12,7 +12,7 @@ router.get('/users', (req, res) => {
   try {
     const users = db.prepare(`
       SELECT u.id, u.username, u.created_at, u.is_admin, u.disabled,
-        w.phantom_coin, w.stoneworks_dollar,
+        w.agon, w.stoneworks_dollar,
         (
           SELECT COUNT(1) FROM transactions t 
           WHERE t.from_user_id = u.id OR t.to_user_id = u.id
@@ -72,7 +72,7 @@ router.get('/metrics', (req, res) => {
         (SELECT COUNT(1) FROM transactions WHERE transaction_type = 'swap') AS swap_count,
         (SELECT SUM(amount) FROM transactions WHERE transaction_type = 'payment') AS total_payment_volume,
         (SELECT AVG(amount) FROM transactions WHERE transaction_type = 'payment') AS avg_payment,
-        (SELECT SUM(phantom_coin) FROM wallets) AS sum_pc,
+        (SELECT SUM(agon) FROM wallets) AS sum_agon,
         (SELECT SUM(stoneworks_dollar) FROM wallets) AS sum_sw
     `).get();
 
@@ -109,7 +109,7 @@ router.get('/metrics', (req, res) => {
         (SELECT COUNT(1) FROM transactions t WHERE t.from_user_id = u.id) as sent_count,
         (SELECT COUNT(1) FROM transactions t WHERE t.to_user_id = u.id) as received_count,
         (SELECT SUM(amount) FROM transactions t WHERE t.from_user_id = u.id AND t.transaction_type = 'payment') as total_sent,
-        w.phantom_coin, w.stoneworks_dollar
+        w.agon, w.stoneworks_dollar
       FROM users u
       LEFT JOIN wallets w ON w.user_id = u.id
       WHERE u.disabled = 0

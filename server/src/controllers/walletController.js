@@ -28,7 +28,7 @@ export const swapCurrency = (req, res) => {
       return res.status(400).json({ error: 'Amount must be greater than 0' });
     }
 
-    const validCurrencies = ['phantom_coin', 'stoneworks_dollar'];
+    const validCurrencies = ['agon', 'stoneworks_dollar'];
     if (!validCurrencies.includes(fromCurrency) || !validCurrencies.includes(toCurrency)) {
       return res.status(400).json({ error: 'Invalid currency type' });
     }

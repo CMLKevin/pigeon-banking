@@ -1,7 +1,7 @@
 {
-  "name": "phantompay-server",
+  "name": "agon-server",
   "version": "1.0.0",
-  "description": "PhantomPay backend server",
+  "description": "Agon backend server",
   "main": "src/server.js",
   "type": "module",
   "scripts": {

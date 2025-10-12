@@ -11,7 +11,7 @@ const Send = () => {
   const [wallet, setWallet] = useState(null);
   const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState('');
-  const [currency, setCurrency] = useState('phantom_coin');
+  const [currency, setCurrency] = useState('agon');
   const [amount, setAmount] = useState('');
   const [description, setDescription] = useState('');
   const [loading, setLoading] = useState(false);
@@ -38,7 +38,7 @@ const Send = () => {
   };
 
   const currencyOptions = [
-    { value: 'phantom_coin', label: 'PhantomCoin' },
+    { value: 'agon', label: 'Agon' },
     { value: 'stoneworks_dollar', label: 'Stoneworks Dollar' }
   ];
 
@@ -97,7 +97,7 @@ const Send = () => {
       <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12 animate-fade-in">
         <div className="mb-10">
           <h1 className="text-4xl font-bold bg-gradient-phantom bg-clip-text text-transparent mb-3">Send Payment</h1>
-          <p className="text-phantom-text-secondary text-lg">Transfer funds to other PhantomPay users</p>
+          <p className="text-phantom-text-secondary text-lg">Transfer funds to other Agon users</p>
         </div>
 
         <div className="bg-phantom-bg-secondary/60 backdrop-blur-xl rounded-3xl shadow-card border border-phantom-border p-8">

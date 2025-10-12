@@ -52,8 +52,8 @@ const Dashboard = () => {
         {/* Wallet Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <WalletCard
-            currency="phantom_coin"
-            balance={wallet?.phantom_coin || 0}
+            currency="agon"
+            balance={wallet?.agon || 0}
           />
           <WalletCard
             currency="stoneworks_dollar"

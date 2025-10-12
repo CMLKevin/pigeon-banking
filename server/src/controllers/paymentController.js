@@ -13,7 +13,7 @@ export const sendPayment = (req, res) => {
       return res.status(400).json({ error: 'Amount must be greater than 0' });
     }
 
-    const validCurrencies = ['phantom_coin', 'stoneworks_dollar'];
+    const validCurrencies = ['agon', 'stoneworks_dollar'];
     if (!validCurrencies.includes(currency)) {
       return res.status(400).json({ error: 'Invalid currency type' });
     }

@@ -1,16 +1,18 @@
-# PhantomPay
+# Agon
 
 A modern, minimalistic payment system for the Stoneworks Minecraft server, built with React and Node.js.
 
 ## Features
 
 - 🔐 **Secure Authentication** - JWT-based authentication with bcrypt password hashing
-- 💰 **Dual Currency System** - PhantomCoin and Stoneworks Dollar
+- 💰 **Dual Currency System** - Agon and Stoneworks Dollar
 - 🔄 **Currency Swap** - Exchange currencies at 1:1 ratio
 - 💸 **Peer-to-Peer Payments** - Send payments to other users
 - 📊 **Transaction History** - Track all your transactions
 - 👥 **User Directory** - Browse and search all registered users
-- 🎨 **Modern UI** - Professional, minimalistic design inspired by Phantom
+- 👑 **Admin Panel** - Comprehensive user management and analytics dashboard
+- 🎟️ **Invite System** - One-time use invite codes for controlled user registration
+- 🎨 **Modern UI** - Professional, minimalistic design inspired by Phantom wallet
 
 ## Tech Stack
 
@@ -39,7 +41,7 @@ A modern, minimalistic payment system for the Stoneworks Minecraft server, built
 
 1. **Clone the repository**
    ```bash
-   cd PhantomPay
+   cd Agon
    ```
 
 2. **Install all dependencies**
@@ -79,7 +81,7 @@ A modern, minimalistic payment system for the Stoneworks Minecraft server, built
 ## Project Structure
 
 ```
-PhantomPay/
+Agon/
 ├── client/                 # React frontend
 │   ├── src/
 │   │   ├── components/    # Reusable UI components
@@ -109,7 +111,7 @@ PhantomPay/
 ## API Endpoints
 
 ### Authentication
-- `POST /api/auth/signup` - Create a new user account
+- `POST /api/auth/signup` - Create a new user account (requires invite code)
 - `POST /api/auth/login` - Login to an existing account
 - `GET /api/auth/profile` - Get current user profile (protected)
 
@@ -125,19 +127,31 @@ PhantomPay/
 - `GET /api/users` - Get all users (protected)
 - `GET /api/users/search` - Search users by username (protected)
 
+### Admin (Admin Only)
+- `GET /api/admin/users` - Get all users with detailed stats
+- `POST /api/admin/users/:id/toggle-disabled` - Enable/disable user account
+- `POST /api/admin/users/:id/toggle-admin` - Promote/demote admin status
+- `GET /api/admin/metrics` - Get system-wide metrics and analytics
+- `GET /api/admin/activity` - Get activity logs
+- `GET /api/admin/invite-codes` - Get all invite codes
+- `POST /api/admin/invite-codes` - Create custom invite code
+- `POST /api/admin/invite-codes/generate` - Generate random invite code
+- `DELETE /api/admin/invite-codes/:id` - Delete unused invite code
+
 ## Usage
 
 ### Creating an Account
 
 1. Navigate to the signup page
-2. Enter your Minecraft username and create a password
-3. You'll receive 1,000 PhantomCoin and 1,000 Stoneworks Dollars as a welcome bonus
+2. Enter your Minecraft username and a valid invite code
+3. Create a password
+4. You'll receive 100 Agon and 100 Stoneworks Dollars as a welcome bonus
 
 ### Sending Payments
 
 1. Go to the "Send" page
 2. Select a recipient from the dropdown
-3. Choose the currency (PhantomCoin or Stoneworks Dollar)
+3. Choose the currency (Agon or Stoneworks Dollar)
 4. Enter the amount and an optional description
 5. Click "Send Payment"
 
@@ -150,6 +164,14 @@ PhantomPay/
 5. Click "Swap Currency"
 
 Currency swaps occur at a 1:1 ratio.
+
+### Admin Panel (Admin Only)
+
+1. Access the admin panel via `/admin/login`
+2. View system metrics, user statistics, and transaction analytics
+3. Manage users (enable/disable, promote to admin)
+4. Create and manage invite codes
+5. Monitor all user activity through detailed logs
 
 ### Viewing Users
 
@@ -169,7 +191,7 @@ Currency swaps occur at a 1:1 ratio.
 ### Wallets Table
 - `id` - Primary key
 - `user_id` - Foreign key to users table
-- `phantom_coin` - PhantomCoin balance
+- `agon` - Agon balance
 - `stoneworks_dollar` - Stoneworks Dollar balance
 
 ### Transactions Table
@@ -182,16 +204,31 @@ Currency swaps occur at a 1:1 ratio.
 - `description` - Optional description
 - `created_at` - Transaction timestamp
 
+### Activity Logs Table
+- `id` - Primary key
+- `user_id` - User who performed the action
+- `action` - Action type
+- `metadata` - JSON metadata about the action
+- `created_at` - Action timestamp
+
+### Invite Codes Table
+- `id` - Primary key
+- `code` - Unique invite code
+- `created_by` - Admin user who created it
+- `used_by` - User who used it (null if unused)
+- `is_used` - Boolean flag
+- `created_at` - Creation timestamp
+- `used_at` - Usage timestamp
+
 ## Future Enhancements
 
-PhantomPay is designed with modularity in mind. Planned future features include:
+Agon is designed with modularity in mind. Planned future features include:
 
-- 📈 **Stock Market** - Trade virtual stocks with PhantomCoin
+- 📈 **Stock Market** - Trade virtual stocks with Agon
 - 💵 **Bonds** - Purchase and trade bonds
 - 🏦 **Loans** - Borrow and lend between users
 - 📱 **Mobile App** - Native mobile application
 - 🔗 **Minecraft Integration** - Direct integration with Minecraft server
-- 📊 **Analytics Dashboard** - Detailed spending and earning insights
 - 🔔 **Notifications** - Real-time transaction notifications
 - 👥 **User Profiles** - Enhanced user profiles with avatars
 - 🎁 **Gift Cards** - Create and redeem gift cards

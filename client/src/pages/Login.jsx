@@ -45,7 +45,7 @@ const Login = () => {
             </svg>
           </div>
           <h1 className="text-5xl font-bold bg-gradient-phantom bg-clip-text text-transparent mb-3">
-            PhantomPay
+            Agon
           </h1>
           <p className="text-phantom-text-secondary text-lg">Welcome back! Sign in to continue</p>
         </div>
