@@ -108,6 +108,60 @@ router.get('/metrics', (req, res) => {
         (SELECT SUM(stoneworks_dollar) FROM wallets) AS sum_sw
     `).get();
 
+    // Game Center totals
+    const gameTotalsRow = db.prepare(`
+      SELECT 
+        COUNT(1) AS total_games,
+        SUM(CASE WHEN won = 1 THEN 1 ELSE 0 END) AS wins,
+        SUM(CASE WHEN won = 0 THEN 1 ELSE 0 END) AS losses,
+        COUNT(DISTINCT user_id) AS unique_players,
+        SUM(bet_amount) AS total_bet,
+        SUM(CASE WHEN won = 1 THEN bet_amount ELSE 0 END) AS total_bet_won
+      FROM game_history
+    `).get();
+
+    const gameTotals = gameTotalsRow ? {
+      total_games: Number(gameTotalsRow.total_games || 0),
+      wins: Number(gameTotalsRow.wins || 0),
+      losses: Number(gameTotalsRow.losses || 0),
+      unique_players: Number(gameTotalsRow.unique_players || 0),
+      total_bet: Number(gameTotalsRow.total_bet || 0),
+      total_bet_won: Number(gameTotalsRow.total_bet_won || 0),
+      win_rate: gameTotalsRow.total_games ? Number(((gameTotalsRow.wins || 0) / gameTotalsRow.total_games * 100).toFixed(2)) : 0,
+      // House profit = sum of losing bets - sum of winning net payouts (1x bet)
+      house_profit: Number(((gameTotalsRow.total_bet || 0) - 2 * (gameTotalsRow.total_bet_won || 0)).toFixed(2)) * -1
+    } : {
+      total_games: 0, wins: 0, losses: 0, unique_players: 0, total_bet: 0, total_bet_won: 0, win_rate: 0, house_profit: 0
+    };
+
+    // Games by day (last 14 days)
+    const gamesByDay = db.prepare(`
+      SELECT DATE(created_at) AS day,
+        COUNT(1) AS games,
+        SUM(CASE WHEN won = 1 THEN 1 ELSE 0 END) AS wins,
+        SUM(CASE WHEN won = 0 THEN 1 ELSE 0 END) AS losses,
+        SUM(bet_amount) AS total_bet,
+        SUM(CASE WHEN won = 1 THEN bet_amount ELSE 0 END) AS bet_won
+      FROM game_history
+      GROUP BY DATE(created_at)
+      ORDER BY day DESC
+      LIMIT 14
+    `).all();
+
+    // Top gamers by games played
+    const topGamers = db.prepare(`
+      SELECT u.id, u.username,
+        COUNT(gh.id) AS games_played,
+        SUM(CASE WHEN gh.won = 1 THEN 1 ELSE 0 END) AS wins,
+        SUM(gh.bet_amount) AS total_bet,
+        SUM(CASE WHEN gh.won = 1 THEN gh.bet_amount ELSE -gh.bet_amount END) AS player_net
+      FROM game_history gh
+      JOIN users u ON u.id = gh.user_id
+      GROUP BY u.id
+      ORDER BY games_played DESC
+      LIMIT 10
+    `).all();
+
     const activity24h = db.prepare(`
       SELECT action, COUNT(1) as count
       FROM activity_logs
@@ -243,7 +297,10 @@ router.get('/metrics', (req, res) => {
       bidsByDay,
       topAuctions,
       topBidders,
-      rarityDistribution
+      rarityDistribution,
+      gameTotals,
+      gamesByDay,
+      topGamers
     });
   } catch (e) {
     console.error('Metrics error:', e);
