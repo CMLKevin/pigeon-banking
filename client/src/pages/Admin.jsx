@@ -342,16 +342,16 @@ const Admin = () => {
               </div>
             </div>
 
-            {/* Game Center Analytics */}
+            {/* Coin Flip Analytics */}
             <div className="mt-12">
               <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 rounded-2xl bg-gradient-phantom flex items-center justify-center shadow-glow">
+                <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-amber-500 to-yellow-500 flex items-center justify-center shadow-glow">
                   <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </div>
                 <div>
-                  <h2 className="text-3xl font-bold bg-gradient-phantom bg-clip-text text-transparent">Game Center Analytics</h2>
+                  <h2 className="text-3xl font-bold bg-gradient-phantom bg-clip-text text-transparent">Coin Flip Analytics</h2>
                   <p className="text-phantom-text-secondary">Monitor coin flip activity and player performance</p>
                 </div>
               </div>
@@ -359,22 +359,22 @@ const Admin = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <StatCard 
                   title="Total Games" 
-                  value={metrics.gameTotals?.total_games || 0} 
-                  sub={`${metrics.gameTotals?.wins || 0} wins • ${metrics.gameTotals?.losses || 0} losses`}
+                  value={metrics.coinflipTotals?.total_games || 0} 
+                  sub={`${metrics.coinflipTotals?.wins || 0} wins • ${metrics.coinflipTotals?.losses || 0} losses`}
                 />
                 <StatCard 
                   title="Unique Players" 
-                  value={metrics.gameTotals?.unique_players || 0} 
-                  sub={`Win rate: ${(metrics.gameTotals?.win_rate || 0).toFixed(2)}%`}
+                  value={metrics.coinflipTotals?.unique_players || 0} 
+                  sub={`Win rate: ${(metrics.coinflipTotals?.win_rate || 0).toFixed(2)}%`}
                 />
                 <StatCard 
                   title="Total Bet (◉)" 
-                  value={`${Number(metrics.gameTotals?.total_bet || 0).toFixed(0)}`} 
-                  sub={`Won Bets: ${Number(metrics.gameTotals?.total_bet_won || 0).toFixed(0)}`}
+                  value={`${Number(metrics.coinflipTotals?.total_bet || 0).toFixed(0)}`} 
+                  sub={`Won Bets: ${Number(metrics.coinflipTotals?.total_bet_won || 0).toFixed(0)}`}
                 />
                 <StatCard 
                   title="House Profit (◉)" 
-                  value={`${Number(metrics.gameTotals?.house_profit || 0).toFixed(0)}`} 
+                  value={`${Number(metrics.coinflipTotals?.house_profit || 0).toFixed(0)}`} 
                   sub={`Expected ≈ 10% edge`}
                 />
               </div>
@@ -384,23 +384,98 @@ const Admin = () => {
                   <div className="flex items-center justify-between mb-4">
                     <div>
                       <h3 className="text-xl font-bold text-phantom-text-primary">Games by Day (14 days)</h3>
-                      <p className="text-sm text-phantom-text-tertiary">Total games played per day</p>
+                      <p className="text-sm text-phantom-text-tertiary">Coin flip games per day</p>
                     </div>
                   </div>
                   <LineChart data={
-                    metrics.gamesByDay?.slice().reverse().map(d => ({
+                    metrics.coinflipByDay?.slice().reverse().map(d => ({
                       label: new Date(d.day).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
                       value: Number(d.games || 0)
                     })) || []
                   } />
                 </div>
                 <div className="bg-phantom-bg-secondary/60 backdrop-blur-xl rounded-3xl shadow-card border border-phantom-border p-6">
-                  <h3 className="text-xl font-bold text-phantom-text-primary mb-2">Top Gamers</h3>
-                  <p className="text-sm text-phantom-text-tertiary mb-4">Most coin flips played</p>
+                  <h3 className="text-xl font-bold text-phantom-text-primary mb-2">Top Players</h3>
+                  <p className="text-sm text-phantom-text-tertiary mb-4">Most coin flip games played</p>
                   <div className="space-y-3">
-                    {metrics.topGamers?.slice(0, 6).map((g, idx) => (
+                    {metrics.topCoinflipPlayers?.slice(0, 6).map((g, idx) => (
                       <div key={g.id} className="flex items-center gap-3 p-3 rounded-2xl hover:bg-phantom-bg-tertiary transition-all group">
-                        <div className="w-8 h-8 rounded-full bg-gradient-phantom flex items-center justify-center text-white font-bold text-sm shadow-glow-sm">
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-500 to-yellow-500 flex items-center justify-center text-white font-bold text-sm shadow-glow-sm">
+                          {idx + 1}
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-sm font-semibold text-phantom-text-primary">{g.username}</p>
+                          <p className="text-xs text-phantom-text-tertiary">{g.games_played} games • {g.wins} wins</p>
+                        </div>
+                        <div className="text-right">
+                          <p className={`text-sm font-semibold ${g.player_net >= 0 ? 'text-phantom-success' : 'text-phantom-error'}`}>{g.player_net >= 0 ? '+' : ''}{Number(g.player_net || 0).toFixed(0)} ◉</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Blackjack Analytics */}
+            <div className="mt-12">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center shadow-glow">
+                  <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+                  </svg>
+                </div>
+                <div>
+                  <h2 className="text-3xl font-bold bg-gradient-phantom bg-clip-text text-transparent">Blackjack Analytics</h2>
+                  <p className="text-phantom-text-secondary">Monitor blackjack activity and player performance</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <StatCard 
+                  title="Total Games" 
+                  value={metrics.blackjackTotals?.total_games || 0} 
+                  sub={`${metrics.blackjackTotals?.wins || 0} wins • ${metrics.blackjackTotals?.losses || 0} losses`}
+                />
+                <StatCard 
+                  title="Unique Players" 
+                  value={metrics.blackjackTotals?.unique_players || 0} 
+                  sub={`Win rate: ${(metrics.blackjackTotals?.win_rate || 0).toFixed(2)}%`}
+                />
+                <StatCard 
+                  title="Blackjacks & Pushes" 
+                  value={`${Number(metrics.blackjackTotals?.blackjacks || 0)}`} 
+                  sub={`${Number(metrics.blackjackTotals?.pushes || 0)} pushes`}
+                />
+                <StatCard 
+                  title="House Profit (◉)" 
+                  value={`${Number(metrics.blackjackTotals?.house_profit || 0).toFixed(0)}`} 
+                  sub={`Total Bet: ${Number(metrics.blackjackTotals?.total_bet || 0).toFixed(0)}`}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+                <div className="bg-phantom-bg-secondary/60 backdrop-blur-xl rounded-3xl shadow-card border border-phantom-border p-6 group">
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <h3 className="text-xl font-bold text-phantom-text-primary">Games by Day (14 days)</h3>
+                      <p className="text-sm text-phantom-text-tertiary">Blackjack games per day</p>
+                    </div>
+                  </div>
+                  <LineChart data={
+                    metrics.blackjackByDay?.slice().reverse().map(d => ({
+                      label: new Date(d.day).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+                      value: Number(d.games || 0)
+                    })) || []
+                  } />
+                </div>
+                <div className="bg-phantom-bg-secondary/60 backdrop-blur-xl rounded-3xl shadow-card border border-phantom-border p-6">
+                  <h3 className="text-xl font-bold text-phantom-text-primary mb-2">Top Players</h3>
+                  <p className="text-sm text-phantom-text-tertiary mb-4">Most blackjack games played</p>
+                  <div className="space-y-3">
+                    {metrics.topBlackjackPlayers?.slice(0, 6).map((g, idx) => (
+                      <div key={g.id} className="flex items-center gap-3 p-3 rounded-2xl hover:bg-phantom-bg-tertiary transition-all group">
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center text-white font-bold text-sm shadow-glow-sm">
                           {idx + 1}
                         </div>
                         <div className="flex-1">

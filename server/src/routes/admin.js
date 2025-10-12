@@ -158,8 +158,8 @@ router.get('/metrics', (req, res) => {
         (SELECT SUM(stoneworks_dollar) FROM wallets) AS sum_sw
     `).get();
 
-    // Game Center totals
-    const gameTotalsRow = db.prepare(`
+    // Coin Flip totals
+    const coinflipTotalsRow = db.prepare(`
       SELECT 
         COUNT(1) AS total_games,
         SUM(CASE WHEN won = 1 THEN 1 ELSE 0 END) AS wins,
@@ -168,25 +168,54 @@ router.get('/metrics', (req, res) => {
         SUM(bet_amount) AS total_bet,
         SUM(CASE WHEN won = 1 THEN bet_amount ELSE 0 END) AS total_bet_won
       FROM game_history
+      WHERE game_type = 'coinflip'
     `).get();
 
-    const gameTotals = gameTotalsRow ? {
-      total_games: Number(gameTotalsRow.total_games || 0),
-      wins: Number(gameTotalsRow.wins || 0),
-      losses: Number(gameTotalsRow.losses || 0),
-      unique_players: Number(gameTotalsRow.unique_players || 0),
-      total_bet: Number(gameTotalsRow.total_bet || 0),
-      total_bet_won: Number(gameTotalsRow.total_bet_won || 0),
-      win_rate: gameTotalsRow.total_games ? Number(((gameTotalsRow.wins || 0) / gameTotalsRow.total_games * 100).toFixed(2)) : 0,
-      // House profit per requested definition:
-      // house_profit = total_bet - total_bet_won (players' winning bets)
-      house_profit: Number(((gameTotalsRow.total_bet || 0) - (gameTotalsRow.total_bet_won || 0)).toFixed(2))
+    const coinflipTotals = coinflipTotalsRow ? {
+      total_games: Number(coinflipTotalsRow.total_games || 0),
+      wins: Number(coinflipTotalsRow.wins || 0),
+      losses: Number(coinflipTotalsRow.losses || 0),
+      unique_players: Number(coinflipTotalsRow.unique_players || 0),
+      total_bet: Number(coinflipTotalsRow.total_bet || 0),
+      total_bet_won: Number(coinflipTotalsRow.total_bet_won || 0),
+      win_rate: coinflipTotalsRow.total_games ? Number(((coinflipTotalsRow.wins || 0) / coinflipTotalsRow.total_games * 100).toFixed(2)) : 0,
+      house_profit: Number(((coinflipTotalsRow.total_bet || 0) - (coinflipTotalsRow.total_bet_won || 0)).toFixed(2))
     } : {
       total_games: 0, wins: 0, losses: 0, unique_players: 0, total_bet: 0, total_bet_won: 0, win_rate: 0, house_profit: 0
     };
 
-    // Games by day (last 14 days)
-    const gamesByDay = db.prepare(`
+    // Blackjack totals
+    const blackjackTotalsRow = db.prepare(`
+      SELECT 
+        COUNT(1) AS total_games,
+        SUM(CASE WHEN won = 1 THEN 1 ELSE 0 END) AS wins,
+        SUM(CASE WHEN won = 0 THEN 1 ELSE 0 END) AS losses,
+        COUNT(DISTINCT user_id) AS unique_players,
+        SUM(bet_amount) AS total_bet,
+        SUM(CASE WHEN won = 1 THEN bet_amount ELSE 0 END) AS total_bet_won,
+        SUM(CASE WHEN result = 'blackjack' THEN 1 ELSE 0 END) AS blackjacks,
+        SUM(CASE WHEN result = 'push' THEN 1 ELSE 0 END) AS pushes
+      FROM game_history
+      WHERE game_type = 'blackjack'
+    `).get();
+
+    const blackjackTotals = blackjackTotalsRow ? {
+      total_games: Number(blackjackTotalsRow.total_games || 0),
+      wins: Number(blackjackTotalsRow.wins || 0),
+      losses: Number(blackjackTotalsRow.losses || 0),
+      unique_players: Number(blackjackTotalsRow.unique_players || 0),
+      total_bet: Number(blackjackTotalsRow.total_bet || 0),
+      total_bet_won: Number(blackjackTotalsRow.total_bet_won || 0),
+      blackjacks: Number(blackjackTotalsRow.blackjacks || 0),
+      pushes: Number(blackjackTotalsRow.pushes || 0),
+      win_rate: blackjackTotalsRow.total_games ? Number(((blackjackTotalsRow.wins || 0) / blackjackTotalsRow.total_games * 100).toFixed(2)) : 0,
+      house_profit: Number(((blackjackTotalsRow.total_bet || 0) - (blackjackTotalsRow.total_bet_won || 0)).toFixed(2))
+    } : {
+      total_games: 0, wins: 0, losses: 0, unique_players: 0, total_bet: 0, total_bet_won: 0, blackjacks: 0, pushes: 0, win_rate: 0, house_profit: 0
+    };
+
+    // Coin flip games by day (last 14 days)
+    const coinflipByDay = db.prepare(`
       SELECT DATE(created_at) AS day,
         COUNT(1) AS games,
         SUM(CASE WHEN won = 1 THEN 1 ELSE 0 END) AS wins,
@@ -194,13 +223,29 @@ router.get('/metrics', (req, res) => {
         SUM(bet_amount) AS total_bet,
         SUM(CASE WHEN won = 1 THEN bet_amount ELSE 0 END) AS bet_won
       FROM game_history
+      WHERE game_type = 'coinflip'
       GROUP BY DATE(created_at)
       ORDER BY day DESC
       LIMIT 14
     `).all();
 
-    // Top gamers by games played
-    const topGamers = db.prepare(`
+    // Blackjack games by day (last 14 days)
+    const blackjackByDay = db.prepare(`
+      SELECT DATE(created_at) AS day,
+        COUNT(1) AS games,
+        SUM(CASE WHEN won = 1 THEN 1 ELSE 0 END) AS wins,
+        SUM(CASE WHEN won = 0 THEN 1 ELSE 0 END) AS losses,
+        SUM(bet_amount) AS total_bet,
+        SUM(CASE WHEN won = 1 THEN bet_amount ELSE 0 END) AS bet_won
+      FROM game_history
+      WHERE game_type = 'blackjack'
+      GROUP BY DATE(created_at)
+      ORDER BY day DESC
+      LIMIT 14
+    `).all();
+
+    // Top coin flip players
+    const topCoinflipPlayers = db.prepare(`
       SELECT u.id, u.username,
         COUNT(gh.id) AS games_played,
         SUM(CASE WHEN gh.won = 1 THEN 1 ELSE 0 END) AS wins,
@@ -208,6 +253,22 @@ router.get('/metrics', (req, res) => {
         SUM(CASE WHEN gh.won = 1 THEN gh.bet_amount ELSE -gh.bet_amount END) AS player_net
       FROM game_history gh
       JOIN users u ON u.id = gh.user_id
+      WHERE gh.game_type = 'coinflip'
+      GROUP BY u.id
+      ORDER BY games_played DESC
+      LIMIT 10
+    `).all();
+
+    // Top blackjack players
+    const topBlackjackPlayers = db.prepare(`
+      SELECT u.id, u.username,
+        COUNT(gh.id) AS games_played,
+        SUM(CASE WHEN gh.won = 1 THEN 1 ELSE 0 END) AS wins,
+        SUM(gh.bet_amount) AS total_bet,
+        SUM(CASE WHEN gh.won = 1 THEN gh.bet_amount ELSE -gh.bet_amount END) AS player_net
+      FROM game_history gh
+      JOIN users u ON u.id = gh.user_id
+      WHERE gh.game_type = 'blackjack'
       GROUP BY u.id
       ORDER BY games_played DESC
       LIMIT 10
@@ -349,9 +410,12 @@ router.get('/metrics', (req, res) => {
       topAuctions,
       topBidders,
       rarityDistribution,
-      gameTotals,
-      gamesByDay,
-      topGamers
+      coinflipTotals,
+      coinflipByDay,
+      topCoinflipPlayers,
+      blackjackTotals,
+      blackjackByDay,
+      topBlackjackPlayers
     });
   } catch (e) {
     console.error('Metrics error:', e);
