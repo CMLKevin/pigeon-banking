@@ -147,7 +147,7 @@ const Signup = () => {
                   <p className="text-phantom-text-primary font-semibold mb-1">Welcome Bonus!</p>
                   <p className="text-sm text-phantom-text-secondary">
                     New users receive <span className="text-phantom-accent-primary font-semibold">100 Agon</span> and{' '}
-                    <span className="text-phantom-accent-secondary font-semibold">100 Stoneworks Dollars</span> to get started.
+                    <span className="text-phantom-accent-secondary font-semibold">100 Game Chips</span> to get started.
                   </p>
                 </div>
               </div>

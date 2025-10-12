@@ -145,6 +145,21 @@ const initDatabase = () => {
     )
   `);
 
+  // Game history table - for tracking game results
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS game_history (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER NOT NULL,
+      game_type TEXT NOT NULL,
+      bet_amount REAL NOT NULL,
+      result TEXT NOT NULL,
+      choice TEXT NOT NULL,
+      won INTEGER NOT NULL,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    )
+  `);
+
   // Create indexes for better query performance
   db.exec(`
     CREATE INDEX IF NOT EXISTS idx_transactions_from_user 
@@ -185,6 +200,12 @@ const initDatabase = () => {
 
     CREATE INDEX IF NOT EXISTS idx_bids_bidder 
     ON bids(bidder_id);
+
+    CREATE INDEX IF NOT EXISTS idx_game_history_user 
+    ON game_history(user_id);
+
+    CREATE INDEX IF NOT EXISTS idx_game_history_created_at 
+    ON game_history(created_at);
   `);
 
   // Best-effort migration for existing databases: add columns if missing

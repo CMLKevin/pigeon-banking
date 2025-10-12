@@ -107,7 +107,7 @@ There are no default users. You need to create an account through the signup pag
 
 Each new user receives:
 - 1,000 PhantomCoin
-- 1,000 Stoneworks Dollars
+- 1,000 Game Chips
 
 ## Testing the Application
 

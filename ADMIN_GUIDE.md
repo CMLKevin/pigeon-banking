@@ -33,7 +33,7 @@ The admin dashboard displays comprehensive system metrics:
 - **Total Users**: Shows total users, disabled count, and admin count
 - **Total Transactions**: Displays total transactions, broken down by payments and swaps
 - **Payment Volume**: Total payment volume with average transaction amount
-- **Currency Supply**: Total PhantomCoin and Stoneworks Dollar in circulation
+- **Currency Supply**: Total Agon and Game Chips in circulation
 
 #### Charts & Visualizations
 - **Payment Volume (14 days)**: Line chart showing daily transaction volume trends
@@ -53,7 +53,7 @@ The User Management table provides full control over user accounts:
 - Avatar with first letter of username
 - Username
 - PhantomCoin balance
-- Stoneworks Dollar balance
+- Game Chips balance
 - Transaction count
 - Role (Admin/User)
 - Status (Active/Disabled)
@@ -71,7 +71,7 @@ The User Management table provides full control over user accounts:
 All key user actions are automatically logged:
 
 - **User Actions Tracked**:
-  - `swap`: Currency swaps between PhantomCoin and Stoneworks Dollar
+  - `swap`: Currency swaps between Agon and Game Chips
   - `payment_sent`: Outgoing payments
   - `payment_received`: Incoming payments
   - `admin_toggle_disabled`: Admin enabling/disabling users

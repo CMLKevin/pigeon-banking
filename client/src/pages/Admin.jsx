@@ -371,7 +371,7 @@ const Admin = () => {
                       </div>
                       <div className="text-right">
                         <p className="text-sm font-semibold text-phantom-accent-primary">{formatCurrency(user.agon || 0, 'Ⱥ')}</p>
-                        <p className="text-xs text-phantom-text-tertiary">SW$ {Number(user.stoneworks_dollar || 0).toFixed(0)}</p>
+                        <p className="text-xs text-phantom-text-tertiary">◉ {Number(user.stoneworks_dollar || 0).toFixed(0)}</p>
                       </div>
                     </div>
                   ))}

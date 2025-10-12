@@ -12,6 +12,7 @@ import AdminLogin from './pages/AdminLogin';
 import Auctions from './pages/Auctions';
 import CreateAuction from './pages/CreateAuction';
 import AuctionDetail from './pages/AuctionDetail';
+import Games from './pages/Games';
 
 function App() {
   return (
@@ -82,6 +83,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <AuctionDetail />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/games"
+            element={
+              <ProtectedRoute>
+                <Games />
               </ProtectedRoute>
             }
           />

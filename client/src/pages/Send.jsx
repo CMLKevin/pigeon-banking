@@ -39,7 +39,7 @@ const Send = () => {
 
   const currencyOptions = [
     { value: 'agon', label: 'Agon' },
-    { value: 'stoneworks_dollar', label: 'Stoneworks Dollar' }
+    { value: 'stoneworks_dollar', label: 'Game Chips' }
   ];
 
   const userOptions = [

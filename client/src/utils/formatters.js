@@ -8,7 +8,7 @@ export const getCurrencySymbol = (currency) => {
     case 'agon':
       return 'Ⱥ';
     case 'stoneworks_dollar':
-      return 'SW$';
+      return '◉';
     default:
       return '';
   }
@@ -19,7 +19,7 @@ export const getCurrencyName = (currency) => {
     case 'agon':
       return 'Agon';
     case 'stoneworks_dollar':
-      return 'Stoneworks Dollar';
+      return 'Game Chips';
     default:
       return currency;
   }

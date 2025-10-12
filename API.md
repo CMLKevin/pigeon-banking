@@ -322,7 +322,7 @@ All errors follow this format:
 ## Currency Types
 
 - `phantom_coin`: PhantomCoin (PC)
-- `stoneworks_dollar`: Stoneworks Dollar (SW$)
+- `stoneworks_dollar`: Game Chips (GC)
 
 ## Transaction Types
 

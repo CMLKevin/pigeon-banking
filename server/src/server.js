@@ -7,6 +7,7 @@ import paymentRoutes from './routes/payment.js';
 import userRoutes from './routes/user.js';
 import adminRoutes from './routes/admin.js';
 import auctionRoutes from './routes/auction.js';
+import gameRoutes from './routes/games.js';
 
 dotenv.config();
 
@@ -29,6 +30,7 @@ app.use('/api/payment', paymentRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/auctions', auctionRoutes);
+app.use('/api/games', gameRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
