@@ -828,6 +828,55 @@ const Admin = () => {
                       )}
                     </td>
                     <td className="py-4 text-right space-x-2">
+                      <div className="flex items-center justify-end gap-2 mb-2">
+                        <input
+                          type="number"
+                          step="0.01"
+                          placeholder="Amount"
+                          className="w-28 px-2 py-1.5 rounded-xl bg-phantom-bg-tertiary border-2 border-phantom-border text-phantom-text-primary placeholder:text-phantom-text-tertiary focus:border-phantom-accent-primary focus:shadow-input focus:outline-none text-sm"
+                          onChange={(e) => (u._adjAmount = e.target.value)}
+                        />
+                        <select
+                          className="px-2 py-1.5 rounded-xl bg-phantom-bg-tertiary border-2 border-phantom-border text-phantom-text-primary focus:border-phantom-accent-primary focus:shadow-input focus:outline-none text-sm"
+                          defaultValue="agon"
+                          onChange={(e) => (u._adjCurrency = e.target.value)}
+                        >
+                          <option value="agon">Agon</option>
+                          <option value="stoneworks_dollar">Game Chips</option>
+                        </select>
+                        <button
+                          onClick={async () => {
+                            const amt = Number(u._adjAmount);
+                            const cur = u._adjCurrency || 'agon';
+                            if (!amt || !isFinite(amt)) return alert('Enter a valid amount');
+                            try {
+                              await adminAPI.adjustBalance(u.id, cur, amt);
+                              load();
+                            } catch (e) {
+                              alert(e.response?.data?.error || 'Failed to adjust balance');
+                            }
+                          }}
+                          className="px-3 py-1.5 rounded-xl bg-phantom-success/20 text-phantom-success hover:bg-phantom-success/30 transition-all text-sm font-medium"
+                        >
+                          Credit
+                        </button>
+                        <button
+                          onClick={async () => {
+                            const amt = Number(u._adjAmount);
+                            const cur = u._adjCurrency || 'agon';
+                            if (!amt || !isFinite(amt)) return alert('Enter a valid amount');
+                            try {
+                              await adminAPI.adjustBalance(u.id, cur, -Math.abs(amt));
+                              load();
+                            } catch (e) {
+                              alert(e.response?.data?.error || 'Failed to adjust balance');
+                            }
+                          }}
+                          className="px-3 py-1.5 rounded-xl bg-phantom-error/20 text-phantom-error hover:bg-phantom-error/30 transition-all text-sm font-medium"
+                        >
+                          Debit
+                        </button>
+                      </div>
                       <button 
                         onClick={() => toggleDisabled(u.id)} 
                         className="px-3 py-1.5 rounded-xl bg-phantom-bg-tertiary hover:bg-phantom-bg-primary border border-phantom-border hover:border-phantom-border-light text-phantom-text-primary hover:text-phantom-accent-primary text-sm transition-all hover:shadow-glow-sm"

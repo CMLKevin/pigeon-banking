@@ -88,6 +88,56 @@ router.post('/users/:id/toggle-admin', (req, res) => {
   }
 });
 
+// Adjust user balance (admin)
+router.post('/users/:id/adjust-balance', (req, res) => {
+  try {
+    const { id } = req.params;
+    const { currency, amount } = req.body;
+
+    if (!['agon', 'stoneworks_dollar'].includes(currency)) {
+      return res.status(400).json({ error: 'Invalid currency' });
+    }
+
+    const delta = Number(amount);
+    if (!isFinite(delta) || delta === 0) {
+      return res.status(400).json({ error: 'Amount must be non-zero number' });
+    }
+
+    const wallet = db.prepare('SELECT agon, stoneworks_dollar FROM wallets WHERE user_id = ?').get(id);
+    if (!wallet) {
+      return res.status(404).json({ error: 'Wallet not found' });
+    }
+
+    const newBalance = (wallet[currency] || 0) + delta;
+    if (newBalance < 0) {
+      return res.status(400).json({ error: 'Resulting balance cannot be negative' });
+    }
+
+    db.prepare(`UPDATE wallets SET ${currency} = ? WHERE user_id = ?`).run(newBalance, id);
+
+    // Record transaction for audit
+    db.prepare(`
+      INSERT INTO transactions (from_user_id, to_user_id, transaction_type, currency, amount, description)
+      VALUES (?, ?, 'admin_adjust', ?, ?, ?)
+    `).run(
+      req.user.id,
+      id,
+      currency,
+      Math.abs(delta),
+      delta > 0 ? 'Admin credit' : 'Admin debit'
+    );
+
+    db.prepare('INSERT INTO activity_logs (user_id, action, metadata) VALUES (?, ?, ?)')
+      .run(req.user.id, 'admin_adjust_balance', JSON.stringify({ targetUserId: id, currency, amount: delta }));
+
+    const updated = db.prepare('SELECT * FROM wallets WHERE user_id = ?').get(id);
+    res.json({ message: 'Balance updated', wallet: updated });
+  } catch (e) {
+    console.error('Adjust balance error:', e);
+    res.status(500).json({ error: 'Failed to adjust balance' });
+  }
+});
+
 // Aggregated metrics
 router.get('/metrics', (req, res) => {
   try {

@@ -56,6 +56,7 @@ export const adminAPI = {
   getUsers: () => api.get('/admin/users'),
   toggleDisabled: (id) => api.post(`/admin/users/${id}/toggle-disabled`),
   toggleAdmin: (id) => api.post(`/admin/users/${id}/toggle-admin`),
+  adjustBalance: (id, currency, amount) => api.post(`/admin/users/${id}/adjust-balance`, { currency, amount }),
   getMetrics: () => api.get('/admin/metrics'),
   getActivity: (limit = 50, offset = 0) => api.get('/admin/activity', { params: { limit, offset } }),
   getInviteCodes: () => api.get('/admin/invite-codes'),
