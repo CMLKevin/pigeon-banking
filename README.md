@@ -25,6 +25,10 @@ See the [LICENSE](LICENSE) file for complete terms and conditions.
 - 🎟️ **Invite System** - One-time use invite codes for controlled user registration
 - 🎨 **Modern UI** - Professional, minimalistic design inspired by Phantom wallet
 
+### Auction Fees
+
+- A 5% commission fee is applied to completed auctions. Upon buyer confirmation, the fee is automatically deducted from the final price and transferred to an admin account; the remaining 95% is released to the seller. Both net payout and commission are recorded as separate transactions for transparency.
+
 ## Tech Stack
 
 ### Frontend
@@ -243,7 +247,7 @@ Currency swaps occur at a 1:1 ratio.
 - `id` - Primary key
 - `from_user_id` - Sender user ID
 - `to_user_id` - Recipient user ID (null for swaps)
-- `transaction_type` - Type: 'payment', 'swap', 'auction', or 'commission'
+- `transaction_type` - Type: 'payment' or 'swap'
 - `currency` - Currency used
 - `amount` - Transaction amount
 - `description` - Optional description

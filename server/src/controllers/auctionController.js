@@ -1,11 +1,5 @@
 import db from '../config/database.js';
 
-// Helper function to get admin user ID
-const getAdminUserId = () => {
-  const admin = db.prepare('SELECT id FROM users WHERE is_admin = 1 LIMIT 1').get();
-  return admin ? admin.id : null;
-};
-
 // Helper function to check and close expired auctions
 const closeExpiredAuctions = () => {
   try {
@@ -289,7 +283,7 @@ export const placeBid = (req, res) => {
   }
 };
 
-// Confirm item delivery and release escrow
+// Confirm item delivery and release escrow (with 5% commission to admin)
 export const confirmDelivery = (req, res) => {
   try {
     const { id } = req.params;
@@ -318,84 +312,84 @@ export const confirmDelivery = (req, res) => {
         throw new Error('No winning bid found');
       }
 
-      // Calculate 1% commission fee
-      const commissionRate = 0.01; // 1%
-      const commissionFee = auction.current_bid * commissionRate;
-      const sellerPayment = auction.current_bid - commissionFee;
+      // Calculate 5% commission
+      const commissionRate = 0.05;
+      const grossAmount = parseFloat(auction.current_bid);
+      const commissionAmount = parseFloat((grossAmount * commissionRate).toFixed(2));
+      const netToSeller = parseFloat((grossAmount - commissionAmount).toFixed(2));
 
-      // Get admin user ID
-      const adminId = getAdminUserId();
-      if (!adminId) {
-        throw new Error('No admin user found');
+      // Find a platform admin account to receive commission
+      const admin = db.prepare('SELECT id, username FROM users WHERE is_admin = 1 ORDER BY id ASC LIMIT 1').get();
+
+      // Release escrow split: net to seller, commission to admin (if exists)
+      db.prepare('UPDATE wallets SET agon = agon + ? WHERE user_id = ?')
+        .run(netToSeller, auction.seller_id);
+      if (admin && admin.id) {
+        db.prepare('UPDATE wallets SET agon = agon + ? WHERE user_id = ?')
+          .run(commissionAmount, admin.id);
       }
 
-      // Release escrow to seller (minus commission)
-      db.prepare('UPDATE wallets SET agon = agon + ? WHERE user_id = ?')
-        .run(sellerPayment, auction.seller_id);
-
-      // Send commission to admin
-      db.prepare('UPDATE wallets SET agon = agon + ? WHERE user_id = ?')
-        .run(commissionFee, adminId);
-
-      // Remove from bidder's escrow
+      // Remove full amount from bidder's escrow
       db.prepare('UPDATE wallets SET agon_escrow = agon_escrow - ? WHERE user_id = ?')
-        .run(auction.current_bid, auction.highest_bidder_id);
+        .run(grossAmount, auction.highest_bidder_id);
 
       // Mark auction as completed
       db.prepare('UPDATE auctions SET status = ?, completed_at = CURRENT_TIMESTAMP WHERE id = ?')
         .run('completed', id);
 
-      // Create transaction records for seller payment and commission
+      // Create transaction records
+      // Buyer -> Seller (net)
       db.prepare(`
         INSERT INTO transactions (from_user_id, to_user_id, transaction_type, currency, amount, description)
         VALUES (?, ?, 'auction', 'agon', ?, ?)
       `).run(
         auction.highest_bidder_id,
         auction.seller_id,
-        sellerPayment,
-        `Auction payment for ${auction.item_name} (seller)`
+        netToSeller,
+        `Auction payment (net) for ${auction.item_name}`
       );
 
-      // Commission transaction
-      db.prepare(`
-        INSERT INTO transactions (from_user_id, to_user_id, transaction_type, currency, amount, description)
-        VALUES (?, ?, 'commission', 'agon', ?, ?)
-      `).run(
-        auction.seller_id,
-        adminId,
-        commissionFee,
-        `1% commission for auction ${auction.item_name}`
-      );
+      // Buyer -> Admin (commission)
+      if (admin && admin.id && commissionAmount > 0) {
+        db.prepare(`
+          INSERT INTO transactions (from_user_id, to_user_id, transaction_type, currency, amount, description)
+          VALUES (?, ?, 'commission', 'agon', ?, ?)
+        `).run(
+          auction.highest_bidder_id,
+          admin.id,
+          commissionAmount,
+          `Auction commission (5%) for ${auction.item_name}`
+        );
+      }
 
       // Log activities
       db.prepare('INSERT INTO activity_logs (user_id, action, metadata) VALUES (?, ?, ?)')
-        .run(auction.seller_id, 'auction_completed', JSON.stringify({
-          auctionId: id,
-          amount: sellerPayment,
-          commission: commissionFee
+        .run(auction.seller_id, 'auction_completed', JSON.stringify({ 
+          auctionId: id, 
+          grossAmount, 
+          netToSeller, 
+          commissionAmount 
         }));
 
       db.prepare('INSERT INTO activity_logs (user_id, action, metadata) VALUES (?, ?, ?)')
-        .run(auction.highest_bidder_id, 'delivery_confirmed', JSON.stringify({
-          auctionId: id,
-          amount: auction.current_bid
+        .run(auction.highest_bidder_id, 'delivery_confirmed', JSON.stringify({ 
+          auctionId: id, 
+          amount: grossAmount 
         }));
 
-      db.prepare('INSERT INTO activity_logs (user_id, action, metadata) VALUES (?, ?, ?)')
-        .run(adminId, 'commission_received', JSON.stringify({
-          auctionId: id,
-          amount: commissionFee,
-          sellerId: auction.seller_id
-        }));
+      if (admin && admin.id && commissionAmount > 0) {
+        db.prepare('INSERT INTO activity_logs (user_id, action, metadata) VALUES (?, ?, ?)')
+          .run(admin.id, 'auction_commission_received', JSON.stringify({ 
+            auctionId: id, 
+            commissionAmount, 
+            sellerId: auction.seller_id 
+          }));
+      }
     });
 
     transaction();
 
-    res.json({
-      message: `Delivery confirmed and payment released to seller (${commissionFee.toFixed(2)}Ⱥ commission deducted)`,
-      commission: commissionFee,
-      sellerPayment: sellerPayment
-    });
+    res.json({ message: 'Delivery confirmed and payment released to seller' });
   } catch (error) {
     console.error('Confirm delivery error:', error);
     res.status(400).json({ error: error.message || 'Failed to confirm delivery' });
