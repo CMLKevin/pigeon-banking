@@ -179,7 +179,8 @@ router.get('/metrics', (req, res) => {
       total_bet: Number(coinflipTotalsRow.total_bet || 0),
       total_bet_won: Number(coinflipTotalsRow.total_bet_won || 0),
       win_rate: coinflipTotalsRow.total_games ? Number(((coinflipTotalsRow.wins || 0) / coinflipTotalsRow.total_games * 100).toFixed(2)) : 0,
-      house_profit: Number(((coinflipTotalsRow.total_bet || 0) - (coinflipTotalsRow.total_bet_won || 0)).toFixed(2))
+      // House profit = total_bet - (won_bets * 2)
+      house_profit: Number(((coinflipTotalsRow.total_bet || 0) - (coinflipTotalsRow.total_bet_won || 0) * 2).toFixed(2))
     } : {
       total_games: 0, wins: 0, losses: 0, unique_players: 0, total_bet: 0, total_bet_won: 0, win_rate: 0, house_profit: 0
     };
@@ -209,7 +210,8 @@ router.get('/metrics', (req, res) => {
       blackjacks: Number(blackjackTotalsRow.blackjacks || 0),
       pushes: Number(blackjackTotalsRow.pushes || 0),
       win_rate: blackjackTotalsRow.total_games ? Number(((blackjackTotalsRow.wins || 0) / blackjackTotalsRow.total_games * 100).toFixed(2)) : 0,
-      house_profit: Number(((blackjackTotalsRow.total_bet || 0) - (blackjackTotalsRow.total_bet_won || 0)).toFixed(2))
+      // House profit = total_bet - (won_bets * 2)
+      house_profit: Number(((blackjackTotalsRow.total_bet || 0) - (blackjackTotalsRow.total_bet_won || 0) * 2).toFixed(2))
     } : {
       total_games: 0, wins: 0, losses: 0, unique_players: 0, total_bet: 0, total_bet_won: 0, blackjacks: 0, pushes: 0, win_rate: 0, house_profit: 0
     };
