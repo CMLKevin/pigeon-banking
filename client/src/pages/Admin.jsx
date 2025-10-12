@@ -858,7 +858,7 @@ const Admin = () => {
                           }}
                           className="px-3 py-1.5 rounded-xl bg-phantom-success/20 text-phantom-success hover:bg-phantom-success/30 transition-all text-sm font-medium"
                         >
-                          Credit
+                          Add
                         </button>
                         <button
                           onClick={async () => {
@@ -874,7 +874,7 @@ const Admin = () => {
                           }}
                           className="px-3 py-1.5 rounded-xl bg-phantom-error/20 text-phantom-error hover:bg-phantom-error/30 transition-all text-sm font-medium"
                         >
-                          Debit
+                          Deduct
                         </button>
                       </div>
                       <button 

@@ -178,8 +178,10 @@ router.get('/metrics', (req, res) => {
       total_bet: Number(gameTotalsRow.total_bet || 0),
       total_bet_won: Number(gameTotalsRow.total_bet_won || 0),
       win_rate: gameTotalsRow.total_games ? Number(((gameTotalsRow.wins || 0) / gameTotalsRow.total_games * 100).toFixed(2)) : 0,
-      // House profit = sum of losing bets - sum of winning net payouts (1x bet)
-      house_profit: Number(((gameTotalsRow.total_bet || 0) - 2 * (gameTotalsRow.total_bet_won || 0)).toFixed(2)) * -1
+      // House profit = sum(loss bets) - sum(win payouts)
+      // loss bets = total_bet - total_bet_won; win payouts = total_bet_won (1x net)
+      // => house_profit = total_bet - 2 * total_bet_won
+      house_profit: Number(((gameTotalsRow.total_bet || 0) - 2 * (gameTotalsRow.total_bet_won || 0)).toFixed(2))
     } : {
       total_games: 0, wins: 0, losses: 0, unique_players: 0, total_bet: 0, total_bet_won: 0, win_rate: 0, house_profit: 0
     };
