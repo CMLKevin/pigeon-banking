@@ -13,6 +13,8 @@ import Auctions from './pages/Auctions';
 import CreateAuction from './pages/CreateAuction';
 import AuctionDetail from './pages/AuctionDetail';
 import Games from './pages/Games';
+import CoinFlip from './pages/CoinFlip';
+import Blackjack from './pages/Blackjack';
 
 function App() {
   return (
@@ -91,6 +93,22 @@ function App() {
             element={
               <ProtectedRoute>
                 <Games />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/games/coinflip"
+            element={
+              <ProtectedRoute>
+                <CoinFlip />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/games/blackjack"
+            element={
+              <ProtectedRoute>
+                <Blackjack />
               </ProtectedRoute>
             }
           />
