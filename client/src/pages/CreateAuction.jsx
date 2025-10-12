@@ -100,23 +100,6 @@ const CreateAuction = () => {
           </p>
         </div>
 
-        {/* Commission Notice */}
-        <div className="bg-phantom-bg-secondary/60 backdrop-blur-xl rounded-3xl shadow-card border border-phantom-border p-4 mb-6">
-          <div className="flex items-start gap-3">
-            <div className="w-8 h-8 rounded-full bg-phantom-accent-primary/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-              <svg className="w-4 h-4 text-phantom-accent-primary" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-              </svg>
-            </div>
-            <div>
-              <p className="text-sm font-semibold text-phantom-text-primary mb-1">1% Commission Fee</p>
-              <p className="text-xs text-phantom-text-secondary">
-                A 1% commission fee will be automatically deducted from the final bid amount and paid to the platform administrators when the auction completes.
-              </p>
-            </div>
-          </div>
-        </div>
-
         <div className="bg-phantom-bg-secondary/60 backdrop-blur-xl rounded-3xl shadow-card border border-phantom-border p-8">
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Item Name */}
