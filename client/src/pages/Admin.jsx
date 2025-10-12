@@ -277,7 +277,7 @@ const Admin = () => {
               <StatCard 
                 title="Total Transactions" 
                 value={metrics.totals.total_transactions} 
-                sub={`${metrics.totals.payment_count} payments • ${metrics.totals.swap_count} swaps`}
+                sub={`${metrics.totals.payment_count || 0} payments • ${metrics.totals.swap_count || 0} swaps • ${(metrics.totals.auction_count || 0) + (metrics.totals.commission_count || 0)} auction`}
                 icon={
                   <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3zM16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 18a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" />
@@ -286,8 +286,8 @@ const Admin = () => {
               />
               <StatCard 
                 title="Payment Volume" 
-                value={formatCurrency(metrics.totals.total_payment_volume || 0, 'PC')}
-                sub={`Avg: ${formatCurrency(metrics.totals.avg_payment || 0, 'PC')}`}
+                value={formatCurrency(metrics.totals.total_payment_volume || 0, 'Ⱥ')}
+                sub={`Avg: ${formatCurrency(metrics.totals.avg_payment || 0, 'Ⱥ')}`}
                 icon={
                   <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z" />
@@ -297,7 +297,7 @@ const Admin = () => {
               />
               <StatCard 
                 title="Currency Supply" 
-                value={`${formatCurrency(metrics.totals.sum_pc || 0, 'PC')}`}
+                value={`Ⱥ ${Number(metrics.totals.sum_agon || 0).toFixed(2)}`}
                 sub={`SW$ ${Number(metrics.totals.sum_sw || 0).toFixed(0)}`}
                 icon={
                   <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
@@ -399,32 +399,45 @@ const Admin = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {metrics.recentTransactions?.map(tx => (
-                      <tr key={tx.id} className="border-b border-phantom-border/50 hover:bg-phantom-bg-tertiary/50 transition-all">
-                        <td className="py-3">
-                          <span className={`inline-flex items-center px-2.5 py-1 rounded-xl text-xs font-semibold ${
-                            tx.transaction_type === 'payment' 
-                              ? 'bg-phantom-success/20 text-phantom-success' 
-                              : 'bg-phantom-accent-primary/20 text-phantom-accent-primary'
-                          }`}>
-                            {tx.transaction_type}
-                          </span>
-                        </td>
-                        <td className="py-3 text-phantom-text-primary font-medium">{tx.from_username}</td>
-                        <td className="py-3 text-phantom-text-primary font-medium">{tx.to_username || '-'}</td>
-                        <td className="py-3 text-phantom-accent-primary font-semibold">
-                          {formatCurrency(tx.amount, tx.currency === 'agon' ? 'Ⱥ' : 'SW$')}
-                        </td>
-                        <td className="py-3 text-phantom-text-secondary text-sm">
-                          {new Date(tx.created_at).toLocaleString('en-US', { 
-                            month: 'short', 
-                            day: 'numeric', 
-                            hour: '2-digit', 
-                            minute: '2-digit' 
-                          })}
-                        </td>
-                      </tr>
-                    ))}
+                    {metrics.recentTransactions?.map(tx => {
+                      // Determine transaction type styling
+                      let typeStyle = 'bg-phantom-accent-primary/20 text-phantom-accent-primary'; // default (swap)
+                      if (tx.transaction_type === 'payment') {
+                        typeStyle = 'bg-phantom-success/20 text-phantom-success';
+                      } else if (tx.transaction_type === 'auction') {
+                        typeStyle = 'bg-blue-500/20 text-blue-400';
+                      } else if (tx.transaction_type === 'commission') {
+                        typeStyle = 'bg-yellow-500/20 text-yellow-400';
+                      }
+
+                      return (
+                        <tr key={tx.id} className="border-b border-phantom-border/50 hover:bg-phantom-bg-tertiary/50 transition-all">
+                          <td className="py-3">
+                            <span className={`inline-flex items-center px-2.5 py-1 rounded-xl text-xs font-semibold ${typeStyle}`}>
+                              {tx.transaction_type}
+                            </span>
+                          </td>
+                          <td className="py-3 text-phantom-text-primary font-medium">{tx.from_username}</td>
+                          <td className="py-3 text-phantom-text-primary font-medium">
+                            {tx.to_username || '-'}
+                            {tx.transaction_type === 'commission' && (
+                              <span className="ml-1 text-xs text-yellow-400">(Platform Fee)</span>
+                            )}
+                          </td>
+                          <td className="py-3 text-phantom-accent-primary font-semibold">
+                            {formatCurrency(tx.amount, tx.currency === 'agon' ? 'Ⱥ' : 'SW$')}
+                          </td>
+                          <td className="py-3 text-phantom-text-secondary text-sm">
+                            {new Date(tx.created_at).toLocaleString('en-US', { 
+                              month: 'short', 
+                              day: 'numeric', 
+                              hour: '2-digit', 
+                              minute: '2-digit' 
+                            })}
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
@@ -473,7 +486,7 @@ const Admin = () => {
                   <StatCard 
                     title="Auction Revenue" 
                     value={formatCurrency(metrics.auctionTotals.total_auction_revenue || 0, 'Ⱥ')}
-                    sub={`Avg: ${formatCurrency(metrics.auctionTotals.avg_final_bid || 0, 'Ⱥ')}`}
+                    sub={`Avg: ${formatCurrency(metrics.auctionTotals.avg_final_bid || 0, 'Ⱥ')} • ${formatCurrency(metrics.totals.total_commission_collected || 0, 'Ⱥ')} commission`}
                     icon={
                       <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z" />
@@ -482,12 +495,12 @@ const Admin = () => {
                     }
                   />
                   <StatCard 
-                    title="Active Bidders" 
-                    value={metrics.auctionTotals.unique_bidders || 0}
-                    sub={`${((metrics.auctionTotals.unique_bidders / (metrics.totals.total_users || 1)) * 100).toFixed(0)}% of total users`}
+                    title="Platform Commission (5%)" 
+                    value={formatCurrency(metrics.totals.total_commission_collected || 0, 'Ⱥ')}
+                    sub={`From ${metrics.totals.commission_count || 0} completed auctions`}
                     icon={
                       <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" />
+                        <path fillRule="evenodd" d="M3 3a1 1 0 000 2v8a2 2 0 002 2h2.586l-1.293 1.293a1 1 0 101.414 1.414L10 15.414l2.293 2.293a1 1 0 001.414-1.414L12.414 15H15a2 2 0 002-2V5a1 1 0 100-2H3zm11.707 4.707a1 1 0 00-1.414-1.414L10 9.586 8.707 8.293a1 1 0 00-1.414 0l-2 2a1 1 0 101.414 1.414L8 10.414l1.293 1.293a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                       </svg>
                     }
                   />

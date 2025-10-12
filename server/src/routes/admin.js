@@ -99,8 +99,11 @@ router.get('/metrics', (req, res) => {
         (SELECT COUNT(1) FROM transactions) AS total_transactions,
         (SELECT COUNT(1) FROM transactions WHERE transaction_type = 'payment') AS payment_count,
         (SELECT COUNT(1) FROM transactions WHERE transaction_type = 'swap') AS swap_count,
+        (SELECT COUNT(1) FROM transactions WHERE transaction_type = 'auction') AS auction_count,
+        (SELECT COUNT(1) FROM transactions WHERE transaction_type = 'commission') AS commission_count,
         (SELECT SUM(amount) FROM transactions WHERE transaction_type = 'payment') AS total_payment_volume,
         (SELECT AVG(amount) FROM transactions WHERE transaction_type = 'payment') AS avg_payment,
+        (SELECT SUM(amount) FROM transactions WHERE transaction_type = 'commission') AS total_commission_collected,
         (SELECT SUM(agon) FROM wallets) AS sum_agon,
         (SELECT SUM(stoneworks_dollar) FROM wallets) AS sum_sw
     `).get();
