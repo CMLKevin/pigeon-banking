@@ -492,6 +492,223 @@ const Admin = () => {
               </div>
             </div>
 
+            {/* Plinko Analytics */}
+            <div className="bg-phantom-bg-secondary/60 backdrop-blur-xl rounded-3xl shadow-card border border-phantom-border p-6">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center shadow-glow">
+                  <svg className="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    <circle cx="12" cy="12" r="2" fill="currentColor" />
+                  </svg>
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold text-phantom-text-primary">Plinko Analytics</h2>
+                  <p className="text-sm text-phantom-text-tertiary">Multiplier-based physics game stats</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <StatCard 
+                  title="Total Games" 
+                  value={metrics.plinkoTotals?.total_games || 0} 
+                  sub={`${metrics.plinkoTotals?.wins || 0} wins • ${metrics.plinkoTotals?.losses || 0} losses`}
+                />
+                <StatCard 
+                  title="Unique Players" 
+                  value={metrics.plinkoTotals?.unique_players || 0} 
+                  sub={`Win Rate: ${metrics.plinkoTotals?.win_rate || 0}%`}
+                />
+                <StatCard 
+                  title="Avg Multiplier" 
+                  value={`${metrics.plinkoTotals?.avg_multiplier || 0}x`} 
+                  sub={`Max: ${metrics.plinkoTotals?.max_multiplier || 0}x • Min: ${metrics.plinkoTotals?.min_multiplier || 0}x`}
+                />
+                <StatCard 
+                  title="House Profit (◉)" 
+                  value={`${Number(metrics.plinkoTotals?.house_profit || 0).toFixed(0)}`} 
+                  sub={`Total Bet: ${Number(metrics.plinkoTotals?.total_bet || 0).toFixed(0)}`}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+                <div className="bg-phantom-bg-secondary/60 backdrop-blur-xl rounded-3xl shadow-card border border-phantom-border p-6 group">
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <h3 className="text-xl font-bold text-phantom-text-primary">Games by Day (14 days)</h3>
+                      <p className="text-sm text-phantom-text-tertiary">Plinko games per day</p>
+                    </div>
+                  </div>
+                  <LineChart data={
+                    metrics.plinkoByDay?.slice().reverse().map(d => ({
+                      label: new Date(d.day).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+                      value: Number(d.games || 0)
+                    })) || []
+                  } />
+                </div>
+                <div className="bg-phantom-bg-secondary/60 backdrop-blur-xl rounded-3xl shadow-card border border-phantom-border p-6">
+                  <h3 className="text-xl font-bold text-phantom-text-primary mb-2">Top Players</h3>
+                  <p className="text-sm text-phantom-text-tertiary mb-4">Most plinko games played</p>
+                  <div className="space-y-3">
+                    {metrics.topPlinkoPlayers?.slice(0, 6).map((g, idx) => (
+                      <div key={g.id} className="flex items-center gap-3 p-3 rounded-2xl hover:bg-phantom-bg-tertiary transition-all group">
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center text-white font-bold text-sm shadow-glow-sm">
+                          {idx + 1}
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-sm font-semibold text-phantom-text-primary">{g.username}</p>
+                          <p className="text-xs text-phantom-text-tertiary">{g.games_played} games • {Number(g.avg_multiplier || 0).toFixed(2)}x avg</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm font-semibold text-purple-400">{Number(g.max_multiplier || 0).toFixed(1)}x max</p>
+                          <p className="text-xs text-phantom-text-tertiary">{Number(g.total_bet || 0).toFixed(0)} ◉ bet</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Risk Distribution */}
+              {metrics.plinkoRiskDistribution && metrics.plinkoRiskDistribution.length > 0 && (
+                <div className="bg-phantom-bg-secondary/60 backdrop-blur-xl rounded-3xl shadow-card border border-phantom-border p-6 mt-6">
+                  <h3 className="text-xl font-bold text-phantom-text-primary mb-2">Risk & Row Distribution</h3>
+                  <p className="text-sm text-phantom-text-tertiary mb-4">Game configuration preferences</p>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    {metrics.plinkoRiskDistribution.slice(0, 9).map((dist, idx) => (
+                      <div key={idx} className="p-4 bg-phantom-bg-tertiary rounded-2xl border border-phantom-border">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className={`px-2 py-1 rounded-lg text-xs font-bold ${
+                            dist.risk_level === 'high' ? 'bg-red-500/20 text-red-400' :
+                            dist.risk_level === 'medium' ? 'bg-yellow-500/20 text-yellow-400' :
+                            'bg-green-500/20 text-green-400'
+                          }`}>
+                            {(dist.risk_level || 'N/A').toUpperCase()}
+                          </span>
+                          <span className="text-xs text-phantom-text-tertiary">{dist.rows || 'N/A'} rows</span>
+                        </div>
+                        <p className="text-2xl font-bold text-phantom-text-primary">{dist.games}</p>
+                        <p className="text-xs text-phantom-text-tertiary">games • {Number(dist.avg_multiplier || 0).toFixed(2)}x avg</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Crash Analytics */}
+            <div className="mt-12">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-red-500 to-orange-600 flex items-center justify-center shadow-glow">
+                  <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                  </svg>
+                </div>
+                <div>
+                  <h2 className="text-3xl font-bold bg-gradient-phantom bg-clip-text text-transparent">Crash Analytics</h2>
+                  <p className="text-phantom-text-secondary">Monitor crash game activity and player cashouts</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <StatCard 
+                  title="Total Games" 
+                  value={metrics.crashTotals?.total_games || 0} 
+                  sub={`${metrics.crashTotals?.wins || 0} wins • ${metrics.crashTotals?.losses || 0} losses`}
+                />
+                <StatCard 
+                  title="Unique Players" 
+                  value={metrics.crashTotals?.unique_players || 0} 
+                  sub={`Win Rate: ${metrics.crashTotals?.win_rate || 0}%`}
+                />
+                <StatCard 
+                  title="Avg Crash Point" 
+                  value={`${metrics.crashTotals?.avg_crash_point || 0}x`} 
+                  sub={`Max: ${metrics.crashTotals?.max_crash_point || 0}x`}
+                />
+                <StatCard 
+                  title="House Profit (◉)" 
+                  value={`${Number(metrics.crashTotals?.house_profit || 0).toFixed(0)}`} 
+                  sub={`Total Bet: ${Number(metrics.crashTotals?.total_bet || 0).toFixed(0)}`}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                <div className="bg-phantom-bg-secondary/60 backdrop-blur-xl rounded-2xl shadow-card border border-phantom-border p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-phantom-text-tertiary text-sm mb-1">Total Payout to Players</p>
+                      <p className="text-2xl font-bold text-phantom-text-primary">◉ {Number(metrics.crashTotals?.total_payout || 0).toFixed(0)}</p>
+                    </div>
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-green-500/20 to-emerald-600/20 flex items-center justify-center">
+                      <svg className="w-6 h-6 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13a1 1 0 102 0V9.414l1.293 1.293a1 1 0 001.414-1.414z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-phantom-bg-secondary/60 backdrop-blur-xl rounded-2xl shadow-card border border-phantom-border p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-phantom-text-tertiary text-sm mb-1">Actual RTP</p>
+                      <p className="text-2xl font-bold text-phantom-text-primary">{metrics.crashTotals?.actual_rtp || 0}%</p>
+                      <p className="text-xs text-phantom-text-tertiary mt-1">Target: 95% (5% house edge)</p>
+                    </div>
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                      (metrics.crashTotals?.actual_rtp || 0) >= 94 && (metrics.crashTotals?.actual_rtp || 0) <= 96
+                        ? 'bg-gradient-to-br from-green-500/20 to-emerald-600/20'
+                        : 'bg-gradient-to-br from-yellow-500/20 to-orange-600/20'
+                    }`}>
+                      <svg className={`w-6 h-6 ${
+                        (metrics.crashTotals?.actual_rtp || 0) >= 94 && (metrics.crashTotals?.actual_rtp || 0) <= 96
+                          ? 'text-green-500'
+                          : 'text-yellow-500'
+                      }`} fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+                <div className="bg-phantom-bg-secondary/60 backdrop-blur-xl rounded-3xl shadow-card border border-phantom-border p-6 group">
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <h3 className="text-xl font-bold text-phantom-text-primary">Games by Day (14 days)</h3>
+                      <p className="text-sm text-phantom-text-tertiary">Crash games per day</p>
+                    </div>
+                  </div>
+                  <LineChart data={
+                    metrics.crashByDay?.slice().reverse().map(d => ({
+                      label: new Date(d.day).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+                      value: Number(d.games || 0)
+                    })) || []
+                  } />
+                </div>
+                <div className="bg-phantom-bg-secondary/60 backdrop-blur-xl rounded-3xl shadow-card border border-phantom-border p-6">
+                  <h3 className="text-xl font-bold text-phantom-text-primary mb-2">Top Players</h3>
+                  <p className="text-sm text-phantom-text-tertiary mb-4">Most crash games played</p>
+                  <div className="space-y-3">
+                    {metrics.topCrashPlayers?.slice(0, 6).map((g, idx) => (
+                      <div key={g.id} className="flex items-center gap-3 p-3 rounded-2xl hover:bg-phantom-bg-tertiary transition-all group">
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-red-500 to-orange-600 flex items-center justify-center text-white font-bold text-sm shadow-glow-sm">
+                          {idx + 1}
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-sm font-semibold text-phantom-text-primary">{g.username}</p>
+                          <p className="text-xs text-phantom-text-tertiary">{g.games_played} games • {Number(g.avg_crash_point || 0).toFixed(2)}x avg</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm font-semibold text-orange-400">{Number(g.max_crash_point || 0).toFixed(1)}x max</p>
+                          <p className="text-xs text-phantom-text-tertiary">{Number(g.total_bet || 0).toFixed(0)} ◉ bet</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+
             {/* Activity and Top Users */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Activity Breakdown */}

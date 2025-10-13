@@ -77,6 +77,44 @@ const Games = () => {
         winRate: 'Varies',
         payout: '3:2 for BJ'
       }
+    },
+    {
+      id: 'plinko',
+      title: 'Plinko',
+      description: 'Drop the ball and hit multipliers up to 1000x!',
+      icon: (
+        <svg className="w-12 h-12 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+          <circle cx="12" cy="12" r="2" fill="currentColor" />
+          <circle cx="8" cy="8" r="1.5" fill="currentColor" />
+          <circle cx="16" cy="8" r="1.5" fill="currentColor" />
+          <circle cx="12" cy="4" r="1.5" fill="currentColor" />
+        </svg>
+      ),
+      gradient: 'from-purple-500 to-pink-600',
+      path: '/games/plinko',
+      stats: {
+        houseEdge: '5%',
+        winRate: 'Varies',
+        payout: 'Up to 1000x'
+      }
+    },
+    {
+      id: 'crash',
+      title: 'Crash',
+      description: 'Cash out before the crash! Up to 10000x multiplier',
+      icon: (
+        <svg className="w-12 h-12 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+        </svg>
+      ),
+      gradient: 'from-red-500 to-orange-600',
+      path: '/games/crash',
+      stats: {
+        houseEdge: '5%',
+        winRate: 'Varies',
+        payout: 'Up to 10000x'
+      }
     }
   ];
 
@@ -207,10 +245,20 @@ const Games = () => {
           ) : (
             <div className="space-y-3">
               {recentGames.map((game, index) => {
-                const gameType = game.game_type === 'coinflip' ? 'Coin Flip' : 'Blackjack';
-                const payout = game.game_type === 'blackjack' && game.result === 'blackjack' 
-                  ? game.bet_amount * 1.5 
-                  : game.bet_amount;
+                const gameType = game.game_type === 'coinflip' ? 'Coin Flip' 
+                  : game.game_type === 'blackjack' ? 'Blackjack' 
+                  : game.game_type === 'plinko' ? 'Plinko' 
+                  : game.game_type;
+                
+                let payout;
+                if (game.game_type === 'blackjack' && game.result === 'blackjack') {
+                  payout = game.bet_amount * 1.5;
+                } else if (game.game_type === 'plinko') {
+                  const multiplier = parseFloat(game.result);
+                  payout = Math.abs(game.bet_amount * (multiplier - 1));
+                } else {
+                  payout = game.bet_amount;
+                }
                 
                 return (
                   <div
@@ -225,7 +273,7 @@ const Games = () => {
                       </div>
                       <div>
                         <p className="text-sm font-semibold text-phantom-text-primary">
-                          {gameType} • {game.result}
+                          {gameType} • {game.game_type === 'plinko' ? `${game.result}x` : game.result}
                         </p>
                         <p className="text-xs text-phantom-text-tertiary">
                           {new Date(game.created_at).toLocaleString()}

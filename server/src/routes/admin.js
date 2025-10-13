@@ -276,6 +276,199 @@ router.get('/metrics', (req, res) => {
       LIMIT 10
     `).all();
 
+    // Plinko totals
+    const plinkoTotalsRow = db.prepare(`
+      SELECT 
+        COUNT(1) AS total_games,
+        SUM(CASE WHEN won = 1 THEN 1 ELSE 0 END) AS wins,
+        SUM(CASE WHEN won = 0 THEN 1 ELSE 0 END) AS losses,
+        COUNT(DISTINCT user_id) AS unique_players,
+        SUM(bet_amount) AS total_bet,
+        AVG(CAST(result AS REAL)) AS avg_multiplier,
+        MAX(CAST(result AS REAL)) AS max_multiplier,
+        MIN(CAST(result AS REAL)) AS min_multiplier
+      FROM game_history
+      WHERE game_type = 'plinko'
+    `).get();
+
+    const plinkoTotals = plinkoTotalsRow ? {
+      total_games: Number(plinkoTotalsRow.total_games || 0),
+      wins: Number(plinkoTotalsRow.wins || 0),
+      losses: Number(plinkoTotalsRow.losses || 0),
+      unique_players: Number(plinkoTotalsRow.unique_players || 0),
+      total_bet: Number(plinkoTotalsRow.total_bet || 0),
+      avg_multiplier: Number((plinkoTotalsRow.avg_multiplier || 0).toFixed(2)),
+      max_multiplier: Number((plinkoTotalsRow.max_multiplier || 0).toFixed(2)),
+      min_multiplier: Number((plinkoTotalsRow.min_multiplier || 0).toFixed(2)),
+      win_rate: plinkoTotalsRow.total_games ? Number(((plinkoTotalsRow.wins || 0) / plinkoTotalsRow.total_games * 100).toFixed(2)) : 0,
+      // Calculate house profit: total bet - total payout
+      // Payout = bet * multiplier, so we need to calculate from each game
+    } : {
+      total_games: 0, wins: 0, losses: 0, unique_players: 0, total_bet: 0, avg_multiplier: 0, max_multiplier: 0, min_multiplier: 0, win_rate: 0
+    };
+
+    // Calculate Plinko house profit separately
+    const plinkoGames = db.prepare(`
+      SELECT bet_amount, CAST(result AS REAL) AS multiplier
+      FROM game_history
+      WHERE game_type = 'plinko'
+    `).all();
+
+    let plinkoHouseProfit = 0;
+    plinkoGames.forEach(game => {
+      const payout = game.bet_amount * game.multiplier;
+      plinkoHouseProfit += game.bet_amount - payout;
+    });
+
+    plinkoTotals.house_profit = Number(plinkoHouseProfit.toFixed(2));
+
+    // Plinko games by day (last 14 days)
+    const plinkoByDay = db.prepare(`
+      SELECT DATE(created_at) AS day,
+        COUNT(1) AS games,
+        SUM(CASE WHEN won = 1 THEN 1 ELSE 0 END) AS wins,
+        SUM(CASE WHEN won = 0 THEN 1 ELSE 0 END) AS losses,
+        SUM(bet_amount) AS total_bet,
+        AVG(CAST(result AS REAL)) AS avg_multiplier
+      FROM game_history
+      WHERE game_type = 'plinko'
+      GROUP BY DATE(created_at)
+      ORDER BY day DESC
+      LIMIT 14
+    `).all();
+
+    // Top plinko players
+    const topPlinkoPlayers = db.prepare(`
+      SELECT u.id, u.username,
+        COUNT(gh.id) AS games_played,
+        SUM(CASE WHEN gh.won = 1 THEN 1 ELSE 0 END) AS wins,
+        SUM(gh.bet_amount) AS total_bet,
+        AVG(CAST(gh.result AS REAL)) AS avg_multiplier,
+        MAX(CAST(gh.result AS REAL)) AS max_multiplier
+      FROM game_history gh
+      JOIN users u ON u.id = gh.user_id
+      WHERE gh.game_type = 'plinko'
+      GROUP BY u.id
+      ORDER BY games_played DESC
+      LIMIT 10
+    `).all();
+
+    // Plinko risk distribution
+    const plinkoRiskDistribution = db.prepare(`
+      SELECT 
+        json_extract(choice, '$.risk') AS risk_level,
+        json_extract(choice, '$.rows') AS rows,
+        COUNT(1) AS games,
+        AVG(CAST(result AS REAL)) AS avg_multiplier,
+        SUM(bet_amount) AS total_bet
+      FROM game_history
+      WHERE game_type = 'plinko'
+      GROUP BY risk_level, rows
+      ORDER BY games DESC
+    `).all();
+
+    // Crash totals
+    const crashTotalsRow = db.prepare(`
+      SELECT 
+        COUNT(1) AS total_games,
+        SUM(CASE WHEN won = 1 THEN 1 ELSE 0 END) AS wins,
+        SUM(CASE WHEN won = 0 THEN 1 ELSE 0 END) AS losses,
+        COUNT(DISTINCT user_id) AS unique_players,
+        SUM(bet_amount) AS total_bet,
+        AVG(CAST(result AS REAL)) AS avg_crash_point,
+        MAX(CAST(result AS REAL)) AS max_crash_point
+      FROM game_history
+      WHERE game_type = 'crash'
+    `).get();
+
+    const crashTotals = crashTotalsRow ? {
+      total_games: Number(crashTotalsRow.total_games || 0),
+      wins: Number(crashTotalsRow.wins || 0),
+      losses: Number(crashTotalsRow.losses || 0),
+      unique_players: Number(crashTotalsRow.unique_players || 0),
+      total_bet: Number(crashTotalsRow.total_bet || 0),
+      avg_crash_point: Number((crashTotalsRow.avg_crash_point || 0).toFixed(2)),
+      max_crash_point: Number((crashTotalsRow.max_crash_point || 0).toFixed(2)),
+      win_rate: crashTotalsRow.total_games ? Number(((crashTotalsRow.wins || 0) / crashTotalsRow.total_games * 100).toFixed(2)) : 0,
+    } : {
+      total_games: 0, wins: 0, losses: 0, unique_players: 0, total_bet: 0, avg_crash_point: 0, max_crash_point: 0, win_rate: 0
+    };
+
+    // Calculate Crash house profit accurately
+    // House profit = total_bet - total_payout
+    // For wins: payout = bet * cashout_multiplier (player gets their winnings)
+    // For losses: payout = 0 (house keeps everything)
+    const crashGames = db.prepare(`
+      SELECT bet_amount, won, choice, CAST(result AS REAL) AS crash_point
+      FROM game_history
+      WHERE game_type = 'crash'
+    `).all();
+
+    let crashHouseProfit = 0;
+    let crashTotalPayout = 0;
+    crashGames.forEach(game => {
+      if (game.won) {
+        // Player cashed out successfully
+        try {
+          const choiceData = JSON.parse(game.choice || '{}');
+          const cashoutMultiplier = Number(choiceData.cashedOut);
+          
+          if (cashoutMultiplier && cashoutMultiplier > 0) {
+            const payout = game.bet_amount * cashoutMultiplier;
+            crashTotalPayout += payout;
+            crashHouseProfit += game.bet_amount - payout;
+          } else {
+            // Invalid data, skip this game
+            console.warn('Invalid cashout multiplier in game:', game);
+          }
+        } catch (error) {
+          console.error('Error parsing crash game choice:', error, game.choice);
+          // If can't parse, treat as a loss for safety
+          crashHouseProfit += game.bet_amount;
+        }
+      } else {
+        // Player lost - house keeps the entire bet
+        crashHouseProfit += game.bet_amount;
+      }
+    });
+
+    crashTotals.house_profit = Number(crashHouseProfit.toFixed(2));
+    crashTotals.total_payout = Number(crashTotalPayout.toFixed(2));
+    crashTotals.actual_rtp = crashTotals.total_bet > 0 
+      ? Number(((crashTotalPayout / crashTotals.total_bet) * 100).toFixed(2))
+      : 0;
+
+    // Crash games by day (last 14 days)
+    const crashByDay = db.prepare(`
+      SELECT DATE(created_at) AS day,
+        COUNT(1) AS games,
+        SUM(CASE WHEN won = 1 THEN 1 ELSE 0 END) AS wins,
+        SUM(CASE WHEN won = 0 THEN 1 ELSE 0 END) AS losses,
+        SUM(bet_amount) AS total_bet,
+        AVG(CAST(result AS REAL)) AS avg_crash_point
+      FROM game_history
+      WHERE game_type = 'crash'
+      GROUP BY DATE(created_at)
+      ORDER BY day DESC
+      LIMIT 14
+    `).all();
+
+    // Top crash players
+    const topCrashPlayers = db.prepare(`
+      SELECT u.id, u.username,
+        COUNT(gh.id) AS games_played,
+        SUM(CASE WHEN gh.won = 1 THEN 1 ELSE 0 END) AS wins,
+        SUM(gh.bet_amount) AS total_bet,
+        AVG(CAST(gh.result AS REAL)) AS avg_crash_point,
+        MAX(CAST(gh.result AS REAL)) AS max_crash_point
+      FROM game_history gh
+      JOIN users u ON u.id = gh.user_id
+      WHERE gh.game_type = 'crash'
+      GROUP BY u.id
+      ORDER BY games_played DESC
+      LIMIT 10
+    `).all();
+
     const activity24h = db.prepare(`
       SELECT action, COUNT(1) as count
       FROM activity_logs
@@ -417,7 +610,14 @@ router.get('/metrics', (req, res) => {
       topCoinflipPlayers,
       blackjackTotals,
       blackjackByDay,
-      topBlackjackPlayers
+      topBlackjackPlayers,
+      plinkoTotals,
+      plinkoByDay,
+      topPlinkoPlayers,
+      plinkoRiskDistribution,
+      crashTotals,
+      crashByDay,
+      topCrashPlayers
     });
   } catch (e) {
     console.error('Metrics error:', e);

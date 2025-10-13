@@ -114,6 +114,53 @@ const Dashboard = () => {
                 <p className="text-sm text-phantom-text-secondary">Buy and sell items</p>
               </div>
             </Link>
+            
+            {/* Game Quick Actions */}
+            <Link to="/games/coinflip">
+              <div className="group p-6 bg-phantom-bg-tertiary/50 border-2 border-phantom-border rounded-2xl hover:border-phantom-accent-primary hover:shadow-glow-sm transition-all duration-300 cursor-pointer transform hover:scale-105">
+                <div className="w-14 h-14 bg-gradient-to-br from-amber-500 to-yellow-500 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-md">
+                  <svg className="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <h3 className="font-bold text-phantom-text-primary text-lg mb-1">Coin Flip</h3>
+                <p className="text-sm text-phantom-text-secondary">45% win • 2x payout</p>
+              </div>
+            </Link>
+            <Link to="/games/blackjack">
+              <div className="group p-6 bg-phantom-bg-tertiary/50 border-2 border-phantom-border rounded-2xl hover:border-phantom-accent-primary hover:shadow-glow-sm transition-all duration-300 cursor-pointer transform hover:scale-105">
+                <div className="w-14 h-14 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-md">
+                  <svg className="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+                  </svg>
+                </div>
+                <h3 className="font-bold text-phantom-text-primary text-lg mb-1">Blackjack</h3>
+                <p className="text-sm text-phantom-text-secondary">Beat the dealer • 3:2</p>
+              </div>
+            </Link>
+            <Link to="/games/plinko">
+              <div className="group p-6 bg-phantom-bg-tertiary/50 border-2 border-phantom-border rounded-2xl hover:border-phantom-accent-primary hover:shadow-glow-sm transition-all duration-300 cursor-pointer transform hover:scale-105">
+                <div className="w-14 h-14 bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-md">
+                  <svg className="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    <circle cx="12" cy="12" r="2" fill="currentColor" />
+                  </svg>
+                </div>
+                <h3 className="font-bold text-phantom-text-primary text-lg mb-1">Plinko</h3>
+                <p className="text-sm text-phantom-text-secondary">Up to 1000x multiplier</p>
+              </div>
+            </Link>
+            <Link to="/games/crash">
+              <div className="group p-6 bg-phantom-bg-tertiary/50 border-2 border-phantom-border rounded-2xl hover:border-phantom-accent-primary hover:shadow-glow-sm transition-all duration-300 cursor-pointer transform hover:scale-105">
+                <div className="w-14 h-14 bg-gradient-to-br from-red-500 to-orange-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-md">
+                  <svg className="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                  </svg>
+                </div>
+                <h3 className="font-bold text-phantom-text-primary text-lg mb-1">Crash</h3>
+                <p className="text-sm text-phantom-text-secondary">Cash out • Up to 10000x</p>
+              </div>
+            </Link>
             <Link to="/games">
               <div className="group p-6 bg-phantom-bg-tertiary/50 border-2 border-phantom-border rounded-2xl hover:border-phantom-accent-primary hover:shadow-glow-sm transition-all duration-300 cursor-pointer transform hover:scale-105">
                 <div className="w-14 h-14 bg-gradient-to-br from-yellow-500 to-amber-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-md">
@@ -122,7 +169,7 @@ const Dashboard = () => {
                   </svg>
                 </div>
                 <h3 className="font-bold text-phantom-text-primary text-lg mb-1">Game Center</h3>
-                <p className="text-sm text-phantom-text-secondary">Play and win chips</p>
+                <p className="text-sm text-phantom-text-secondary">View all games</p>
               </div>
             </Link>
           </div>
