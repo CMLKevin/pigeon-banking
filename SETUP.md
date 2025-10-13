@@ -36,11 +36,11 @@ npm run dev
 
 This will start:
 - Backend server on http://localhost:3001
-- Frontend client on http://localhost:3000
+- Frontend client on http://localhost:5000
 
 ### 4. Create Your First Account
 
-1. Open http://localhost:3000 in your browser
+1. Open http://localhost:5000 in your browser
 2. Click "Sign Up"
 3. Enter your Minecraft username and create a password
 4. You'll automatically be logged in with 1,000 PC and 1,000 SW$
@@ -49,7 +49,7 @@ This will start:
 
 ### Port Already in Use
 
-If port 3000 or 3001 is already in use:
+If port 5000 or 3001 is already in use:
 
 1. Change the frontend port in `client/vite.config.js`
 2. Change the backend port in `server/.env`

@@ -96,13 +96,14 @@ Replit's PostgreSQL (powered by Neon) provides:
    ```
    ✓ PostgreSQL database connected successfully
    New client connected to PostgreSQL
-   Server running on port 3000
+   Server running on port 3001
+   Frontend dev server running on port 5000
    ```
 
 ## Step 6: Access Your Application
 
-- Backend API: `https://your-repl-name.your-username.repl.co:3000`
-- Frontend: `https://your-repl-name.your-username.repl.co` (if configured)
+- Backend API: `https://your-repl-name.your-username.repl.co:3001`
+- Frontend: `https://your-repl-name.your-username.repl.co:5000` (development server)
 
 ## Database Connection Details
 

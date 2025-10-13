@@ -82,7 +82,7 @@ See the [LICENSE](LICENSE) file for complete terms and conditions.
    npm run dev
    ```
 
-   This will start both the backend server (port 3001) and frontend client (port 3000).
+   This will start both the backend server (port 3001) and frontend client (port 5000).
 
    Alternatively, you can start them separately:
    ```bash
@@ -95,7 +95,7 @@ See the [LICENSE](LICENSE) file for complete terms and conditions.
 
 5. **Access the application**
    
-   Open your browser and navigate to `http://localhost:3000`
+   Open your browser and navigate to `http://localhost:5000`
 
 ## Deployment
 

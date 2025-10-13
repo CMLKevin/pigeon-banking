@@ -280,9 +280,9 @@ The codebase is prepared for:
 
 ### Development
 ```
-Frontend (Vite Dev Server) → http://localhost:3000
+Frontend (Vite Dev Server) → http://localhost:5000
 Backend (Node.js) → http://localhost:3001
-Database (SQLite) → server/database.db
+Database (PostgreSQL) → via DATABASE_URL
 ```
 
 ### Production (Recommended)
