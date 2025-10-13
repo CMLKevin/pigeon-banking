@@ -1,9 +1,8 @@
 run = "npm run install:all && npm run dev"
 hidden = [".config", "package-lock.json"]
-modules = ["nodejs-20", "bash", "web"]
 
 [nix]
-channel = "stable-25_05"
+channel = "stable-23_05"
 
 [deployment]
 run = ["sh", "-c", "npm run install:all && npm run start:prod"]
