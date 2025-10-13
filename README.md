@@ -41,7 +41,7 @@ See the [LICENSE](LICENSE) file for complete terms and conditions.
 ### Backend
 - Node.js
 - Express
-- SQLite
+- PostgreSQL (Replit-compatible, Neon serverless)
 - JWT Authentication
 - bcrypt
 
@@ -51,6 +51,7 @@ See the [LICENSE](LICENSE) file for complete terms and conditions.
 
 - Node.js (v16 or higher)
 - npm or yarn
+- PostgreSQL database (automatically provisioned on Replit)
 
 ### Installation
 
@@ -71,7 +72,10 @@ See the [LICENSE](LICENSE) file for complete terms and conditions.
    PORT=3001
    JWT_SECRET=your_jwt_secret_key_change_this_in_production
    NODE_ENV=development
+   DATABASE_URL=postgresql://user:password@localhost:5432/dbname
    ```
+   
+   **Note**: On Replit, `DATABASE_URL` is automatically set when you provision a PostgreSQL database.
 
 4. **Start the development servers**
    ```bash
@@ -92,6 +96,28 @@ See the [LICENSE](LICENSE) file for complete terms and conditions.
 5. **Access the application**
    
    Open your browser and navigate to `http://localhost:3000`
+
+## Deployment
+
+### Replit Deployment (Recommended)
+
+This application is fully optimized for deployment on Replit with PostgreSQL support.
+
+**See [REPLIT_DEPLOYMENT.md](REPLIT_DEPLOYMENT.md) for complete deployment instructions.**
+
+Key features:
+- ✅ Automatic PostgreSQL provisioning (Neon serverless)
+- ✅ Pre-configured connection pooling for serverless architecture
+- ✅ Automatic schema initialization
+- ✅ Built-in retry logic for cold starts
+- ✅ SSL-secured database connections
+- ✅ Graceful shutdown handling
+
+### Other Deployment Options
+
+For deployment guides to other platforms, see:
+- [QUICK_START_DEPLOYMENT.md](QUICK_START_DEPLOYMENT.md) - General deployment guide
+- [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md) - Detailed deployment options
 
 ## Project Structure
 

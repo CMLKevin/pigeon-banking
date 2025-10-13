@@ -3,29 +3,80 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
+// Replit provides DATABASE_URL automatically when PostgreSQL is provisioned
+// Also supports individual credentials: PGHOST, PGUSER, PGPASSWORD, PGDATABASE
 const connectionString = process.env.DATABASE_URL;
 if (!connectionString) {
   console.error('DATABASE_URL is required for PostgreSQL connection.');
+  console.error('If using Replit, provision a PostgreSQL database from the Tools pane.');
 }
 
+// Pool configuration optimized for Replit's serverless PostgreSQL (Neon)
 const pool = new Pool({
   connectionString,
-  ssl: process.env.PGSSL?.toLowerCase() === 'false' ? false : { rejectUnauthorized: false }
+  // SSL configuration - Replit/Neon requires SSL
+  ssl: process.env.PGSSL?.toLowerCase() === 'false' ? false : { rejectUnauthorized: false },
+  // Serverless-optimized settings
+  max: 10, // Maximum number of clients in the pool
+  min: 0, // Minimum idle clients (0 for serverless to reduce costs)
+  idleTimeoutMillis: 30000, // Close idle clients after 30 seconds
+  connectionTimeoutMillis: 10000, // Timeout for new connections
+  // Keep-alive to prevent connection drops
+  keepAlive: true,
+  keepAliveInitialDelayMillis: 10000
 });
 
-const query = async (text, params = []) => {
-  const { rows } = await pool.query(text, params);
-  return rows;
+// Event handlers for better error visibility in Replit
+pool.on('error', (err, client) => {
+  console.error('Unexpected error on idle client:', err);
+});
+
+pool.on('connect', (client) => {
+  console.log('New client connected to PostgreSQL');
+});
+
+pool.on('remove', (client) => {
+  console.log('Client removed from pool');
+});
+
+// Wrapper functions with retry logic for serverless cold starts
+const query = async (text, params = [], retries = 3) => {
+  for (let i = 0; i < retries; i++) {
+    try {
+      const { rows } = await pool.query(text, params);
+      return rows;
+    } catch (err) {
+      if (i === retries - 1) throw err;
+      console.warn(`Query failed, retrying (${i + 1}/${retries})...`);
+      await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1)));
+    }
+  }
 };
 
-const queryOne = async (text, params = []) => {
-  const { rows } = await pool.query(text, params);
-  return rows[0] || null;
+const queryOne = async (text, params = [], retries = 3) => {
+  for (let i = 0; i < retries; i++) {
+    try {
+      const { rows } = await pool.query(text, params);
+      return rows[0] || null;
+    } catch (err) {
+      if (i === retries - 1) throw err;
+      console.warn(`QueryOne failed, retrying (${i + 1}/${retries})...`);
+      await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1)));
+    }
+  }
 };
 
-const exec = async (text, params = []) => {
-  const res = await pool.query(text, params);
-  return { rowCount: res.rowCount, rows: res.rows };
+const exec = async (text, params = [], retries = 3) => {
+  for (let i = 0; i < retries; i++) {
+    try {
+      const res = await pool.query(text, params);
+      return { rowCount: res.rowCount, rows: res.rows };
+    } catch (err) {
+      if (i === retries - 1) throw err;
+      console.warn(`Exec failed, retrying (${i + 1}/${retries})...`);
+      await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1)));
+    }
+  }
 };
 
 const tx = async (fn) => {
@@ -179,8 +230,36 @@ const initSchema = async () => {
   await exec('CREATE INDEX IF NOT EXISTS idx_game_history_created_at ON game_history(created_at)');
 };
 
+// Test database connection
+const testConnection = async () => {
+  try {
+    await pool.query('SELECT NOW()');
+    console.log('✓ PostgreSQL database connected successfully');
+    return true;
+  } catch (err) {
+    console.error('✗ Failed to connect to PostgreSQL database:', err.message);
+    return false;
+  }
+};
+
+// Graceful shutdown handler for Replit
+const shutdown = async () => {
+  console.log('Closing PostgreSQL connection pool...');
+  await pool.end();
+  console.log('PostgreSQL pool closed');
+};
+
+// Handle process termination signals
+process.on('SIGTERM', shutdown);
+process.on('SIGINT', shutdown);
+process.on('beforeExit', shutdown);
+
+// Test connection before initializing schema
+await testConnection();
+
+// Initialize database schema
 await initSchema();
 
-const db = { query, queryOne, exec, tx };
+const db = { query, queryOne, exec, tx, pool, shutdown };
 export default db;
 
