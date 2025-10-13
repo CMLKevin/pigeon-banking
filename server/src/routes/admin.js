@@ -538,10 +538,10 @@ router.get('/invite-codes', async (req, res) => {
     const codes = await db.query(`
       SELECT ic.*, 
         creator.username as created_by_username,
-        user.username as used_by_username
+        used_user.username as used_by_username
       FROM invite_codes ic
       LEFT JOIN users creator ON creator.id = ic.created_by
-      LEFT JOIN users user ON user.id = ic.used_by
+      LEFT JOIN users used_user ON used_user.id = ic.used_by
       ORDER BY ic.created_at DESC
     `);
     res.json({ codes });
