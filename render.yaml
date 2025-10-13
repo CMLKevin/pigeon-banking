@@ -1,0 +1,45 @@
+# Render.com deployment configuration
+# Deploy with: Push to GitHub and connect to Render
+
+services:
+  # Backend + Frontend combined service
+  - type: web
+    name: phantompay
+    env: node
+    region: oregon  # Change to your preferred region
+    plan: starter   # Free tier: free, Paid: starter ($7/mo), standard ($25/mo)
+    buildCommand: npm run install:all && cd client && npm run build
+    startCommand: cd server && npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3001
+      - key: JWT_SECRET
+        generateValue: true  # Render will auto-generate a secure random value
+    disk:
+      name: phantompay-data
+      mountPath: /opt/render/project/src/server
+      sizeGB: 1  # 1GB persistent disk for SQLite database
+
+# Alternative: Separate backend and static site (not recommended for this app)
+# This won't work well because of SQLite and in-memory state
+# 
+# services:
+#   - type: web
+#     name: phantompay-api
+#     env: node
+#     buildCommand: cd server && npm install
+#     startCommand: cd server && npm start
+#     
+#   - type: web
+#     name: phantompay-frontend
+#     env: static
+#     buildCommand: cd client && npm install && npm run build
+#     staticPublishPath: ./client/dist
+#     routes:
+#       - type: rewrite
+#         source: /api/*
+#         destination: https://phantompay-api.onrender.com/api/*
+

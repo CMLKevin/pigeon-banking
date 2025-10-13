@@ -83,37 +83,34 @@ const Plinko = () => {
     } catch {}
   };
 
-  useEffect(() => {
-    loadWallet();
-    loadRecentGames();
-    
-    // Cleanup animation on unmount
-    return () => {
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current);
-      }
-    };
-  }, []);
+  const playLaunchSound = () => {
+    try {
+      const ctx = ensureAudioContext();
+      const now = ctx.currentTime;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(800, now);
+      osc.frequency.exponentialRampToValueAtTime(400, now + 0.15);
+      gain.gain.setValueAtTime(0.08, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.16);
+    } catch {}
+  };
 
-  // Draw initial board when canvas is ready and when settings change
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      drawInitialBoard();
-    }, 100); // Small delay to ensure canvas is rendered
-    
-    return () => clearTimeout(timer);
-  }, [drawInitialBoard]);
-
-  const loadWallet = async () => {
+  // Define loadWallet and loadRecentGames as useCallback to avoid dependency issues
+  const loadWallet = useCallback(async () => {
     try {
       const res = await walletAPI.getWallet();
       setWallet(res.data.wallet);
     } catch (error) {
       console.error('Failed to load wallet:', error);
     }
-  };
+  }, []);
 
-  const loadRecentGames = async () => {
+  const loadRecentGames = useCallback(async () => {
     try {
       const res = await api.get('/games/history', { params: { limit: 10 } });
       const filtered = (res.data.games || []).filter(g => g.game_type === 'plinko');
@@ -121,7 +118,7 @@ const Plinko = () => {
     } catch (error) {
       console.error('Failed to load game history:', error);
     }
-  };
+  }, []);
 
   const drawInitialBoard = useCallback(() => {
     const canvas = canvasRef.current;
@@ -220,7 +217,7 @@ const Plinko = () => {
     }
   }, [rows, risk]);
 
-  const simulatePlinko = (landingSlot) => {
+  const simulatePlinko = (landingSlot, onComplete) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -319,6 +316,7 @@ const Plinko = () => {
     let currentColumn = 1; // Start at column 1 (middle of first row which is [0,1,2])
     const gravity = 0.5;
     const maxSpeed = 10;
+    let hasCalledComplete = false; // Flag to ensure callback fires only once
 
     const animate = () => {
       // Clear with anti-aliasing
@@ -513,6 +511,12 @@ const Plinko = () => {
 
       // Check if ball reached bottom
       if (ball.y > height - 70) {
+        // Call onComplete callback when ball lands
+        if (!hasCalledComplete && onComplete && typeof onComplete === 'function') {
+          hasCalledComplete = true;
+          onComplete();
+        }
+        
         // Ensure ball is centered in the correct slot
         ball.x = targetSlotX;
         ball.y = height - 35;
@@ -625,6 +629,28 @@ const Plinko = () => {
     animate();
   };
 
+  // Load wallet and recent games on mount
+  useEffect(() => {
+    loadWallet();
+    loadRecentGames();
+    
+    // Cleanup animation on unmount
+    return () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+    };
+  }, [loadWallet, loadRecentGames]);
+
+  // Draw initial board when canvas is ready and when settings change
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      drawInitialBoard();
+    }, 100); // Small delay to ensure canvas is rendered
+    
+    return () => clearTimeout(timer);
+  }, [drawInitialBoard, rows, risk]);
+
   const handleDrop = async (e) => {
     e.preventDefault();
 
@@ -648,17 +674,20 @@ const Plinko = () => {
         risk: risk
       });
 
-      // Simulate the drop with the landing slot from server
-      simulatePlinko(res.data.landingSlot);
+      // Play launch sound when ball is released
+      playLaunchSound();
 
-      // Show result after animation
-      setTimeout(() => {
+      // Simulate the drop with the landing slot from server
+      // Pass callback to sync result display with ball landing
+      simulatePlinko(res.data.landingSlot, () => {
+        // This callback fires when the ball actually lands in the slot
+        playWinSound(res.data.multiplier);
         setGameResult(res.data);
         setIsDropping(false);
-        playWinSound(res.data.multiplier);
         loadWallet();
         loadRecentGames();
 
+        // Handle auto-play
         if (autoPlay && autoPlayCount > 0) {
           setAutoPlayCount(autoPlayCount - 1);
           if (autoPlayCount - 1 > 0) {
@@ -667,7 +696,7 @@ const Plinko = () => {
             setAutoPlay(false);
           }
         }
-      }, 2500);
+      });
     } catch (error) {
       setIsDropping(false);
       console.error('Plinko error:', error);

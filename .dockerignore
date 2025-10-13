@@ -1,0 +1,54 @@
+# Dependencies
+node_modules/
+client/node_modules/
+server/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Development files
+.git/
+.gitignore
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+*.md
+!README.md
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Build outputs (we build inside Docker)
+client/dist/
+server/database.db
+
+# Documentation
+docs/
+ADMIN_*.md
+SETUP.md
+API.md
+ARCHITECTURE.md
+LICENSE
+
+# Test files
+*.test.js
+*.spec.js
+__tests__/
+coverage/
+
+# Deployment configs for other platforms
+fly.toml
+render.yaml
+deploy-vps.sh
+docker-compose.yml
+
