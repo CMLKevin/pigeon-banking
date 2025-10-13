@@ -214,7 +214,7 @@ router.get('/metrics', async (req, res) => {
 
     // Coin flip games by day (last 14 days)
     const coinflipByDay = await db.query(`
-      SELECT DATE(created_at) AS day,
+      SELECT created_at::date AS day,
         COUNT(1) AS games,
         SUM(CASE WHEN won = TRUE THEN 1 ELSE 0 END) AS wins,
         SUM(CASE WHEN won = FALSE THEN 1 ELSE 0 END) AS losses,
@@ -222,14 +222,14 @@ router.get('/metrics', async (req, res) => {
         SUM(CASE WHEN won = TRUE THEN bet_amount ELSE 0 END) AS bet_won
       FROM game_history
       WHERE game_type = 'coinflip'
-      GROUP BY DATE(created_at)
+      GROUP BY created_at::date
       ORDER BY day DESC
       LIMIT 14
     `);
 
     // Blackjack games by day (last 14 days)
     const blackjackByDay = await db.query(`
-      SELECT DATE(created_at) AS day,
+      SELECT created_at::date AS day,
         COUNT(1) AS games,
         SUM(CASE WHEN won = TRUE THEN 1 ELSE 0 END) AS wins,
         SUM(CASE WHEN won = FALSE THEN 1 ELSE 0 END) AS losses,
@@ -237,7 +237,7 @@ router.get('/metrics', async (req, res) => {
         SUM(CASE WHEN won = TRUE THEN bet_amount ELSE 0 END) AS bet_won
       FROM game_history
       WHERE game_type = 'blackjack'
-      GROUP BY DATE(created_at)
+      GROUP BY created_at::date
       ORDER BY day DESC
       LIMIT 14
     `);
@@ -318,7 +318,7 @@ router.get('/metrics', async (req, res) => {
 
     // Plinko games by day (last 14 days)
     const plinkoByDay = await db.query(`
-      SELECT DATE(created_at) AS day,
+      SELECT created_at::date AS day,
         COUNT(1) AS games,
         SUM(CASE WHEN won = TRUE THEN 1 ELSE 0 END) AS wins,
         SUM(CASE WHEN won = FALSE THEN 1 ELSE 0 END) AS losses,
@@ -326,7 +326,7 @@ router.get('/metrics', async (req, res) => {
         AVG(CAST(result AS NUMERIC)) AS avg_multiplier
       FROM game_history
       WHERE game_type = 'plinko'
-      GROUP BY DATE(created_at)
+      GROUP BY created_at::date
       ORDER BY day DESC
       LIMIT 14
     `);
@@ -370,21 +370,21 @@ router.get('/metrics', async (req, res) => {
     `);
 
     const volumeByDay = await db.query(`
-      SELECT DATE(created_at) as day,
+      SELECT created_at::date as day,
         SUM(CASE WHEN transaction_type = 'payment' THEN amount ELSE 0 END) as payment_volume,
         SUM(CASE WHEN transaction_type = 'swap' THEN amount ELSE 0 END) as swap_volume,
         COUNT(CASE WHEN transaction_type = 'payment' THEN 1 END) as payment_count,
         COUNT(CASE WHEN transaction_type = 'swap' THEN 1 END) as swap_count
       FROM transactions
-      GROUP BY DATE(created_at)
+      GROUP BY created_at::date
       ORDER BY day DESC
       LIMIT 14
     `);
 
     const userGrowth = await db.query(`
-      SELECT DATE(created_at) as day, COUNT(1) as new_users
+      SELECT created_at::date as day, COUNT(1) as new_users
       FROM users
-      GROUP BY DATE(created_at)
+      GROUP BY created_at::date
       ORDER BY day DESC
       LIMIT 14
     `);
@@ -430,22 +430,22 @@ router.get('/metrics', async (req, res) => {
     `);
 
     const auctionsByDay = await db.query(`
-      SELECT DATE(created_at) as day,
+      SELECT created_at::date as day,
         COUNT(1) as auctions_created,
         SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as completed_count,
         SUM(CASE WHEN status = 'completed' THEN current_bid ELSE 0 END) as revenue
       FROM auctions
-      GROUP BY DATE(created_at)
+      GROUP BY created_at::date
       ORDER BY day DESC
       LIMIT 14
     `);
 
     const bidsByDay = await db.query(`
-      SELECT DATE(created_at) as day,
+      SELECT created_at::date as day,
         COUNT(1) as bids_placed,
         COUNT(DISTINCT bidder_id) as unique_bidders
       FROM bids
-      GROUP BY DATE(created_at)
+      GROUP BY created_at::date
       ORDER BY day DESC
       LIMIT 14
     `);
