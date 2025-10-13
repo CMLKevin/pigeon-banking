@@ -835,7 +835,26 @@ const Plinko = () => {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {recentGames.slice(0, 10).map((game, index) => {
-                const gameData = JSON.parse(game.choice || '{}');
+                // Safely parse game data with fallback
+                let gameData = {};
+                try {
+                  if (game.choice && typeof game.choice === 'string') {
+                    gameData = JSON.parse(game.choice);
+                  } else if (game.choice && typeof game.choice === 'object') {
+                    // Already parsed (some databases return JSONB as objects)
+                    gameData = game.choice;
+                  }
+                } catch (error) {
+                  console.error('Failed to parse game choice:', error, game.choice);
+                  gameData = {};
+                }
+                
+                // Safely parse numeric values with fallbacks
+                const multiplier = parseFloat(game.result) || 0;
+                const betAmount = parseFloat(game.bet_amount) || 0;
+                const isWin = game.won === true || game.won === 1 || game.won === 'true';
+                const profit = betAmount * (multiplier - 1);
+                
                 return (
                   <div
                     key={index}
@@ -843,13 +862,13 @@ const Plinko = () => {
                   >
                     <div className="flex items-center gap-4">
                       <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${
-                        parseFloat(game.result) >= 1 ? 'bg-green-500/20 text-green-500' : 'bg-red-500/20 text-red-500'
+                        multiplier >= 1 ? 'bg-green-500/20 text-green-500' : 'bg-red-500/20 text-red-500'
                       }`}>
-                        {parseFloat(game.result)}x
+                        {multiplier.toFixed(1)}x
                       </div>
                       <div>
                         <p className="text-sm font-semibold text-phantom-text-primary">
-                          {gameData.rows || 12} rows • {(gameData.risk || 'medium').toUpperCase()}
+                          {gameData.rows || 8} rows • {(gameData.risk || 'low').toUpperCase()}
                         </p>
                         <p className="text-xs text-phantom-text-tertiary">
                           {new Date(game.created_at).toLocaleString()}
@@ -858,12 +877,12 @@ const Plinko = () => {
                     </div>
                     <div className="text-right">
                       <p className={`font-semibold ${
-                        game.won ? 'text-green-500' : 'text-red-500'
+                        isWin ? 'text-green-500' : 'text-red-500'
                       }`}>
-                        {game.won ? '+' : ''}{getCurrencySymbol('stoneworks_dollar')} {formatCurrency(Math.abs(game.bet_amount * (parseFloat(game.result) - 1)))}
+                        {isWin ? '+' : ''}{getCurrencySymbol('stoneworks_dollar')} {formatCurrency(Math.abs(profit))}
                       </p>
                       <p className="text-xs text-phantom-text-tertiary">
-                        Bet: {getCurrencySymbol('stoneworks_dollar')} {formatCurrency(game.bet_amount)}
+                        Bet: {getCurrencySymbol('stoneworks_dollar')} {formatCurrency(betAmount)}
                       </p>
                     </div>
                   </div>
