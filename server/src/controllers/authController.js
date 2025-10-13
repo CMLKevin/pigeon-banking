@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 import db from '../config/database.js';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret_key_change_this_in_production';
-const JWT_EXPIRES_IN = '7d';
+const JWT_EXPIRES_IN = '365d'; // 1 year - users stay logged in for a year
 
 export const signup = async (req, res) => {
   try {
