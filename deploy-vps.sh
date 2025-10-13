@@ -1,7 +1,7 @@
 #!/bin/bash
 # PhantomPay VPS Deployment Script
-# For Ubuntu 22.04 LTS
-# Usage: curl -sL https://raw.githubusercontent.com/CMLKevin/phantom-pay/main/deploy-vps.sh | bash
+# Compatible with Ubuntu 22.04+ and CentOS 8+/AlmaLinux/Rocky Linux
+# Usage: curl -sL https://raw.githubusercontent.com/CMLKevin/phantom-pay/main/deploy-vps.sh | sudo bash
 
 set -e
 
@@ -15,9 +15,32 @@ if [ "$EUID" -ne 0 ]; then
   exit 1
 fi
 
+# Detect OS
+if [ -f /etc/os-release ]; then
+    . /etc/os-release
+    OS=$ID
+    echo "🖥️  Detected OS: $OS ($VERSION)"
+else
+    echo "❌ Cannot detect operating system"
+    exit 1
+fi
+echo ""
+
+# Install Node.js based on OS
 echo "📦 Step 1: Installing Node.js 18..."
-curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
-apt-get install -y nodejs
+if [ "$OS" = "ubuntu" ] || [ "$OS" = "debian" ]; then
+    # Ubuntu/Debian
+    curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
+    apt-get install -y nodejs
+elif [ "$OS" = "centos" ] || [ "$OS" = "rhel" ] || [ "$OS" = "almalinux" ] || [ "$OS" = "rocky" ]; then
+    # CentOS/RHEL/AlmaLinux/Rocky Linux
+    curl -fsSL https://rpm.nodesource.com/setup_18.x | bash -
+    yum install -y nodejs
+else
+    echo "❌ Unsupported OS: $OS"
+    echo "   This script supports Ubuntu, Debian, CentOS, AlmaLinux, Rocky Linux"
+    exit 1
+fi
 
 echo "✅ Node.js $(node --version) installed"
 echo ""
@@ -28,13 +51,22 @@ echo "✅ PM2 installed"
 echo ""
 
 echo "📦 Step 3: Installing nginx..."
-apt-get update
-apt-get install -y nginx
+if [ "$OS" = "ubuntu" ] || [ "$OS" = "debian" ]; then
+    apt-get update
+    apt-get install -y nginx
+elif [ "$OS" = "centos" ] || [ "$OS" = "rhel" ] || [ "$OS" = "almalinux" ] || [ "$OS" = "rocky" ]; then
+    yum install -y nginx
+    systemctl enable nginx
+fi
 echo "✅ Nginx installed"
 echo ""
 
 echo "📦 Step 4: Installing Git..."
-apt-get install -y git
+if [ "$OS" = "ubuntu" ] || [ "$OS" = "debian" ]; then
+    apt-get install -y git
+elif [ "$OS" = "centos" ] || [ "$OS" = "rhel" ] || [ "$OS" = "almalinux" ] || [ "$OS" = "rocky" ]; then
+    yum install -y git
+fi
 echo "✅ Git installed"
 echo ""
 
@@ -155,15 +187,30 @@ echo "✅ Nginx configured"
 echo ""
 
 echo "🔥 Step 11: Configuring firewall..."
-ufw --force enable
-ufw allow 22/tcp    # SSH
-ufw allow 80/tcp    # HTTP
-ufw allow 443/tcp   # HTTPS
+if [ "$OS" = "ubuntu" ] || [ "$OS" = "debian" ]; then
+    # UFW for Ubuntu/Debian
+    ufw --force enable
+    ufw allow 22/tcp    # SSH
+    ufw allow 80/tcp    # HTTP
+    ufw allow 443/tcp   # HTTPS
+elif [ "$OS" = "centos" ] || [ "$OS" = "rhel" ] || [ "$OS" = "almalinux" ] || [ "$OS" = "rocky" ]; then
+    # firewalld for CentOS/RHEL
+    systemctl start firewalld
+    systemctl enable firewalld
+    firewall-cmd --permanent --add-service=ssh
+    firewall-cmd --permanent --add-service=http
+    firewall-cmd --permanent --add-service=https
+    firewall-cmd --reload
+fi
 echo "✅ Firewall configured"
 echo ""
 
 echo "📧 Step 12: Installing Certbot for SSL..."
-apt-get install -y certbot python3-certbot-nginx
+if [ "$OS" = "ubuntu" ] || [ "$OS" = "debian" ]; then
+    apt-get install -y certbot python3-certbot-nginx
+elif [ "$OS" = "centos" ] || [ "$OS" = "rhel" ] || [ "$OS" = "almalinux" ] || [ "$OS" = "rocky" ]; then
+    yum install -y certbot python3-certbot-nginx
+fi
 
 # Ask if user wants to set up SSL now
 echo ""
