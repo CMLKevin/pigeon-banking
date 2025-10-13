@@ -215,8 +215,52 @@ fi
 if [ -d "client" ] && [ -f "client/package.json" ]; then
     echo "   Installing client dependencies..."
     cd client
-    npm install
-    cd ..
+    
+    # Clear npm cache first to avoid EMFILE errors on shared hosting
+    echo "   Clearing npm cache..."
+    npm cache clean --force 2>/dev/null || true
+    
+    # Try to install with increased network timeout and legacy peer deps
+    # Use --legacy-peer-deps to reduce file operations
+    echo "   Installing (this may take several minutes on shared hosting)..."
+    npm install --legacy-peer-deps --prefer-offline --no-audit --progress=false || {
+        echo "⚠️  Warning: npm install failed (common on shared hosting due to file limits)"
+        echo "   Trying alternative installation method..."
+        
+        # Try with cache verification disabled
+        npm install --legacy-peer-deps --cache-min 999999 --prefer-offline 2>/dev/null || {
+            echo ""
+            echo "❌ Client dependencies installation failed"
+            echo ""
+            echo "📋 This is a known issue on shared hosting with strict file limits."
+            echo "   Choose one of these solutions:"
+            echo ""
+            echo "   Option 1: Build frontend locally (RECOMMENDED)"
+            echo "   ────────────────────────────────────────────"
+            echo "   On your local machine:"
+            echo "   cd client"
+            echo "   npm install"
+            echo "   npm run build"
+            echo "   git add dist/"
+            echo "   git commit -m 'Add pre-built frontend'"
+            echo "   git push"
+            echo ""
+            echo "   Then re-run this script - it will use the pre-built files."
+            echo ""
+            echo "   Option 2: Continue without frontend build"
+            echo "   ─────────────────────────────────────────────"
+            echo "   Press Enter to skip client build and continue with backend setup"
+            echo "   (You'll need to build frontend locally later)"
+            echo ""
+            read -p "Press Enter to continue or Ctrl+C to cancel: "
+            cd ..
+            SKIP_CLIENT_BUILD=true
+        }
+    }
+    
+    if [ "$SKIP_CLIENT_BUILD" != true ]; then
+        cd ..
+    fi
 fi
 
 # Install server dependencies
@@ -286,10 +330,31 @@ echo ""
 # Build frontend
 echo "🏗️  Building frontend..."
 if [ -d "client" ]; then
-    cd client
-    npm run build
-    cd ..
-    echo "✅ Frontend built"
+    # Check if dist folder already exists (pre-built)
+    if [ -d "client/dist" ] && [ -f "client/dist/index.html" ]; then
+        echo "✅ Pre-built frontend found (client/dist/)"
+        echo "   Skipping build step - using existing build"
+    elif [ "$SKIP_CLIENT_BUILD" = true ]; then
+        echo "⚠️  Skipping frontend build (dependencies not installed)"
+        echo "   You'll need to build the frontend locally and deploy it manually"
+    else
+        echo "   Building frontend (this may take a few minutes)..."
+        cd client
+        npm run build || {
+            echo "⚠️  Frontend build failed"
+            echo "   You can build it locally and push the dist/ folder to git"
+            cd ..
+        }
+        if [ "$PWD" != "$DEPLOY_DIR" ]; then
+            cd ..
+        fi
+        
+        if [ -d "client/dist" ]; then
+            echo "✅ Frontend built successfully"
+        else
+            echo "⚠️  Frontend build incomplete - you may need to build locally"
+        fi
+    fi
 else
     echo "⚠️  Client directory not found, skipping frontend build"
 fi
