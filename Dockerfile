@@ -9,8 +9,8 @@ WORKDIR /app/client
 # Copy frontend package files
 COPY client/package*.json ./
 
-# Install frontend dependencies
-RUN npm ci --only=production
+# Install ALL frontend dependencies (including devDependencies like vite for building)
+RUN npm ci
 
 # Copy frontend source
 COPY client/ ./
