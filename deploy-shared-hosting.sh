@@ -232,6 +232,19 @@ echo ""
 
 # Create environment file
 echo "🔐 Setting up environment variables..."
+
+# Ensure we're in the deployment directory
+cd "$DEPLOY_DIR" || {
+    echo "❌ Error: Cannot access deployment directory: $DEPLOY_DIR"
+    exit 1
+}
+
+# Create server directory if it doesn't exist
+if [ ! -d "server" ]; then
+    echo "⚠️  Warning: server directory not found. Creating it..."
+    mkdir -p server
+fi
+
 if [ ! -f "server/.env" ]; then
     # Generate secure JWT secret
     JWT_SECRET=$(openssl rand -base64 32 2>/dev/null || cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1)
