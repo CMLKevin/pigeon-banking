@@ -1,6 +1,6 @@
 run = "npm run install:all && npm run dev"
 hidden = [".config", "package-lock.json"]
-modules = ["nodejs-20"]
+modules = ["nodejs-20", "postgresql-16"]
 
 [nix]
 channel = "stable-23_05"
