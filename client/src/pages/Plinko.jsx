@@ -621,14 +621,17 @@ const Plinko = () => {
     };
   }, [loadWallet, loadRecentGames]);
 
-  // Draw initial board when canvas is ready
+  // Draw initial board when canvas is ready (but not during/after animation)
   useEffect(() => {
+    // Don't redraw if dropping or if there's a game result showing
+    if (isDropping || gameResult) return;
+    
     const timer = setTimeout(() => {
       drawInitialBoard();
     }, 100); // Small delay to ensure canvas is rendered
     
     return () => clearTimeout(timer);
-  }, [drawInitialBoard]);
+  }, [drawInitialBoard, isDropping, gameResult]);
 
   const handleDrop = async (e) => {
     e.preventDefault();
