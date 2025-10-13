@@ -19,8 +19,7 @@ const pool = new Pool({
   // Serverless-optimized settings
   max: 10, // Maximum number of clients in the pool
   min: 0, // Minimum idle clients (0 for serverless to reduce costs)
-  idleTimeoutMillis: 30000, // Close idle clients after 30 seconds
-  connectionTimeoutMillis: 10000, // Timeout for new connections
+  idleTimeoutMillis: 30000, // Close idle clients after 30 seconds, // Timeout for new connections (increased for cold starts)
   // Keep-alive to prevent connection drops
   keepAlive: true,
   keepAliveInitialDelayMillis: 10000
