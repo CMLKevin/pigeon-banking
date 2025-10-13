@@ -272,10 +272,13 @@ export const playBlackjack = (req, res) => {
           VALUES (?, ?, ?, ?, ?, ?, datetime('now'))
         `).run(userId, 'blackjack', betAmount, result, JSON.stringify({ playerValue, dealerValue }), won);
 
-        db.prepare(`
-          INSERT INTO transactions (from_user_id, to_user_id, transaction_type, currency, amount, description)
-          VALUES (?, NULL, 'game', ?, ?, ?)
-        `).run(userId, 'stoneworks_dollar', Math.abs(amountChange), `Blackjack: ${result}`);
+        // Only record transaction if there was an actual amount change (not a push)
+        if (amountChange !== 0) {
+          db.prepare(`
+            INSERT INTO transactions (from_user_id, to_user_id, transaction_type, currency, amount, description)
+            VALUES (?, NULL, 'game', ?, ?, ?)
+          `).run(userId, 'stoneworks_dollar', Math.abs(amountChange), `Blackjack: ${result}`);
+        }
 
         return res.json({
           gameOver: true,
@@ -392,10 +395,13 @@ export const playBlackjack = (req, res) => {
           VALUES (?, ?, ?, ?, ?, ?, datetime('now'))
         `).run(userId, 'blackjack', betAmount, result, JSON.stringify({ playerValue, dealerValue }), won);
 
-        db.prepare(`
-          INSERT INTO transactions (from_user_id, to_user_id, transaction_type, currency, amount, description)
-          VALUES (?, NULL, 'game', ?, ?, ?)
-        `).run(userId, 'stoneworks_dollar', Math.abs(amountChange), `Blackjack: ${result}`);
+        // Only record transaction if there was an actual amount change (not a push)
+        if (amountChange !== 0) {
+          db.prepare(`
+            INSERT INTO transactions (from_user_id, to_user_id, transaction_type, currency, amount, description)
+            VALUES (?, NULL, 'game', ?, ?, ?)
+          `).run(userId, 'stoneworks_dollar', Math.abs(amountChange), `Blackjack: ${result}`);
+        }
 
         return res.json({
           gameOver: true,
