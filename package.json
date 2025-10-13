@@ -2,13 +2,15 @@
   "name": "phantompay",
   "version": "1.0.0",
   "description": "Payment system for Stoneworks Minecraft server",
+  "type": "module",
   "scripts": {
     "install:all": "npm install && cd client && npm install && cd ../server && npm install",
     "dev": "concurrently \"npm run server\" \"npm run client\"",
     "server": "cd server && npm run dev",
     "client": "cd client && npm run dev",
     "build": "cd client && npm run build",
-    "start": "cd server && npm start"
+    "start": "cd server && npm start",
+    "check-deployment": "node check-deployment.js"
   },
   "keywords": ["payment", "minecraft", "cryptocurrency"],
   "author": "",
