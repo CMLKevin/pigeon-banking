@@ -409,7 +409,7 @@ const Auctions = () => {
                   </div>
                 ) : (
                   myBids.map((bid) => {
-                    const isWinning = bid.highest_bidder_id === bid.bidder_id && bid.auction_status === 'active';
+                    const isWinning = bid.highest_bidder_id === bid.bidder_id && bid.status === 'active';
                     return (
                       <Link
                         key={bid.id}
@@ -461,15 +461,15 @@ const Auctions = () => {
                             <div>
                               <p className="text-xs text-phantom-text-tertiary mb-1">Status</p>
                               {(() => {
-                                const badge = getStatusBadge(bid.auction_status);
+                                const badge = getStatusBadge(bid.status);
                                 return (
                                   <p className={`text-sm font-semibold ${badge.text}`}>
-                                    {bid.auction_status?.charAt(0).toUpperCase() + bid.auction_status?.slice(1)}
+                                    {bid.status?.charAt(0).toUpperCase() + bid.status?.slice(1)}
                                   </p>
                                 );
                               })()}
                             </div>
-                            {bid.auction_status === 'active' && (
+                            {bid.status === 'active' && (
                               <div>
                                 <p className="text-xs text-phantom-text-tertiary mb-1">Time Left</p>
                                 <p className="text-sm font-semibold text-phantom-text-primary">

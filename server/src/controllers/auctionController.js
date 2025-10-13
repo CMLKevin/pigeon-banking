@@ -196,12 +196,12 @@ export const placeBid = async (req, res) => {
       }
 
       // Check minimum bid
-      const minBid = auction.current_bid 
-        ? auction.current_bid + 1  // Minimum increment of 1 Agon
-        : auction.starting_price;
+      const currentBid = parseFloat(auction.current_bid) || 0;
+      const startingPrice = parseFloat(auction.starting_price) || 0;
+      const minBid = currentBid > 0 ? currentBid + 1 : startingPrice;  // Minimum increment of 1 Agon
 
       if (bidAmount < minBid) {
-        throw new Error(`Bid must be at least ${minBid} Agon`);
+        throw new Error(`Bid must be at least ${minBid.toFixed(2)} Agon`);
       }
 
       // Get bidder's wallet
@@ -212,20 +212,21 @@ export const placeBid = async (req, res) => {
       }
 
       // Check if user has enough available balance
-      if (wallet.agon < bidAmount) {
+      const availableBalance = parseFloat(wallet.agon) || 0;
+      if (availableBalance < bidAmount) {
         throw new Error('Insufficient balance');
       }
 
       // If user already has the highest bid, refund the previous bid first
       if (auction.highest_bidder_id === req.user.id) {
         // Return previous escrow amount
-        await q.exec('UPDATE wallets SET agon = agon + $1, agon_escrow = agon_escrow - $1 WHERE user_id = $2', [auction.current_bid, req.user.id]);
+        await q.exec('UPDATE wallets SET agon = agon + $1, agon_escrow = agon_escrow - $1 WHERE user_id = $2', [currentBid, req.user.id]);
       }
 
       // If there was a previous highest bidder (different user), refund them
       if (auction.highest_bidder_id && auction.highest_bidder_id !== req.user.id) {
         // Return escrowed funds to previous highest bidder
-        await q.exec('UPDATE wallets SET agon = agon + $1, agon_escrow = agon_escrow - $1 WHERE user_id = $2', [auction.current_bid, auction.highest_bidder_id]);
+        await q.exec('UPDATE wallets SET agon = agon + $1, agon_escrow = agon_escrow - $1 WHERE user_id = $2', [currentBid, auction.highest_bidder_id]);
         
         // Deactivate their bid
         await q.exec('UPDATE bids SET is_active = FALSE WHERE auction_id = $1 AND bidder_id = $2', [id, auction.highest_bidder_id]);
@@ -234,7 +235,7 @@ export const placeBid = async (req, res) => {
         await q.exec('INSERT INTO activity_logs (user_id, action, metadata) VALUES ($1, $2, $3::jsonb)'
           , [auction.highest_bidder_id, 'bid_refunded', JSON.stringify({ 
             auctionId: id, 
-            amount: auction.current_bid 
+            amount: currentBid 
           })]);
       }
 
@@ -308,7 +309,7 @@ export const confirmDelivery = async (req, res) => {
 
       // Calculate 5% commission
       const commissionRate = 0.05;
-      const grossAmount = parseFloat(auction.current_bid);
+      const grossAmount = parseFloat(auction.current_bid) || 0;
       const commissionAmount = parseFloat((grossAmount * commissionRate).toFixed(2));
       const netToSeller = parseFloat((grossAmount - commissionAmount).toFixed(2));
 
@@ -368,8 +369,6 @@ export const confirmDelivery = async (req, res) => {
           })]);
       }
     });
-
-    transaction();
 
     res.json({ message: 'Delivery confirmed and payment released to seller' });
   } catch (error) {
