@@ -1,17 +1,8 @@
 import axios from 'axios';
 
-// Detect environment and set appropriate API URL
-const getApiUrl = () => {
-  // Check if running on Replit
-  if (window.location.hostname.includes('replit')) {
-    // On Replit, backend runs on same domain
-    return `${window.location.protocol}//${window.location.hostname}/api`;
-  }
-  // Local development
-  return 'http://localhost:3001/api';
-};
-
-const API_URL = getApiUrl();
+// Use relative path to leverage Vite proxy in development
+// In production, the backend serves both static files and API from the same server
+const API_URL = '/api';
 
 const api = axios.create({
   baseURL: API_URL,

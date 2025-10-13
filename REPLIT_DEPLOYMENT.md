@@ -84,13 +84,15 @@ Replit's PostgreSQL (powered by Neon) provides:
 
 ## Step 5: Run the Application
 
+### Development Mode (Testing in Repl)
+
 1. Click the "Run" button at the top of your Repl
 2. The application will:
    - Install all dependencies
    - Connect to PostgreSQL
    - Initialize the database schema
-   - Start the backend server
-   - Start the frontend development server
+   - Start the backend server (port 3001)
+   - Start the frontend development server (port 5000)
 
 3. You should see output like:
    ```
@@ -100,10 +102,32 @@ Replit's PostgreSQL (powered by Neon) provides:
    Frontend dev server running on port 5000
    ```
 
+### Production Deployment
+
+When you deploy your Repl (click "Deploy" button):
+
+1. The deployment process will:
+   - Install all dependencies
+   - Build the frontend for production (optimized)
+   - Start the backend server with NODE_ENV=production
+   - Serve the built frontend from the same server
+
+2. Production configuration automatically:
+   - Uses production build commands (not dev)
+   - Serves static files efficiently
+   - Handles client-side routing
+   - Sets NODE_ENV=production for optimizations
+
 ## Step 6: Access Your Application
 
+### Development Mode:
 - Backend API: `https://your-repl-name.your-username.repl.co:3001`
-- Frontend: `https://your-repl-name.your-username.repl.co:5000` (development server)
+- Frontend: `https://your-repl-name.your-username.repl.co:5000`
+
+### Production Deployment:
+- Application: `https://your-repl-name.your-username.repl.co`
+  - Frontend and backend served from the same URL
+  - API routes accessible at `/api/*`
 
 ## Database Connection Details
 
