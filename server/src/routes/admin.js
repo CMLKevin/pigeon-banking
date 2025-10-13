@@ -293,9 +293,9 @@ router.get('/metrics', async (req, res) => {
       losses: Number(plinkoTotalsRow.losses || 0),
       unique_players: Number(plinkoTotalsRow.unique_players || 0),
       total_bet: Number(plinkoTotalsRow.total_bet || 0),
-      avg_multiplier: Number((plinkoTotalsRow.avg_multiplier || 0).toFixed(2)),
-      max_multiplier: Number((plinkoTotalsRow.max_multiplier || 0).toFixed(2)),
-      min_multiplier: Number((plinkoTotalsRow.min_multiplier || 0).toFixed(2)),
+      avg_multiplier: Number(Number(plinkoTotalsRow.avg_multiplier || 0).toFixed(2)),
+      max_multiplier: Number(Number(plinkoTotalsRow.max_multiplier || 0).toFixed(2)),
+      min_multiplier: Number(Number(plinkoTotalsRow.min_multiplier || 0).toFixed(2)),
       win_rate: plinkoTotalsRow.total_games ? Number(((plinkoTotalsRow.wins || 0) / plinkoTotalsRow.total_games * 100).toFixed(2)) : 0,
     } : {
       total_games: 0, wins: 0, losses: 0, unique_players: 0, total_bet: 0, avg_multiplier: 0, max_multiplier: 0, min_multiplier: 0, win_rate: 0
