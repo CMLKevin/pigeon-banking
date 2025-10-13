@@ -98,23 +98,6 @@ const Games = () => {
         winRate: 'Varies',
         payout: 'Up to 1000x'
       }
-    },
-    {
-      id: 'crash',
-      title: 'Crash',
-      description: 'Cash out before the crash! Up to 10000x multiplier',
-      icon: (
-        <svg className="w-12 h-12 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-        </svg>
-      ),
-      gradient: 'from-red-500 to-orange-600',
-      path: '/games/crash',
-      stats: {
-        houseEdge: '5%',
-        winRate: 'Varies',
-        payout: 'Up to 10000x'
-      }
     }
   ];
 

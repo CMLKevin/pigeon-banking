@@ -1,18 +1,14 @@
 import db from '../config/database.js';
 
-export const getAllUsers = (req, res) => {
+export const getAllUsers = async (req, res) => {
   try {
-    const users = db.prepare(`
-      SELECT 
-        u.id,
-        u.username,
-        u.created_at,
-        u.is_admin,
-        u.disabled
-      FROM users u
-      WHERE u.id != ?
-      ORDER BY u.username ASC
-    `).all(req.user.id);
+    const users = await db.query(
+      `SELECT id, username, created_at, is_admin, disabled
+       FROM users
+       WHERE id != $1
+       ORDER BY username ASC`,
+      [req.user.id]
+    );
 
     res.json({ users });
   } catch (error) {
@@ -21,24 +17,25 @@ export const getAllUsers = (req, res) => {
   }
 };
 
-export const searchUsers = (req, res) => {
+export const searchUsers = async (req, res) => {
   try {
-    const { query } = req.query;
+    const { query: q } = req.query;
 
-    if (!query) {
+    if (!q) {
       return res.status(400).json({ error: 'Search query is required' });
     }
 
-    const users = db.prepare(`
-      SELECT 
-        u.id,
-        u.username,
-        u.created_at
-      FROM users u
-      WHERE u.username LIKE ? AND u.id != ?
-      ORDER BY u.username ASC
-      LIMIT 20
-    `).all(`%${query}%`, req.user.id);
+    const users = await db.query(
+      `SELECT id, username, created_at
+       FROM users
+       WHERE username ILIKE $1 AND id != $2
+       ORDER BY username ASC
+       LIMIT 20`,
+      [
+        `%${q}%`,
+        req.user.id
+      ]
+    );
 
     res.json({ users });
   } catch (error) {

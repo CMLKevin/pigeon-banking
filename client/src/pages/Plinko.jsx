@@ -7,35 +7,17 @@ import api from '../services/api';
 const Plinko = () => {
   const [wallet, setWallet] = useState(null);
   const [betAmount, setBetAmount] = useState('');
-  const [rows, setRows] = useState(12);
-  const [risk, setRisk] = useState('medium');
   const [isDropping, setIsDropping] = useState(false);
   const [gameResult, setGameResult] = useState(null);
   const [recentGames, setRecentGames] = useState([]);
-  const [autoPlay, setAutoPlay] = useState(false);
-  const [autoPlayCount, setAutoPlayCount] = useState(0);
   const canvasRef = useRef(null);
   const animationRef = useRef(null);
   const audioCtxRef = useRef(null);
 
-  // Multiplier configurations for different risk levels and row counts
-  const multipliers = {
-    low: {
-      8: [5.6, 2.1, 1.1, 1.0, 0.5, 1.0, 1.1, 2.1, 5.6],
-      12: [10, 3, 1.6, 1.4, 1.1, 1.0, 0.5, 1.0, 1.1, 1.4, 1.6, 3, 10],
-      16: [16, 9, 2, 1.4, 1.4, 1.2, 1.1, 1.0, 0.5, 1.0, 1.1, 1.2, 1.4, 1.4, 2, 9, 16]
-    },
-    medium: {
-      8: [13, 3, 1.3, 0.7, 0.4, 0.7, 1.3, 3, 13],
-      12: [33, 11, 4, 2, 1.1, 0.6, 0.3, 0.6, 1.1, 2, 4, 11, 33],
-      16: [110, 41, 10, 5, 3, 1.5, 1.0, 0.5, 0.3, 0.5, 1.0, 1.5, 3, 5, 10, 41, 110]
-    },
-    high: {
-      8: [29, 4, 1.5, 0.3, 0.2, 0.3, 1.5, 4, 29],
-      12: [170, 24, 8.1, 2, 0.7, 0.2, 0.2, 0.2, 0.7, 2, 8.1, 24, 170],
-      16: [1000, 130, 26, 9, 4, 2, 0.2, 0.2, 0.2, 0.2, 0.2, 2, 4, 9, 26, 130, 1000]
-    }
-  };
+  // Fixed: Low risk, 8 rows only
+  const rows = 8;
+  const risk = 'low';
+  const multipliers = [5.6, 2.1, 1.1, 1.0, 0.5, 1.0, 1.1, 2.1, 5.6];
 
   const ensureAudioContext = () => {
     if (!audioCtxRef.current) {
@@ -178,19 +160,18 @@ const Plinko = () => {
     });
 
     // Get current multipliers and draw slots
-    const currentMultipliers = multipliers[risk][rows];
-    const slotsCount = currentMultipliers.length;
+    const slotsCount = multipliers.length;
     const slotWidth = (width * 0.9) / slotsCount;
     const slotsStartX = (width - slotWidth * slotsCount) / 2;
 
     for (let i = 0; i < slotsCount; i++) {
-      if (i >= currentMultipliers.length) continue;
+      if (i >= multipliers.length) continue;
       
       const x = slotsStartX + i * slotWidth;
       const y = height - 60;
       const slotHeight = 50;
       
-      const mult = currentMultipliers[i];
+      const mult = multipliers[i];
       let color = '#10b981';
       if (mult < 1) color = '#ef4444';
       else if (mult > 10) color = '#f59e0b';
@@ -238,7 +219,7 @@ const Plinko = () => {
     }
     
     // Validate landingSlot
-    const maxSlot = multipliers[risk][rows].length - 1;
+    const maxSlot = multipliers.length - 1;
     if (landingSlot < 0 || landingSlot > maxSlot) {
       console.error(`Invalid landingSlot ${landingSlot}. Must be between 0 and ${maxSlot}`);
       landingSlot = Math.max(0, Math.min(landingSlot, maxSlot));
@@ -274,9 +255,7 @@ const Plinko = () => {
     const pegs = pegsByRow.flat();
 
     // Calculate predetermined path based on landing slot
-    // Get the actual multipliers for current configuration
-    const currentMultipliers = multipliers[risk][rows];
-    const slotsCount = currentMultipliers.length;
+    const slotsCount = multipliers.length;
     const slotWidth = (width * 0.9) / slotsCount;
     const slotsStartX = (width - slotWidth * slotsCount) / 2;
     const targetSlotX = slotsStartX + landingSlot * slotWidth + slotWidth / 2;
@@ -350,15 +329,15 @@ const Plinko = () => {
       // Draw multiplier slots with better visuals
       for (let i = 0; i < slotsCount; i++) {
         // Safety check - skip if multiplier doesn't exist
-        if (i >= currentMultipliers.length) {
-          console.warn(`Slot ${i} exceeds multipliers array length ${currentMultipliers.length}`);
+        if (i >= multipliers.length) {
+          console.warn(`Slot ${i} exceeds multipliers array length ${multipliers.length}`);
           continue;
         }
         const x = slotsStartX + i * slotWidth;
         const y = height - 60;
         const slotHeight = 50;
         
-        const mult = currentMultipliers[i];
+        const mult = multipliers[i];
         let color = '#10b981';
         if (mult < 1) color = '#ef4444';
         else if (mult > 10) color = '#f59e0b';
@@ -549,13 +528,13 @@ const Plinko = () => {
         // Final draw - highlight winning slot
         for (let i = 0; i < slotsCount; i++) {
           // Safety check
-          if (i >= currentMultipliers.length) continue;
+          if (i >= multipliers.length) continue;
           
           const x = slotsStartX + i * slotWidth;
           const y = height - 60;
           const slotHeight = 50;
           
-          const mult = currentMultipliers[i];
+          const mult = multipliers[i];
           let color = '#10b981';
           if (mult < 1) color = '#ef4444';
           else if (mult > 10) color = '#f59e0b';
@@ -642,14 +621,14 @@ const Plinko = () => {
     };
   }, [loadWallet, loadRecentGames]);
 
-  // Draw initial board when canvas is ready and when settings change
+  // Draw initial board when canvas is ready
   useEffect(() => {
     const timer = setTimeout(() => {
       drawInitialBoard();
     }, 100); // Small delay to ensure canvas is rendered
     
     return () => clearTimeout(timer);
-  }, [drawInitialBoard, rows, risk]);
+  }, [drawInitialBoard]);
 
   const handleDrop = async (e) => {
     e.preventDefault();
@@ -669,9 +648,7 @@ const Plinko = () => {
 
     try {
       const res = await api.post('/games/plinko', {
-        betAmount: parseFloat(betAmount),
-        rows: rows,
-        risk: risk
+        betAmount: parseFloat(betAmount)
       });
 
       // Play launch sound when ball is released
@@ -686,16 +663,6 @@ const Plinko = () => {
         setIsDropping(false);
         loadWallet();
         loadRecentGames();
-
-        // Handle auto-play
-        if (autoPlay && autoPlayCount > 0) {
-          setAutoPlayCount(autoPlayCount - 1);
-          if (autoPlayCount - 1 > 0) {
-            setTimeout(() => handleDrop({ preventDefault: () => {} }), 1000);
-          } else {
-            setAutoPlay(false);
-          }
-        }
       });
     } catch (error) {
       setIsDropping(false);
@@ -703,20 +670,6 @@ const Plinko = () => {
       console.error('Error response:', error.response);
       const errorMsg = error.response?.data?.message || error.message || 'Failed to play game';
       alert(errorMsg);
-    }
-  };
-
-  const toggleAutoPlay = () => {
-    if (autoPlay) {
-      setAutoPlay(false);
-      setAutoPlayCount(0);
-    } else {
-      const count = parseInt(prompt('How many auto drops? (max 100)', '10'));
-      if (count && count > 0 && count <= 100) {
-        setAutoPlay(true);
-        setAutoPlayCount(count);
-        handleDrop({ preventDefault: () => {} });
-      }
     }
   };
 
@@ -805,7 +758,7 @@ const Plinko = () => {
                     type="number"
                     value={betAmount}
                     onChange={(e) => setBetAmount(e.target.value)}
-                    disabled={isDropping || autoPlay}
+                    disabled={isDropping}
                     placeholder="Enter amount..."
                     className="w-full px-4 py-3 bg-phantom-bg-tertiary border-2 border-phantom-border rounded-2xl text-phantom-text-primary placeholder-phantom-text-tertiary focus:border-phantom-accent-primary focus:ring-0 transition-colors disabled:opacity-50"
                     step="0.01"
@@ -817,7 +770,7 @@ const Plinko = () => {
                         key={amount}
                         type="button"
                         onClick={() => setBetAmount(amount.toString())}
-                        disabled={isDropping || autoPlay}
+                        disabled={isDropping}
                         className="flex-1 px-2 py-1 text-sm bg-phantom-bg-tertiary border border-phantom-border rounded-lg text-phantom-text-secondary hover:border-phantom-accent-primary hover:text-phantom-text-primary transition-all disabled:opacity-50"
                       >
                         {amount}
@@ -826,67 +779,18 @@ const Plinko = () => {
                   </div>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-phantom-text-primary mb-2">
-                    Risk Level
-                  </label>
-                  <div className="grid grid-cols-3 gap-2">
-                    {['low', 'medium', 'high'].map((level) => (
-                      <button
-                        key={level}
-                        type="button"
-                        onClick={() => setRisk(level)}
-                        disabled={isDropping || autoPlay}
-                        className={`py-2 px-3 rounded-xl border-2 transition-all text-sm font-semibold ${
-                          risk === level
-                            ? 'bg-phantom-accent-primary/20 border-phantom-accent-primary text-phantom-text-primary'
-                            : 'bg-phantom-bg-tertiary border-phantom-border text-phantom-text-secondary hover:border-phantom-accent-primary'
-                        } disabled:opacity-50`}
-                      >
-                        {level.charAt(0).toUpperCase() + level.slice(1)}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-phantom-text-primary mb-2">
-                    Rows ({rows})
-                  </label>
-                  <div className="grid grid-cols-3 gap-2">
-                    {[8, 12, 16].map((rowCount) => (
-                      <button
-                        key={rowCount}
-                        type="button"
-                        onClick={() => setRows(rowCount)}
-                        disabled={isDropping || autoPlay}
-                        className={`py-2 px-3 rounded-xl border-2 transition-all text-sm font-semibold ${
-                          rows === rowCount
-                            ? 'bg-phantom-accent-primary/20 border-phantom-accent-primary text-phantom-text-primary'
-                            : 'bg-phantom-bg-tertiary border-phantom-border text-phantom-text-secondary hover:border-phantom-accent-primary'
-                        } disabled:opacity-50`}
-                      >
-                        {rowCount}
-                      </button>
-                    ))}
-                  </div>
+                <div className="p-4 bg-phantom-bg-tertiary/50 rounded-xl border border-phantom-border">
+                  <p className="text-sm text-phantom-text-secondary">
+                    <span className="font-semibold text-phantom-text-primary">Fixed Settings:</span> Low Risk, 8 Rows
+                  </p>
                 </div>
 
                 <button
                   type="submit"
-                  disabled={isDropping || autoPlay || !betAmount}
+                  disabled={isDropping || !betAmount}
                   className="w-full py-4 bg-gradient-phantom text-white font-bold rounded-2xl hover:shadow-glow transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {isDropping ? 'Dropping...' : autoPlay ? `Auto: ${autoPlayCount} left` : 'Drop Ball'}
-                </button>
-
-                <button
-                  type="button"
-                  onClick={toggleAutoPlay}
-                  disabled={isDropping || !betAmount}
-                  className="w-full py-3 bg-phantom-bg-tertiary border-2 border-phantom-border text-phantom-text-primary font-semibold rounded-2xl hover:border-phantom-accent-primary transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {autoPlay ? 'Stop Auto' : 'Auto Play'}
+                  {isDropping ? 'Dropping...' : 'Drop Ball'}
                 </button>
               </form>
             </div>
@@ -905,9 +809,7 @@ const Plinko = () => {
                 </div>
                 <div className="flex justify-between">
                   <span>Max Multiplier:</span>
-                  <span className="text-phantom-text-primary font-semibold">
-                    {risk === 'high' ? '1000x' : risk === 'medium' ? '170x' : '16x'}
-                  </span>
+                  <span className="text-phantom-text-primary font-semibold">5.6x</span>
                 </div>
               </div>
             </div>

@@ -27,13 +27,13 @@ export const signup = async (req, res) => {
     }
 
     // Check if user already exists
-    const existingUser = db.prepare('SELECT id FROM users WHERE username = ?').get(username);
+    const existingUser = await db.queryOne('SELECT id FROM users WHERE username = $1', [username]);
     if (existingUser) {
       return res.status(400).json({ error: 'Username already exists' });
     }
 
     // Validate invite code
-    const invite = db.prepare('SELECT id, is_used FROM invite_codes WHERE code = ?').get(inviteCode);
+    const invite = await db.queryOne('SELECT id, is_used FROM invite_codes WHERE code = $1', [inviteCode]);
     if (!invite) {
       return res.status(400).json({ error: 'Invalid invite code' });
     }
@@ -45,21 +45,20 @@ export const signup = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Create user
-    const insertUser = db.prepare('INSERT INTO users (username, password) VALUES (?, ?)');
-    const result = insertUser.run(username, hashedPassword);
-    const userId = result.lastInsertRowid;
+    const userRow = await db.queryOne(
+      'INSERT INTO users (username, password) VALUES ($1, $2) RETURNING id',
+      [username, hashedPassword]
+    );
+    const userId = userRow.id;
 
     // Mark invite code as used
-    db.prepare('UPDATE invite_codes SET is_used = 1, used_by = ?, used_at = CURRENT_TIMESTAMP WHERE id = ?').run(userId, invite.id);
+    await db.exec('UPDATE invite_codes SET is_used = TRUE, used_by = $1, used_at = NOW() WHERE id = $2', [userId, invite.id]);
 
     // Create wallet with initial balance (100 of each currency)
-    const insertWallet = db.prepare(
-      'INSERT INTO wallets (user_id, agon, stoneworks_dollar) VALUES (?, ?, ?)'
-    );
-    insertWallet.run(userId, 100.0, 100.0);
+    await db.exec('INSERT INTO wallets (user_id, agon, stoneworks_dollar) VALUES ($1, $2, $3)', [userId, 100.0, 100.0]);
 
     // Generate token
-    const fresh = db.prepare('SELECT id, username, is_admin FROM users WHERE id = ?').get(userId);
+    const fresh = await db.queryOne('SELECT id, username, is_admin FROM users WHERE id = $1', [userId]);
     const token = jwt.sign({ id: fresh.id, username: fresh.username, is_admin: !!fresh.is_admin }, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
 
     res.status(201).json({
@@ -87,7 +86,7 @@ export const login = async (req, res) => {
     }
 
     // Find user
-    const user = db.prepare('SELECT * FROM users WHERE username = ?').get(username);
+    const user = await db.queryOne('SELECT * FROM users WHERE username = $1', [username]);
     if (!user) {
       return res.status(401).json({ error: 'Invalid username or password' });
     }
@@ -118,15 +117,15 @@ export const login = async (req, res) => {
   }
 };
 
-export const getProfile = (req, res) => {
+export const getProfile = async (req, res) => {
   try {
-    const user = db.prepare('SELECT id, username, created_at, is_admin FROM users WHERE id = ?').get(req.user.id);
+    const user = await db.queryOne('SELECT id, username, created_at, is_admin FROM users WHERE id = $1', [req.user.id]);
     
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    const wallet = db.prepare('SELECT agon, stoneworks_dollar FROM wallets WHERE user_id = ?').get(req.user.id);
+    const wallet = await db.queryOne('SELECT agon, stoneworks_dollar FROM wallets WHERE user_id = $1', [req.user.id]);
 
     res.json({
       user,

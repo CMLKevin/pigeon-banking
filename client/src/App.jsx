@@ -16,7 +16,6 @@ import Games from './pages/Games';
 import CoinFlip from './pages/CoinFlip';
 import Blackjack from './pages/Blackjack';
 import Plinko from './pages/Plinko';
-import Crash from './pages/Crash';
 
 function App() {
   return (
@@ -119,14 +118,6 @@ function App() {
             element={
               <ProtectedRoute>
                 <Plinko />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/games/crash"
-            element={
-              <ProtectedRoute>
-                <Crash />
               </ProtectedRoute>
             }
           />

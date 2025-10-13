@@ -1,223 +1,186 @@
-import Database from 'better-sqlite3';
-import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
+import { Pool } from 'pg';
+import dotenv from 'dotenv';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+dotenv.config();
 
-const db = new Database(join(__dirname, '../../database.db'));
+const connectionString = process.env.DATABASE_URL;
+if (!connectionString) {
+  console.error('DATABASE_URL is required for PostgreSQL connection.');
+}
 
-// Enable foreign keys
-db.pragma('foreign_keys = ON');
+const pool = new Pool({
+  connectionString,
+  ssl: process.env.PGSSL?.toLowerCase() === 'false' ? false : { rejectUnauthorized: false }
+});
 
-// Initialize database tables
-const initDatabase = () => {
-  // Users table
-  db.exec(`
+const query = async (text, params = []) => {
+  const { rows } = await pool.query(text, params);
+  return rows;
+};
+
+const queryOne = async (text, params = []) => {
+  const { rows } = await pool.query(text, params);
+  return rows[0] || null;
+};
+
+const exec = async (text, params = []) => {
+  const res = await pool.query(text, params);
+  return { rowCount: res.rowCount, rows: res.rows };
+};
+
+const tx = async (fn) => {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    const adapter = {
+      query: async (text, params = []) => (await client.query(text, params)).rows,
+      queryOne: async (text, params = []) => {
+        const { rows } = await client.query(text, params);
+        return rows[0] || null;
+      },
+      exec: async (text, params = []) => {
+        const res = await client.query(text, params);
+        return { rowCount: res.rowCount, rows: res.rows };
+      }
+    };
+    const result = await fn(adapter);
+    await client.query('COMMIT');
+    return result;
+  } catch (e) {
+    await client.query('ROLLBACK');
+    throw e;
+  } finally {
+    client.release();
+  }
+};
+
+const initSchema = async () => {
+  // Users
+  await exec(`
     CREATE TABLE IF NOT EXISTS users (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      id SERIAL PRIMARY KEY,
       username TEXT UNIQUE NOT NULL,
       password TEXT NOT NULL,
-      is_admin INTEGER DEFAULT 0,
-      disabled INTEGER DEFAULT 0,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      is_admin BOOLEAN DEFAULT FALSE,
+      disabled BOOLEAN DEFAULT FALSE,
+      created_at TIMESTAMPTZ DEFAULT NOW()
     )
   `);
 
-  // Wallets table - each user has balances for both currencies
-  db.exec(`
+  // Wallets
+  await exec(`
     CREATE TABLE IF NOT EXISTS wallets (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      user_id INTEGER UNIQUE NOT NULL,
-      agon REAL DEFAULT 0.0,
-      stoneworks_dollar REAL DEFAULT 0.0,
-      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+      id SERIAL PRIMARY KEY,
+      user_id INTEGER UNIQUE NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      agon NUMERIC DEFAULT 0.0,
+      stoneworks_dollar NUMERIC DEFAULT 0.0,
+      agon_escrow NUMERIC DEFAULT 0.0
     )
   `);
 
-  // Migration: Rename phantom_coin to agon if it exists
-  try {
-    const tableInfo = db.pragma('table_info(wallets)');
-    const hasPhantomCoin = tableInfo.some(col => col.name === 'phantom_coin');
-    const hasAgon = tableInfo.some(col => col.name === 'agon');
-    
-    if (hasPhantomCoin && !hasAgon) {
-      // Create temporary table with new schema
-      db.exec(`
-        CREATE TABLE wallets_new (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          user_id INTEGER UNIQUE NOT NULL,
-          agon REAL DEFAULT 0.0,
-          stoneworks_dollar REAL DEFAULT 0.0,
-          FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-        )
-      `);
-      
-      // Copy data from old table to new
-      db.exec(`INSERT INTO wallets_new (id, user_id, agon, stoneworks_dollar)
-               SELECT id, user_id, phantom_coin, stoneworks_dollar FROM wallets`);
-      
-      // Drop old table and rename new one
-      db.exec(`DROP TABLE wallets`);
-      db.exec(`ALTER TABLE wallets_new RENAME TO wallets`);
-      
-      console.log('Successfully migrated phantom_coin to agon');
-    }
-  } catch (e) {
-    console.log('Migration check:', e.message);
-  }
-
-  // Transactions table - for tracking all payments and swaps
-  db.exec(`
+  // Transactions
+  await exec(`
     CREATE TABLE IF NOT EXISTS transactions (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      from_user_id INTEGER NOT NULL,
-      to_user_id INTEGER,
+      id SERIAL PRIMARY KEY,
+      from_user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      to_user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
       transaction_type TEXT NOT NULL,
       currency TEXT NOT NULL,
-      amount REAL NOT NULL,
+      amount NUMERIC NOT NULL,
       description TEXT,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (from_user_id) REFERENCES users(id) ON DELETE CASCADE,
-      FOREIGN KEY (to_user_id) REFERENCES users(id) ON DELETE CASCADE
+      created_at TIMESTAMPTZ DEFAULT NOW()
     )
   `);
 
-  // Activity logs table - records key user actions for admin analytics
-  db.exec(`
+  // Activity logs
+  await exec(`
     CREATE TABLE IF NOT EXISTS activity_logs (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      user_id INTEGER NOT NULL,
+      id SERIAL PRIMARY KEY,
+      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
       action TEXT NOT NULL,
-      metadata TEXT,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+      metadata JSONB,
+      created_at TIMESTAMPTZ DEFAULT NOW()
     )
   `);
 
-  // Invite codes table - one-time use codes for user registration
-  db.exec(`
+  // Invite codes
+  await exec(`
     CREATE TABLE IF NOT EXISTS invite_codes (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      id SERIAL PRIMARY KEY,
       code TEXT UNIQUE NOT NULL,
-      created_by INTEGER NOT NULL,
-      used_by INTEGER,
-      is_used INTEGER DEFAULT 0,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      used_at DATETIME,
-      FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE CASCADE,
-      FOREIGN KEY (used_by) REFERENCES users(id) ON DELETE SET NULL
+      created_by INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      used_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
+      is_used BOOLEAN DEFAULT FALSE,
+      created_at TIMESTAMPTZ DEFAULT NOW(),
+      used_at TIMESTAMPTZ
     )
   `);
 
-  // Auctions table - for auction house listings
-  db.exec(`
+  // Auctions
+  await exec(`
     CREATE TABLE IF NOT EXISTS auctions (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      seller_id INTEGER NOT NULL,
+      id SERIAL PRIMARY KEY,
+      seller_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
       item_name TEXT NOT NULL,
       item_description TEXT,
       rarity TEXT NOT NULL,
       durability INTEGER,
-      starting_price REAL NOT NULL,
-      current_bid REAL,
-      highest_bidder_id INTEGER,
-      end_date DATETIME NOT NULL,
+      starting_price NUMERIC NOT NULL,
+      current_bid NUMERIC,
+      highest_bidder_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+      end_date TIMESTAMPTZ NOT NULL,
       status TEXT DEFAULT 'active',
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      completed_at DATETIME,
-      FOREIGN KEY (seller_id) REFERENCES users(id) ON DELETE CASCADE,
-      FOREIGN KEY (highest_bidder_id) REFERENCES users(id) ON DELETE SET NULL
+      created_at TIMESTAMPTZ DEFAULT NOW(),
+      completed_at TIMESTAMPTZ
     )
   `);
 
-  // Bids table - for tracking all bids on auctions
-  db.exec(`
+  // Bids
+  await exec(`
     CREATE TABLE IF NOT EXISTS bids (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      auction_id INTEGER NOT NULL,
-      bidder_id INTEGER NOT NULL,
-      amount REAL NOT NULL,
-      is_active INTEGER DEFAULT 1,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (auction_id) REFERENCES auctions(id) ON DELETE CASCADE,
-      FOREIGN KEY (bidder_id) REFERENCES users(id) ON DELETE CASCADE
+      id SERIAL PRIMARY KEY,
+      auction_id INTEGER NOT NULL REFERENCES auctions(id) ON DELETE CASCADE,
+      bidder_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      amount NUMERIC NOT NULL,
+      is_active BOOLEAN DEFAULT TRUE,
+      created_at TIMESTAMPTZ DEFAULT NOW()
     )
   `);
 
-  // Game history table - for tracking game results
-  db.exec(`
+  // Game history
+  await exec(`
     CREATE TABLE IF NOT EXISTS game_history (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      user_id INTEGER NOT NULL,
+      id SERIAL PRIMARY KEY,
+      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
       game_type TEXT NOT NULL,
-      bet_amount REAL NOT NULL,
+      bet_amount NUMERIC NOT NULL,
       result TEXT NOT NULL,
-      choice TEXT NOT NULL,
-      won INTEGER NOT NULL,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+      choice JSONB NOT NULL DEFAULT '{}'::jsonb,
+      won BOOLEAN NOT NULL,
+      created_at TIMESTAMPTZ DEFAULT NOW()
     )
   `);
 
-  // Create indexes for better query performance
-  db.exec(`
-    CREATE INDEX IF NOT EXISTS idx_transactions_from_user 
-    ON transactions(from_user_id);
-    
-    CREATE INDEX IF NOT EXISTS idx_transactions_to_user 
-    ON transactions(to_user_id);
-    
-    CREATE INDEX IF NOT EXISTS idx_transactions_created_at 
-    ON transactions(created_at);
-
-    CREATE INDEX IF NOT EXISTS idx_activity_user 
-    ON activity_logs(user_id);
-
-    CREATE INDEX IF NOT EXISTS idx_activity_action 
-    ON activity_logs(action);
-
-    CREATE INDEX IF NOT EXISTS idx_activity_created_at 
-    ON activity_logs(created_at);
-
-    CREATE INDEX IF NOT EXISTS idx_invite_codes_code 
-    ON invite_codes(code);
-
-    CREATE INDEX IF NOT EXISTS idx_invite_codes_used 
-    ON invite_codes(is_used);
-
-    CREATE INDEX IF NOT EXISTS idx_auctions_seller 
-    ON auctions(seller_id);
-
-    CREATE INDEX IF NOT EXISTS idx_auctions_status 
-    ON auctions(status);
-
-    CREATE INDEX IF NOT EXISTS idx_auctions_end_date 
-    ON auctions(end_date);
-
-    CREATE INDEX IF NOT EXISTS idx_bids_auction 
-    ON bids(auction_id);
-
-    CREATE INDEX IF NOT EXISTS idx_bids_bidder 
-    ON bids(bidder_id);
-
-    CREATE INDEX IF NOT EXISTS idx_game_history_user 
-    ON game_history(user_id);
-
-    CREATE INDEX IF NOT EXISTS idx_game_history_created_at 
-    ON game_history(created_at);
-  `);
-
-  // Best-effort migration for existing databases: add columns if missing
-  // SQLite doesn't support IF NOT EXISTS for ADD COLUMN; attempt and ignore errors
-  try { db.exec("ALTER TABLE users ADD COLUMN is_admin INTEGER DEFAULT 0"); } catch (e) {}
-  try { db.exec("ALTER TABLE users ADD COLUMN disabled INTEGER DEFAULT 0"); } catch (e) {}
-  try { db.exec("ALTER TABLE wallets ADD COLUMN agon_escrow REAL DEFAULT 0.0"); } catch (e) {}
-
-  console.log('Database initialized successfully');
+  // Indexes
+  await exec('CREATE INDEX IF NOT EXISTS idx_transactions_from_user ON transactions(from_user_id)');
+  await exec('CREATE INDEX IF NOT EXISTS idx_transactions_to_user ON transactions(to_user_id)');
+  await exec('CREATE INDEX IF NOT EXISTS idx_transactions_created_at ON transactions(created_at)');
+  await exec('CREATE INDEX IF NOT EXISTS idx_activity_user ON activity_logs(user_id)');
+  await exec('CREATE INDEX IF NOT EXISTS idx_activity_action ON activity_logs(action)');
+  await exec('CREATE INDEX IF NOT EXISTS idx_activity_created_at ON activity_logs(created_at)');
+  await exec('CREATE INDEX IF NOT EXISTS idx_invite_codes_code ON invite_codes(code)');
+  await exec('CREATE INDEX IF NOT EXISTS idx_invite_codes_used ON invite_codes(is_used)');
+  await exec('CREATE INDEX IF NOT EXISTS idx_auctions_seller ON auctions(seller_id)');
+  await exec('CREATE INDEX IF NOT EXISTS idx_auctions_status ON auctions(status)');
+  await exec('CREATE INDEX IF NOT EXISTS idx_auctions_end_date ON auctions(end_date)');
+  await exec('CREATE INDEX IF NOT EXISTS idx_bids_auction ON bids(auction_id)');
+  await exec('CREATE INDEX IF NOT EXISTS idx_bids_bidder ON bids(bidder_id)');
+  await exec('CREATE INDEX IF NOT EXISTS idx_game_history_user ON game_history(user_id)');
+  await exec('CREATE INDEX IF NOT EXISTS idx_game_history_created_at ON game_history(created_at)');
 };
 
-initDatabase();
+await initSchema();
 
+const db = { query, queryOne, exec, tx };
 export default db;
 

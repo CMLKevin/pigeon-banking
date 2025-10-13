@@ -1,8 +1,8 @@
 import db from '../config/database.js';
 
-export const getWallet = (req, res) => {
+export const getWallet = async (req, res) => {
   try {
-    const wallet = db.prepare('SELECT * FROM wallets WHERE user_id = ?').get(req.user.id);
+    const wallet = await db.queryOne('SELECT * FROM wallets WHERE user_id = $1', [req.user.id]);
     
     if (!wallet) {
       return res.status(404).json({ error: 'Wallet not found' });
@@ -15,7 +15,7 @@ export const getWallet = (req, res) => {
   }
 };
 
-export const swapCurrency = (req, res) => {
+export const swapCurrency = async (req, res) => {
   try {
     const { fromCurrency, toCurrency, amount } = req.body;
 
@@ -38,7 +38,7 @@ export const swapCurrency = (req, res) => {
     }
 
     // Get current wallet
-    const wallet = db.prepare('SELECT * FROM wallets WHERE user_id = ?').get(req.user.id);
+    const wallet = await db.queryOne('SELECT * FROM wallets WHERE user_id = $1', [req.user.id]);
     
     if (!wallet) {
       return res.status(404).json({ error: 'Wallet not found' });
@@ -50,34 +50,31 @@ export const swapCurrency = (req, res) => {
     }
 
     // Perform swap (1:1 ratio)
-    const updateWallet = db.prepare(`
-      UPDATE wallets 
-      SET ${fromCurrency} = ${fromCurrency} - ?, 
-          ${toCurrency} = ${toCurrency} + ?
-      WHERE user_id = ?
-    `);
-    
-    updateWallet.run(amount, amount, req.user.id);
+    // Update balances
+    await db.exec(
+      `UPDATE wallets 
+       SET ${fromCurrency} = ${fromCurrency} - $1, 
+           ${toCurrency} = ${toCurrency} + $2
+       WHERE user_id = $3`,
+      [amount, amount, req.user.id]
+    );
 
     // Record transaction
-    const insertTransaction = db.prepare(`
-      INSERT INTO transactions (from_user_id, transaction_type, currency, amount, description)
-      VALUES (?, 'swap', ?, ?, ?)
-    `);
-    
-    insertTransaction.run(
-      req.user.id,
-      fromCurrency,
-      amount,
-      `Swapped ${amount} ${fromCurrency} to ${toCurrency}`
+    await db.exec(
+      `INSERT INTO transactions (from_user_id, transaction_type, currency, amount, description)
+       VALUES ($1, 'swap', $2, $3, $4)`,
+      [req.user.id, fromCurrency, amount, `Swapped ${amount} ${fromCurrency} to ${toCurrency}`]
     );
 
     // Log activity
-    const log = db.prepare('INSERT INTO activity_logs (user_id, action, metadata) VALUES (?, ?, ?)');
-    log.run(req.user.id, 'swap', JSON.stringify({ fromCurrency, toCurrency, amount }));
+    await db.exec('INSERT INTO activity_logs (user_id, action, metadata) VALUES ($1, $2, $3::jsonb)', [
+      req.user.id,
+      'swap',
+      JSON.stringify({ fromCurrency, toCurrency, amount })
+    ]);
 
     // Get updated wallet
-    const updatedWallet = db.prepare('SELECT * FROM wallets WHERE user_id = ?').get(req.user.id);
+    const updatedWallet = await db.queryOne('SELECT * FROM wallets WHERE user_id = $1', [req.user.id]);
 
     res.json({
       message: 'Swap successful',

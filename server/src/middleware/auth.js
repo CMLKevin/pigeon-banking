@@ -3,7 +3,7 @@ import db from '../config/database.js';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret_key_change_this_in_production';
 
-export const authenticateToken = (req, res, next) => {
+export const authenticateToken = async (req, res, next) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
 
@@ -14,7 +14,10 @@ export const authenticateToken = (req, res, next) => {
   try {
     const user = jwt.verify(token, JWT_SECRET);
     // Refresh user flags from DB (disabled/admin) for every request
-    const row = db.prepare('SELECT id, username, is_admin, disabled FROM users WHERE id = ?').get(user.id);
+    const row = await db.queryOne(
+      'SELECT id, username, is_admin, disabled FROM users WHERE id = $1',
+      [user.id]
+    );
     if (!row) {
       return res.status(401).json({ error: 'User not found' });
     }
