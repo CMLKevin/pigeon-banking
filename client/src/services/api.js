@@ -1,6 +1,17 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:3001/api';
+// Detect environment and set appropriate API URL
+const getApiUrl = () => {
+  // Check if running on Replit
+  if (window.location.hostname.includes('replit')) {
+    // On Replit, backend runs on same domain
+    return `${window.location.protocol}//${window.location.hostname}/api`;
+  }
+  // Local development
+  return 'http://localhost:3001/api';
+};
+
+const API_URL = getApiUrl();
 
 const api = axios.create({
   baseURL: API_URL,
