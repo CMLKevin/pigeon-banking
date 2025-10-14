@@ -173,15 +173,54 @@ export const getPlatformStats = async (req, res) => {
       LIMIT 10
     `);
 
+    // Calculate platform exposure per market
+    const exposureData = await db.query(`
+      SELECT 
+        m.id,
+        m.question,
+        m.status,
+        SUM(CASE WHEN p.side = 'yes' THEN p.quantity * (1 - p.avg_price) ELSE 0 END) as yes_exposure,
+        SUM(CASE WHEN p.side = 'no' THEN p.quantity * (1 - p.avg_price) ELSE 0 END) as no_exposure,
+        SUM(CASE WHEN p.side = 'yes' THEN p.quantity ELSE 0 END) as yes_quantity,
+        SUM(CASE WHEN p.side = 'no' THEN p.quantity ELSE 0 END) as no_quantity
+      FROM prediction_markets m
+      LEFT JOIN prediction_positions p ON m.id = p.market_id AND p.quantity > 0
+      WHERE m.status = 'active'
+      GROUP BY m.id, m.question, m.status
+      HAVING SUM(p.quantity) > 0
+      ORDER BY GREATEST(
+        SUM(CASE WHEN p.side = 'yes' THEN p.quantity * (1 - p.avg_price) ELSE 0 END),
+        SUM(CASE WHEN p.side = 'no' THEN p.quantity * (1 - p.avg_price) ELSE 0 END)
+      ) DESC
+    `);
+
+    // Calculate total platform exposure
+    const totalYesExposure = exposureData.reduce((sum, m) => sum + parseFloat(m.yes_exposure || 0), 0);
+    const totalNoExposure = exposureData.reduce((sum, m) => sum + parseFloat(m.no_exposure || 0), 0);
+    const maxExposure = Math.max(totalYesExposure, totalNoExposure);
+
     res.json({
       stats: {
         totalMarkets: parseInt(marketCount.count),
         activePositions: parseInt(positionCount.count),
         totalVolume: parseFloat(volumeData.total || 0),
         activeUsers: parseInt(activeUsers.count),
-        totalFees: parseFloat(feesData.total || 0)
+        totalFees: parseFloat(feesData.total || 0),
+        platformExposure: {
+          maxExposure,
+          yesExposure: totalYesExposure,
+          noExposure: totalNoExposure
+        }
       },
-      topMarkets
+      topMarkets,
+      exposureByMarket: exposureData.map(m => ({
+        ...m,
+        yes_exposure: parseFloat(m.yes_exposure || 0),
+        no_exposure: parseFloat(m.no_exposure || 0),
+        yes_quantity: parseFloat(m.yes_quantity || 0),
+        no_quantity: parseFloat(m.no_quantity || 0),
+        max_exposure: Math.max(parseFloat(m.yes_exposure || 0), parseFloat(m.no_exposure || 0))
+      }))
     });
   } catch (error) {
     console.error('Get platform stats error:', error);

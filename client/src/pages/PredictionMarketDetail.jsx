@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Button from '../components/Button';
 import Input from '../components/Input';
+import QuoteChart from '../components/prediction/QuoteChart';
 import { predictionAPI, walletAPI } from '../services/api';
 import { formatCurrency } from '../utils/formatters';
 
@@ -207,6 +208,13 @@ const PredictionMarketDetail = () => {
                     </div>
                   </div>
                 </div>
+              </div>
+            )}
+
+            {/* Quote History Chart */}
+            {quotes && quotes.length > 0 && (
+              <div className="bg-phantom-bg-secondary/60 backdrop-blur-xl rounded-3xl shadow-card border border-phantom-border p-8">
+                <QuoteChart quotes={quotes} side="both" />
               </div>
             )}
 

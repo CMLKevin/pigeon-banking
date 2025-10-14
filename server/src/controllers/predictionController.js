@@ -2,6 +2,7 @@ import db from '../config/database.js';
 
 const MAX_ORDER_SIZE = 1000; // Maximum shares per order
 const TRADE_FEE_RATE = 0.01; // 1% fee
+const MAX_PLATFORM_EXPOSURE = 10000; // Maximum platform exposure per market side in Agon
 
 // Get all whitelisted markets with last quote
 export const getMarkets = async (req, res) => {
@@ -146,6 +147,21 @@ export const placeOrder = async (req, res) => {
         // Check balance
         if (balance < totalCost) {
           throw new Error('Insufficient Agon balance');
+        }
+
+        // Check platform exposure limit
+        const currentExposure = await q.queryOne(`
+          SELECT 
+            SUM(CASE WHEN side = $1 THEN quantity * (1 - avg_price) ELSE 0 END) as side_exposure
+          FROM prediction_positions
+          WHERE market_id = $2 AND quantity > 0
+        `, [side, id]);
+
+        const exposure = parseFloat(currentExposure.side_exposure || 0);
+        const newExposure = exposure + (qty * (1 - execPrice));
+
+        if (newExposure > MAX_PLATFORM_EXPOSURE) {
+          throw new Error(`Order would exceed platform exposure limit. Current ${side.toUpperCase()} exposure: ${exposure.toFixed(2)} Agon`);
         }
 
         // Debit wallet

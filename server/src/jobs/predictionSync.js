@@ -1,26 +1,39 @@
 import db from '../config/database.js';
 import * as polymarket from '../services/polymarketService.js';
 
+// Track consecutive failures
+const syncFailures = new Map();
+const MAX_FAILURES = 5;
+
 // Sync quotes for all active markets
 export const syncQuotes = async () => {
+  const startTime = Date.now();
+  let successCount = 0;
+  let failureCount = 0;
+
   try {
     // Get all active markets from our database
     const markets = await db.query(`
-      SELECT id, pm_market_id, yes_token_id, no_token_id
+      SELECT id, pm_market_id, yes_token_id, no_token_id, question
       FROM prediction_markets
       WHERE status = 'active'
     `);
 
-    console.log(`Syncing quotes for ${markets.length} active markets...`);
+    console.log(`[${new Date().toISOString()}] Syncing quotes for ${markets.length} active markets...`);
 
     for (const market of markets) {
       try {
         if (!market.yes_token_id || !market.no_token_id) {
-          console.warn(`Market ${market.id} missing token IDs, skipping`);
+          console.warn(`Market ${market.id} (${market.question}) missing token IDs, skipping`);
           continue;
         }
 
         const quotes = await polymarket.fetchQuotes(market.yes_token_id, market.no_token_id);
+
+        // Validate quotes
+        if (!quotes || typeof quotes.yes_bid === 'undefined') {
+          throw new Error('Invalid quote data received');
+        }
 
         // Insert new quote
         await db.exec(`
@@ -47,12 +60,35 @@ export const syncQuotes = async () => {
           )
         `, [market.id]);
 
+        successCount++;
+        // Reset failure count on success
+        syncFailures.set(market.id, 0);
+
       } catch (error) {
-        console.error(`Error syncing quotes for market ${market.id}:`, error);
+        failureCount++;
+        const failures = (syncFailures.get(market.id) || 0) + 1;
+        syncFailures.set(market.id, failures);
+
+        console.error(`Error syncing quotes for market ${market.id} (${market.question}):`, error.message);
+
+        // Pause market if too many consecutive failures
+        if (failures >= MAX_FAILURES) {
+          console.error(`Market ${market.id} has failed ${failures} times, pausing market`);
+          try {
+            await db.exec(`
+              UPDATE prediction_markets
+              SET status = 'paused'
+              WHERE id = $1
+            `, [market.id]);
+          } catch (pauseError) {
+            console.error(`Failed to pause market ${market.id}:`, pauseError);
+          }
+        }
       }
     }
 
-    console.log('Quote sync complete');
+    const duration = Date.now() - startTime;
+    console.log(`[${new Date().toISOString()}] Quote sync complete: ${successCount} succeeded, ${failureCount} failed (${duration}ms)`);
   } catch (error) {
     console.error('Error in syncQuotes:', error);
   }

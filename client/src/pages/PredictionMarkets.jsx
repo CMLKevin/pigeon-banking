@@ -10,6 +10,7 @@ const PredictionMarkets = () => {
   const [wallet, setWallet] = useState(null);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all'); // all, active, resolved
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     loadData();
@@ -34,8 +35,16 @@ const PredictionMarkets = () => {
   };
 
   const filteredMarkets = markets.filter(m => {
-    if (filter === 'active') return m.status === 'active';
-    if (filter === 'resolved') return m.status === 'resolved';
+    // Filter by status
+    if (filter === 'active' && m.status !== 'active') return false;
+    if (filter === 'resolved' && m.status !== 'resolved') return false;
+    
+    // Filter by search query
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      return m.question.toLowerCase().includes(query);
+    }
+    
     return true;
   });
 
@@ -89,6 +98,32 @@ const PredictionMarkets = () => {
           </div>
         </div>
 
+        {/* Search Bar */}
+        <div className="mb-6">
+          <div className="relative">
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search markets..."
+              className="w-full px-5 py-4 pl-12 bg-phantom-bg-secondary border-2 border-phantom-border text-phantom-text-primary placeholder:text-phantom-text-tertiary rounded-2xl focus:outline-none focus:border-phantom-accent-primary focus:shadow-input transition-all duration-200"
+            />
+            <svg className="w-5 h-5 text-phantom-text-tertiary absolute left-4 top-1/2 transform -translate-y-1/2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="absolute right-4 top-1/2 transform -translate-y-1/2 text-phantom-text-tertiary hover:text-phantom-text-primary"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            )}
+          </div>
+        </div>
+
         {/* Filter Tabs */}
         <div className="mb-6 flex gap-2">
           {['all', 'active', 'resolved'].map((f) => (
@@ -101,7 +136,7 @@ const PredictionMarkets = () => {
                   : 'bg-phantom-bg-secondary text-phantom-text-secondary hover:text-phantom-text-primary hover:bg-phantom-bg-tertiary'
               }`}
             >
-              {f.charAt(0).toUpperCase() + f.slice(1)}
+              {f.charAt(0).toUpperCase() + f.slice(1)} ({markets.filter(m => f === 'all' || m.status === f).length})
             </button>
           ))}
         </div>

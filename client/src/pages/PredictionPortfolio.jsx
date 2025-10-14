@@ -27,6 +27,43 @@ const PredictionPortfolio = () => {
     }
   };
 
+  const exportToCSV = () => {
+    if (!portfolio?.trades || portfolio.trades.length === 0) {
+      alert('No trades to export');
+      return;
+    }
+
+    // Prepare CSV data
+    const headers = ['Date', 'Market', 'Side', 'Action', 'Quantity', 'Price', 'Cost (Agon)', 'Status'];
+    const rows = portfolio.trades.map(trade => [
+      new Date(trade.created_at).toLocaleString(),
+      trade.market_question,
+      trade.side.toUpperCase(),
+      trade.action,
+      trade.quantity,
+      trade.exec_price,
+      trade.cost_agon,
+      trade.status
+    ]);
+
+    // Build CSV string
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
+    ].join('\n');
+
+    // Create download link
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `prediction-trades-${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-dark">
@@ -58,14 +95,25 @@ const PredictionPortfolio = () => {
               Track your positions and performance
             </p>
           </div>
-          <Link to="/prediction-markets">
-            <button className="px-6 py-3 bg-gradient-phantom text-white font-bold rounded-2xl hover:shadow-glow transition-all duration-200">
-              <svg className="w-5 h-5 inline mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+          <div className="flex gap-3">
+            <button
+              onClick={exportToCSV}
+              className="px-4 py-2 bg-phantom-bg-secondary border border-phantom-border text-phantom-text-primary rounded-xl hover:bg-phantom-bg-tertiary transition-colors flex items-center gap-2"
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
+              Export Trades
+            </button>
+            <Link to="/prediction-markets">
+              <button className="px-6 py-3 bg-gradient-phantom text-white font-bold rounded-2xl hover:shadow-glow transition-all duration-200 flex items-center gap-2">
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                </svg>
               Browse Markets
             </button>
           </Link>
+          </div>
         </div>
 
         {/* Portfolio Summary */}
