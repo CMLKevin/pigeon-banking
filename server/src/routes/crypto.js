@@ -1,11 +1,11 @@
 import express from 'express';
 import * as cryptoController from '../controllers/cryptoController.js';
-import { requireAuth } from '../middleware/auth.js';
+import { authenticateToken } from '../middleware/auth.js';
 
 const router = express.Router();
 
 // All routes require authentication
-router.use(requireAuth);
+router.use(authenticateToken);
 
 // Get current prices for all supported coins
 router.get('/prices', cryptoController.getCurrentPrices);
