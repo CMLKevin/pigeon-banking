@@ -94,6 +94,7 @@ export const predictionAPI = {
   updateMarketStatus: (id, status) => api.put(`/prediction/admin/markets/${id}/status`, { status }),
   removeMarket: (id) => api.delete(`/prediction/admin/markets/${id}`),
   triggerSettlement: (id, outcome) => api.post(`/prediction/admin/markets/${id}/settle`, { outcome }),
+  repairMarket: (id) => api.post(`/prediction/admin/markets/${id}/repair`),
   getPlatformStats: () => api.get('/prediction/admin/stats'),
 };
 

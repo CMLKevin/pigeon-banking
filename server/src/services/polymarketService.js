@@ -171,8 +171,14 @@ export const fetchActiveMarkets = async () => {
 
 // Fetch market details by condition_id
 export const fetchMarketDetails = async (conditionId) => {
+  const functionStart = Date.now();
+  console.log(`\n[fetchMarketDetails] 🚀 Fetching details for market: ${conditionId}`);
+  
   try {
-    const response = await fetchWithTimeout(`${POLYMARKET_API_BASE}/markets/${conditionId}`, {
+    const url = `${POLYMARKET_API_BASE}/markets/${conditionId}`;
+    console.log(`[fetchMarketDetails] 🔗 URL: ${url}`);
+    
+    const response = await fetchWithTimeout(url, {
       headers: {
         'Accept': 'application/json',
         'User-Agent': 'PhantomPay/1.0'
@@ -180,12 +186,34 @@ export const fetchMarketDetails = async (conditionId) => {
     });
 
     if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`[fetchMarketDetails] ❌ API error ${response.status}: ${errorText.substring(0, 200)}`);
       throw new Error(`Polymarket API error: ${response.status}`);
     }
 
-    return await response.json();
+    const marketData = await response.json();
+    const duration = Date.now() - functionStart;
+    
+    console.log(`[fetchMarketDetails] ✓ Market data received (${duration}ms)`);
+    console.log(`[fetchMarketDetails] 📋 Market structure:`, {
+      id: marketData.id,
+      condition_id: marketData.condition_id,
+      question: marketData.question?.substring(0, 60) + '...',
+      tokens: marketData.tokens?.length || 0,
+      outcomes: marketData.outcomes,
+      hasTokens: !!marketData.tokens,
+      tokenStructure: marketData.tokens ? marketData.tokens.map(t => ({ 
+        token_id: t.token_id, 
+        outcome: t.outcome,
+        winner: t.winner 
+      })) : []
+    });
+
+    return marketData;
   } catch (error) {
-    console.error('Error fetching market details from Polymarket:', error);
+    const duration = Date.now() - functionStart;
+    console.error(`[fetchMarketDetails] ❌ FAILED after ${duration}ms`);
+    console.error(`[fetchMarketDetails] Error:`, error.message);
     throw error;
   }
 };

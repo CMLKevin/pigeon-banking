@@ -67,6 +67,7 @@ export const whitelistMarket = async (req, res) => {
     }
 
     // Fetch market details from Polymarket
+    console.log(`[whitelistMarket] Fetching market details for: ${pm_market_id}`);
     const marketData = await polymarket.fetchMarketDetails(pm_market_id);
 
     if (!marketData) {
@@ -77,14 +78,35 @@ export const whitelistMarket = async (req, res) => {
     const tokens = marketData.tokens || [];
     const outcomes = marketData.outcomes || ['No', 'Yes'];
     
+    console.log(`[whitelistMarket] Token extraction:`, {
+      tokenCount: tokens.length,
+      outcomes,
+      tokens: tokens.map(t => ({ token_id: t.token_id, outcome: t.outcome }))
+    });
+    
     // Find YES and NO tokens
     let yesTokenId = null;
     let noTokenId = null;
 
     if (tokens.length >= 2) {
-      // Typically index 1 is YES, index 0 is NO
-      noTokenId = tokens[0]?.token_id;
-      yesTokenId = tokens[1]?.token_id;
+      // Try matching by outcome name first
+      const yesToken = tokens.find(t => t.outcome?.toLowerCase() === 'yes');
+      const noToken = tokens.find(t => t.outcome?.toLowerCase() === 'no');
+      
+      if (yesToken && noToken) {
+        yesTokenId = yesToken.token_id;
+        noTokenId = noToken.token_id;
+      } else {
+        // Fallback: index 1 is YES, index 0 is NO
+        noTokenId = tokens[0]?.token_id;
+        yesTokenId = tokens[1]?.token_id;
+      }
+    }
+    
+    console.log(`[whitelistMarket] Extracted token IDs:`, { yesTokenId, noTokenId });
+    
+    if (!yesTokenId || !noTokenId) {
+      console.warn(`[whitelistMarket] ⚠️ WARNING: Missing token IDs for market ${pm_market_id}`);
     }
 
     // Insert market
@@ -315,6 +337,109 @@ export const triggerSettlement = async (req, res) => {
   } catch (error) {
     console.error('Trigger settlement error:', error);
     res.status(500).json({ error: 'Failed to trigger settlement' });
+  }
+};
+
+// Repair market token IDs (for markets with missing token IDs)
+export const repairMarketTokens = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    console.log(`[repairMarketTokens] Starting repair for market ID: ${id}`);
+
+    const market = await db.queryOne('SELECT * FROM prediction_markets WHERE id = $1', [id]);
+    if (!market) {
+      return res.status(404).json({ error: 'Market not found' });
+    }
+
+    // Check if already has token IDs
+    if (market.yes_token_id && market.no_token_id) {
+      return res.json({ 
+        message: 'Market already has token IDs', 
+        yesTokenId: market.yes_token_id,
+        noTokenId: market.no_token_id 
+      });
+    }
+
+    console.log(`[repairMarketTokens] Market missing tokens:`, {
+      id: market.id,
+      pm_market_id: market.pm_market_id,
+      question: market.question,
+      yes_token_id: market.yes_token_id,
+      no_token_id: market.no_token_id
+    });
+
+    // Fetch market details from Polymarket
+    const marketData = await polymarket.fetchMarketDetails(market.pm_market_id);
+
+    if (!marketData) {
+      return res.status(404).json({ error: 'Market not found on Polymarket' });
+    }
+
+    // Extract token IDs
+    const tokens = marketData.tokens || [];
+    let yesTokenId = null;
+    let noTokenId = null;
+
+    if (tokens.length >= 2) {
+      // Try matching by outcome name first
+      const yesToken = tokens.find(t => t.outcome?.toLowerCase() === 'yes');
+      const noToken = tokens.find(t => t.outcome?.toLowerCase() === 'no');
+      
+      if (yesToken && noToken) {
+        yesTokenId = yesToken.token_id;
+        noTokenId = noToken.token_id;
+      } else {
+        // Fallback: index 1 is YES, index 0 is NO
+        noTokenId = tokens[0]?.token_id;
+        yesTokenId = tokens[1]?.token_id;
+      }
+    }
+
+    if (!yesTokenId || !noTokenId) {
+      console.error(`[repairMarketTokens] Could not extract token IDs from Polymarket response`);
+      return res.status(400).json({ 
+        error: 'Could not extract token IDs from Polymarket',
+        tokens: tokens.map(t => ({ token_id: t.token_id, outcome: t.outcome }))
+      });
+    }
+
+    console.log(`[repairMarketTokens] Updating market with token IDs:`, { yesTokenId, noTokenId });
+
+    // Update market with token IDs
+    await db.exec(`
+      UPDATE prediction_markets
+      SET yes_token_id = $1, no_token_id = $2, updated_at = NOW()
+      WHERE id = $3
+    `, [yesTokenId, noTokenId, id]);
+
+    // Try to fetch initial quote
+    try {
+      const quotes = await polymarket.fetchQuotes(yesTokenId, noTokenId);
+      await db.exec(`
+        INSERT INTO prediction_quotes (market_id, yes_bid, yes_ask, no_bid, no_ask, src_timestamp)
+        VALUES ($1, $2, $3, $4, $5, $6)
+      `, [
+        id,
+        quotes.yes_bid,
+        quotes.yes_ask,
+        quotes.no_bid,
+        quotes.no_ask,
+        quotes.src_timestamp
+      ]);
+      console.log(`[repairMarketTokens] Initial quote fetched successfully`);
+    } catch (error) {
+      console.error(`[repairMarketTokens] Error fetching initial quote:`, error);
+    }
+
+    res.json({ 
+      message: 'Market token IDs repaired successfully',
+      yesTokenId,
+      noTokenId
+    });
+  } catch (error) {
+    console.error('[repairMarketTokens] Error:', error);
+    res.status(500).json({ error: 'Failed to repair market token IDs' });
   }
 };
 

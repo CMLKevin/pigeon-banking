@@ -12,7 +12,8 @@ import {
   updateMarketStatus,
   getPlatformStats,
   removeMarket,
-  triggerSettlement
+  triggerSettlement,
+  repairMarketTokens
 } from '../controllers/predictionAdminController.js';
 
 const router = express.Router();
@@ -29,6 +30,7 @@ router.post('/admin/markets/whitelist', authenticateToken, requireAdmin, whiteli
 router.put('/admin/markets/:id/status', authenticateToken, requireAdmin, updateMarketStatus);
 router.delete('/admin/markets/:id', authenticateToken, requireAdmin, removeMarket);
 router.post('/admin/markets/:id/settle', authenticateToken, requireAdmin, triggerSettlement);
+router.post('/admin/markets/:id/repair', authenticateToken, requireAdmin, repairMarketTokens);
 router.get('/admin/stats', authenticateToken, requireAdmin, getPlatformStats);
 
 export default router;

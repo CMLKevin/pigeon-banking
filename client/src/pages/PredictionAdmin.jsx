@@ -104,6 +104,20 @@ const PredictionAdmin = () => {
     }
   };
 
+  const handleRepair = async (id) => {
+    setError('');
+    setSuccess('');
+
+    try {
+      const res = await predictionAPI.repairMarket(id);
+      setSuccess(`Market repaired! Token IDs: ${res.data.yesTokenId?.substring(0, 10)}... / ${res.data.noTokenId?.substring(0, 10)}...`);
+      await loadAvailableMarkets();
+      setTimeout(() => setSuccess(''), 5000);
+    } catch (err) {
+      setError(err.response?.data?.error || 'Failed to repair market');
+    }
+  };
+
   if (!user?.is_admin) {
     return null;
   }
@@ -304,6 +318,14 @@ const PredictionAdmin = () => {
                             }`}>
                               {market.status}
                             </span>
+                            {(!market.yes_token_id || !market.no_token_id) && (
+                              <span className="px-2 py-1 rounded-lg text-xs font-medium bg-red-500/20 text-red-500 flex items-center gap-1">
+                                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                </svg>
+                                Missing Token IDs
+                              </span>
+                            )}
                           </div>
                           <p className="text-xs text-phantom-text-tertiary font-mono mb-2">
                             ID: {market.pm_market_id}
@@ -315,6 +337,15 @@ const PredictionAdmin = () => {
                           )}
                         </div>
                         <div className="flex gap-2">
+                          {(!market.yes_token_id || !market.no_token_id) && (
+                            <Button
+                              size="small"
+                              onClick={() => handleRepair(market.id)}
+                              className="bg-orange-500/20 hover:bg-orange-500/30 text-orange-500"
+                            >
+                              🔧 Repair
+                            </Button>
+                          )}
                           {market.status === 'active' && (
                             <Button
                               size="small"
