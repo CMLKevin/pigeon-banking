@@ -136,23 +136,51 @@ export const fetchActiveMarkets = async () => {
       final: activeMarkets.length
     });
 
-    const mappedMarkets = activeMarkets.map(m => ({
-      pm_market_id: m.condition_id || m.id,
-      question: m.question,
-      end_date: m.end_date_iso,
-      outcomes: m.outcomes,
-      tokens: m.tokens,
-      volume: m.volume,
-      liquidity: m.liquidity,
-      metadata: {
-        description: m.description,
-        market_slug: m.market_slug,
-        image: m.image,
-        icon: m.icon,
-        category: m.category,
-        tags: m.tags || []
+    const mappedMarkets = activeMarkets.map(m => {
+      // Parse outcomes and clobTokenIds from JSON strings
+      let outcomes = [];
+      let clobTokenIds = [];
+      
+      try {
+        outcomes = typeof m.outcomes === 'string' ? JSON.parse(m.outcomes) : m.outcomes || [];
+      } catch (e) {
+        console.warn(`Failed to parse outcomes for market ${m.id}:`, e.message);
+        outcomes = ['No', 'Yes']; // Default fallback
       }
-    }));
+      
+      try {
+        clobTokenIds = typeof m.clobTokenIds === 'string' ? JSON.parse(m.clobTokenIds) : m.clobTokenIds || [];
+      } catch (e) {
+        console.warn(`Failed to parse clobTokenIds for market ${m.id}:`, e.message);
+        clobTokenIds = [];
+      }
+      
+      // Build tokens array from clobTokenIds
+      const tokens = clobTokenIds.map((tokenId, index) => ({
+        token_id: tokenId,
+        outcome: outcomes[index] || (index === 0 ? 'No' : 'Yes')
+      }));
+      
+      return {
+        pm_market_id: m.conditionId || m.condition_id || m.id,
+        question: m.question,
+        end_date: m.endDateIso || m.end_date_iso,
+        outcomes,
+        tokens,
+        clobTokenIds,
+        volume: m.volume,
+        liquidity: m.liquidity,
+        enableOrderBook: m.enableOrderBook !== false, // Assume true unless explicitly false
+        metadata: {
+          description: m.description,
+          market_slug: m.slug || m.market_slug,
+          image: m.image,
+          icon: m.icon,
+          category: m.category,
+          tags: m.tags || []
+        }
+      };
+    });
     
     const duration = Date.now() - functionStart;
     console.log(`[fetchActiveMarkets] ✅ Success! Returning ${mappedMarkets.length} markets (${duration}ms total)\n`);
@@ -170,69 +198,78 @@ export const fetchActiveMarkets = async () => {
 };
 
 // Fetch market details by condition_id
-export const fetchMarketDetails = async (marketIdentifier) => {
+export const fetchMarketDetails = async (conditionId) => {
   const functionStart = Date.now();
-  console.log(`\n[fetchMarketDetails] 🚀 Fetching details for: ${marketIdentifier}`);
+  console.log(`\n[fetchMarketDetails] 🚀 Fetching details for market: ${conditionId}`);
   
   try {
-    let marketData = null;
+    const url = `${POLYMARKET_API_BASE}/markets/${conditionId}`;
+    console.log(`[fetchMarketDetails] 🔗 URL: ${url}`);
+    
+    const response = await fetchWithTimeout(url, {
+      headers: {
+        'Accept': 'application/json',
+        'User-Agent': 'PhantomPay/1.0'
+      }
+    });
 
-    if (typeof marketIdentifier === 'string' && marketIdentifier.startsWith('0x')) {
-      // Treat as condition_id; query by condition_id
-      const url = `${POLYMARKET_API_BASE}/markets?condition_id=${marketIdentifier}&limit=1`;
-      console.log(`[fetchMarketDetails] 🔗 URL (by condition_id): ${url}`);
-      const response = await fetchWithTimeout(url, {
-        headers: {
-          'Accept': 'application/json',
-          'User-Agent': 'PhantomPay/1.0'
-        }
-      });
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error(`[fetchMarketDetails] ❌ API error ${response.status}: ${errorText.substring(0, 200)}`);
-        throw new Error(`Polymarket API error: ${response.status}`);
-      }
-      const results = await response.json();
-      marketData = Array.isArray(results) && results.length > 0 ? results[0] : null;
-    } else {
-      // Treat as numeric market id
-      const url = `${POLYMARKET_API_BASE}/markets/${marketIdentifier}`;
-      console.log(`[fetchMarketDetails] 🔗 URL (by id): ${url}`);
-      const response = await fetchWithTimeout(url, {
-        headers: {
-          'Accept': 'application/json',
-          'User-Agent': 'PhantomPay/1.0'
-        }
-      });
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error(`[fetchMarketDetails] ❌ API error ${response.status}: ${errorText.substring(0, 200)}`);
-        throw new Error(`Polymarket API error: ${response.status}`);
-      }
-      marketData = await response.json();
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`[fetchMarketDetails] ❌ API error ${response.status}: ${errorText.substring(0, 200)}`);
+      throw new Error(`Polymarket API error: ${response.status}`);
     }
 
-    if (!marketData) {
-      throw new Error('Market not found in Polymarket API response');
-    }
-
+    const marketData = await response.json();
     const duration = Date.now() - functionStart;
+    
+    // Parse outcomes and clobTokenIds from JSON strings
+    let outcomes = [];
+    let clobTokenIds = [];
+    
+    try {
+      outcomes = typeof marketData.outcomes === 'string' ? JSON.parse(marketData.outcomes) : marketData.outcomes || [];
+    } catch (e) {
+      console.warn(`Failed to parse outcomes:`, e.message);
+      outcomes = ['No', 'Yes'];
+    }
+    
+    try {
+      clobTokenIds = typeof marketData.clobTokenIds === 'string' ? JSON.parse(marketData.clobTokenIds) : marketData.clobTokenIds || [];
+    } catch (e) {
+      console.warn(`Failed to parse clobTokenIds:`, e.message);
+      clobTokenIds = [];
+    }
+    
+    // Build tokens array from clobTokenIds
+    const tokens = clobTokenIds.map((tokenId, index) => ({
+      token_id: tokenId,
+      outcome: outcomes[index] || (index === 0 ? 'No' : 'Yes')
+    }));
+    
     console.log(`[fetchMarketDetails] ✓ Market data received (${duration}ms)`);
     console.log(`[fetchMarketDetails] 📋 Market structure:`, {
       id: marketData.id,
-      condition_id: marketData.condition_id,
+      conditionId: marketData.conditionId || marketData.condition_id,
       question: marketData.question?.substring(0, 60) + '...',
-      tokens: marketData.tokens?.length || 0,
-      outcomes: marketData.outcomes,
-      hasTokens: !!marketData.tokens,
-      tokenStructure: marketData.tokens ? marketData.tokens.map(t => ({ 
-        token_id: t.token_id, 
-        outcome: t.outcome,
-        winner: t.winner 
-      })) : []
+      clobTokenIds: clobTokenIds.length,
+      outcomes: outcomes,
+      hasTokens: tokens.length > 0,
+      tokenStructure: tokens.map(t => ({ 
+        token_id: t.token_id?.substring(0, 20) + '...', 
+        outcome: t.outcome
+      }))
     });
 
-    return marketData;
+    // Return normalized market data
+    return {
+      ...marketData,
+      outcomes,
+      tokens,
+      clobTokenIds,
+      condition_id: marketData.conditionId || marketData.condition_id,
+      end_date_iso: marketData.endDateIso || marketData.end_date_iso,
+      market_slug: marketData.slug || marketData.market_slug
+    };
   } catch (error) {
     const duration = Date.now() - functionStart;
     console.error(`[fetchMarketDetails] ❌ FAILED after ${duration}ms`);
@@ -256,25 +293,7 @@ export const fetchOrderBook = async (tokenId) => {
     }
 
     const book = await response.json();
-    // Normalize possible formats: arrays [[price, size], ...] or objects { p, q }
-    const normalize = (levels) => {
-      if (!Array.isArray(levels)) return [];
-      return levels.map((lvl) => {
-        if (Array.isArray(lvl)) {
-          const price = parseFloat(lvl[0]);
-          const size = parseFloat(lvl[1] ?? 0);
-          return { price, size };
-        }
-        const price = parseFloat(lvl.price ?? lvl.p ?? 0);
-        const size = parseFloat(lvl.size ?? lvl.q ?? 0);
-        return { price, size };
-      });
-    };
-
-    return {
-      bids: normalize(book.bids),
-      asks: normalize(book.asks)
-    };
+    return book;
   } catch (error) {
     console.error('Error fetching order book from Polymarket:', error);
     return { bids: [], asks: [] };
@@ -340,17 +359,30 @@ export const fetchQuotes = async (yesTokenId, noTokenId) => {
 export const checkMarketResolution = async (conditionId) => {
   try {
     const market = await fetchMarketDetails(conditionId);
-    const closed = market.closed === true || market.state === 'closed';
-    const resolved = market.resolved === true || Array.isArray(market.payout_numerators);
-
-    if (closed && resolved) {
-      const payoutNumerators = market.payout_numerators || [];
+    
+    if (market.closed && market.resolved) {
+      // Determine which outcome won
+      // Polymarket returns payoutNumerators array where winning outcome has value 1
+      let payoutNumerators = [];
+      
+      try {
+        payoutNumerators = typeof market.payoutNumerators === 'string' 
+          ? JSON.parse(market.payoutNumerators) 
+          : market.payoutNumerators || market.payout_numerators || [];
+      } catch (e) {
+        console.warn('Failed to parse payoutNumerators:', e.message);
+        return { resolved: false, outcome: null };
+      }
+      
       if (payoutNumerators.length >= 2) {
-        const n0 = typeof payoutNumerators[0] === 'string' ? payoutNumerators[0] : String(payoutNumerators[0]);
-        const n1 = typeof payoutNumerators[1] === 'string' ? payoutNumerators[1] : String(payoutNumerators[1]);
-        if (n1 === '1') return { resolved: true, outcome: 'yes' };
-        if (n0 === '1') return { resolved: true, outcome: 'no' };
-        return { resolved: true, outcome: 'invalid' };
+        // Index 0 is typically NO, index 1 is YES
+        if (payoutNumerators[1] === '1' || payoutNumerators[1] === 1) {
+          return { resolved: true, outcome: 'yes' };
+        } else if (payoutNumerators[0] === '1' || payoutNumerators[0] === 1) {
+          return { resolved: true, outcome: 'no' };
+        } else {
+          return { resolved: true, outcome: 'invalid' };
+        }
       }
     }
 
@@ -390,11 +422,19 @@ export const fetchResolutions = async () => {
 
 // Helper to determine outcome from payout numerators
 const determineOutcome = (payoutNumerators) => {
-  if (!payoutNumerators || payoutNumerators.length < 2) return null;
-  const n0 = typeof payoutNumerators[0] === 'string' ? payoutNumerators[0] : String(payoutNumerators[0]);
-  const n1 = typeof payoutNumerators[1] === 'string' ? payoutNumerators[1] : String(payoutNumerators[1]);
-  if (n1 === '1') return 'yes';
-  if (n0 === '1') return 'no';
+  if (!payoutNumerators) return null;
+  
+  let parsed = [];
+  try {
+    parsed = typeof payoutNumerators === 'string' ? JSON.parse(payoutNumerators) : payoutNumerators;
+  } catch (e) {
+    return null;
+  }
+  
+  if (parsed.length < 2) return null;
+  
+  if (parsed[1] === '1' || parsed[1] === 1) return 'yes';
+  if (parsed[0] === '1' || parsed[0] === 1) return 'no';
   return 'invalid';
 };
 

@@ -74,14 +74,19 @@ export const whitelistMarket = async (req, res) => {
       return res.status(404).json({ error: 'Market not found on Polymarket' });
     }
 
-    // Extract token IDs for YES and NO
+    // Extract token IDs for YES and NO (already normalized by fetchMarketDetails)
     const tokens = marketData.tokens || [];
     const outcomes = marketData.outcomes || ['No', 'Yes'];
+    const clobTokenIds = marketData.clobTokenIds || [];
     
     console.log(`[whitelistMarket] Token extraction:`, {
       tokenCount: tokens.length,
+      clobTokenIds: clobTokenIds.length,
       outcomes,
-      tokens: tokens.map(t => ({ token_id: t.token_id, outcome: t.outcome }))
+      tokens: tokens.map(t => ({ 
+        token_id: t.token_id ? t.token_id.substring(0, 20) + '...' : 'null', 
+        outcome: t.outcome 
+      }))
     });
     
     // Find YES and NO tokens
@@ -101,12 +106,24 @@ export const whitelistMarket = async (req, res) => {
         noTokenId = tokens[0]?.token_id;
         yesTokenId = tokens[1]?.token_id;
       }
+    } else if (clobTokenIds.length >= 2) {
+      // Fallback to raw clobTokenIds if tokens array not built
+      // Index 0 is typically NO, index 1 is YES
+      noTokenId = clobTokenIds[0];
+      yesTokenId = clobTokenIds[1];
     }
     
-    console.log(`[whitelistMarket] Extracted token IDs:`, { yesTokenId, noTokenId });
+    console.log(`[whitelistMarket] Extracted token IDs:`, { 
+      yesTokenId: yesTokenId ? yesTokenId.substring(0, 20) + '...' : null,
+      noTokenId: noTokenId ? noTokenId.substring(0, 20) + '...' : null
+    });
     
     if (!yesTokenId || !noTokenId) {
-      console.warn(`[whitelistMarket] ⚠️ WARNING: Missing token IDs for market ${pm_market_id}`);
+      console.error(`[whitelistMarket] ❌ ERROR: Missing token IDs for market ${pm_market_id}`);
+      return res.status(400).json({ 
+        error: 'Market does not have valid token IDs. This market may not support order book trading.',
+        details: { tokens, clobTokenIds, outcomes }
+      });
     }
 
     // Insert market
@@ -376,8 +393,9 @@ export const repairMarketTokens = async (req, res) => {
       return res.status(404).json({ error: 'Market not found on Polymarket' });
     }
 
-    // Extract token IDs
+    // Extract token IDs (already normalized by fetchMarketDetails)
     const tokens = marketData.tokens || [];
+    const clobTokenIds = marketData.clobTokenIds || [];
     let yesTokenId = null;
     let noTokenId = null;
 
@@ -394,13 +412,21 @@ export const repairMarketTokens = async (req, res) => {
         noTokenId = tokens[0]?.token_id;
         yesTokenId = tokens[1]?.token_id;
       }
+    } else if (clobTokenIds.length >= 2) {
+      // Fallback to raw clobTokenIds
+      noTokenId = clobTokenIds[0];
+      yesTokenId = clobTokenIds[1];
     }
 
     if (!yesTokenId || !noTokenId) {
       console.error(`[repairMarketTokens] Could not extract token IDs from Polymarket response`);
       return res.status(400).json({ 
-        error: 'Could not extract token IDs from Polymarket',
-        tokens: tokens.map(t => ({ token_id: t.token_id, outcome: t.outcome }))
+        error: 'Could not extract token IDs from Polymarket. This market may not support order book trading.',
+        tokens: tokens.map(t => ({ 
+          token_id: t.token_id ? t.token_id.substring(0, 20) + '...' : 'null', 
+          outcome: t.outcome 
+        })),
+        clobTokenIds: clobTokenIds.map(id => id ? id.substring(0, 20) + '...' : 'null')
       });
     }
 
