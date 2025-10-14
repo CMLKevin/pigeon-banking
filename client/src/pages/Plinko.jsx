@@ -864,7 +864,7 @@ const Plinko = () => {
                       <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${
                         multiplier >= 1 ? 'bg-green-500/20 text-green-500' : 'bg-red-500/20 text-red-500'
                       }`}>
-                        {multiplier.toFixed(1)}x
+                        {Number(multiplier || 0).toFixed(1)}x
                       </div>
                       <div>
                         <p className="text-sm font-semibold text-phantom-text-primary">

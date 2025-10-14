@@ -279,13 +279,13 @@ const PredictionPortfolio = () => {
                       <div>
                         <p className="text-xs text-phantom-text-tertiary mb-1">Avg Price</p>
                         <p className="text-sm font-bold text-phantom-text-primary">
-                          Ⱥ {position.avg_price.toFixed(3)}
+                          Ⱥ {Number(position.avg_price || 0).toFixed(3)}
                         </p>
                       </div>
                       <div>
                         <p className="text-xs text-phantom-text-tertiary mb-1">Current Price</p>
                         <p className="text-sm font-bold text-phantom-text-primary">
-                          Ⱥ {position.currentPrice.toFixed(3)}
+                          Ⱥ {Number(position.currentPrice || 0).toFixed(3)}
                         </p>
                       </div>
                       <div>
@@ -337,7 +337,7 @@ const PredictionPortfolio = () => {
                     </div>
                     <div className="text-right">
                       <p className="text-sm font-semibold text-phantom-text-primary">
-                        @ Ⱥ {parseFloat(trade.exec_price).toFixed(3)}
+                        @ Ⱥ {Number(parseFloat(trade.exec_price) || 0).toFixed(3)}
                       </p>
                       <p className="text-xs text-phantom-text-tertiary">
                         {new Date(trade.created_at).toLocaleDateString()}

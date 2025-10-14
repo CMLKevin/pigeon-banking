@@ -63,7 +63,7 @@ const ProbabilityChart = ({ quotes, height = 260 }) => {
     <div className="bg-phantom-bg-secondary p-6 rounded-2xl border border-phantom-border">
       <div className="mb-3 flex items-center justify-between">
         <h3 className="text-lg font-semibold text-phantom-text-primary">YES Probability</h3>
-        <span className="text-sm text-phantom-text-tertiary">Last: {(points[points.length - 1].p * 100).toFixed(1)}%</span>
+        <span className="text-sm text-phantom-text-tertiary">Last: {Number((points[points.length - 1]?.p || 0) * 100).toFixed(1)}%</span>
       </div>
       <div className="overflow-x-auto">
         <svg width={width} height={height} className="text-phantom-text-tertiary select-none">
@@ -73,7 +73,7 @@ const ProbabilityChart = ({ quotes, height = 260 }) => {
               <g key={idx}>
                 <line x1={0} y1={t.y} x2={chartWidth} y2={t.y} stroke="currentColor" strokeOpacity="0.08" />
                 <text x={-10} y={t.y} textAnchor="end" alignmentBaseline="middle" className="text-xs fill-current">
-                  {(t.p * 100).toFixed(0)}%
+                  {Number((t?.p || 0) * 100).toFixed(0)}%
                 </text>
               </g>
             ))}

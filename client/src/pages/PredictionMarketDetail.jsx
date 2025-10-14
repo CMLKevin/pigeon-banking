@@ -179,16 +179,16 @@ const PredictionMarketDetail = () => {
                   <div className="p-6 bg-gradient-to-br from-green-500/10 to-green-600/5 border-2 border-green-500/30 rounded-2xl">
                     <p className="text-sm text-phantom-text-tertiary mb-2">YES</p>
                     <p className="text-4xl font-bold text-green-500 mb-4">
-                      {(yesMid * 100).toFixed(1)}¢
+                      {Number((yesMid || 0) * 100).toFixed(1)}¢
                     </p>
                     <div className="space-y-2">
                       <div className="flex justify-between text-sm">
                         <span className="text-phantom-text-tertiary">Buy (Ask):</span>
-                        <span className="text-phantom-text-primary font-semibold">{(parseFloat(lastQuote.yes_ask) * 100).toFixed(1)}¢</span>
+                        <span className="text-phantom-text-primary font-semibold">{Number((parseFloat(lastQuote.yes_ask) || 0) * 100).toFixed(1)}¢</span>
                       </div>
                       <div className="flex justify-between text-sm">
                         <span className="text-phantom-text-tertiary">Sell (Bid):</span>
-                        <span className="text-phantom-text-primary font-semibold">{(parseFloat(lastQuote.yes_bid) * 100).toFixed(1)}¢</span>
+                        <span className="text-phantom-text-primary font-semibold">{Number((parseFloat(lastQuote.yes_bid) || 0) * 100).toFixed(1)}¢</span>
                       </div>
                     </div>
                   </div>
@@ -196,16 +196,16 @@ const PredictionMarketDetail = () => {
                   <div className="p-6 bg-gradient-to-br from-red-500/10 to-red-600/5 border-2 border-red-500/30 rounded-2xl">
                     <p className="text-sm text-phantom-text-tertiary mb-2">NO</p>
                     <p className="text-4xl font-bold text-red-500 mb-4">
-                      {(noMid * 100).toFixed(1)}¢
+                      {Number((noMid || 0) * 100).toFixed(1)}¢
                     </p>
                     <div className="space-y-2">
                       <div className="flex justify-between text-sm">
                         <span className="text-phantom-text-tertiary">Buy (Ask):</span>
-                        <span className="text-phantom-text-primary font-semibold">{(parseFloat(lastQuote.no_ask) * 100).toFixed(1)}¢</span>
+                        <span className="text-phantom-text-primary font-semibold">{Number((parseFloat(lastQuote.no_ask) || 0) * 100).toFixed(1)}¢</span>
                       </div>
                       <div className="flex justify-between text-sm">
                         <span className="text-phantom-text-tertiary">Sell (Bid):</span>
-                        <span className="text-phantom-text-primary font-semibold">{(parseFloat(lastQuote.no_bid) * 100).toFixed(1)}¢</span>
+                        <span className="text-phantom-text-primary font-semibold">{Number((parseFloat(lastQuote.no_bid) || 0) * 100).toFixed(1)}¢</span>
                       </div>
                     </div>
                   </div>
@@ -362,27 +362,27 @@ const PredictionMarketDetail = () => {
                       <div className="flex justify-between text-sm">
                         <span className="text-phantom-text-tertiary">Price per share:</span>
                         <span className="text-phantom-text-primary font-semibold">
-                          Ⱥ {getExecutionPrice().toFixed(3)}
+                          Ⱥ {Number(getExecutionPrice() || 0).toFixed(3)}
                         </span>
                       </div>
                       <div className="flex justify-between text-sm">
                         <span className="text-phantom-text-tertiary">Subtotal:</span>
                         <span className="text-phantom-text-primary">
-                          Ⱥ {(parseFloat(quantity) * getExecutionPrice()).toFixed(3)}
+                          Ⱥ {Number((parseFloat(quantity) || 0) * (getExecutionPrice() || 0)).toFixed(3)}
                         </span>
                       </div>
                       {action === 'buy' && (
                         <div className="flex justify-between text-sm">
                           <span className="text-phantom-text-tertiary">Fee (1%):</span>
                           <span className="text-phantom-text-primary">
-                            Ⱥ {(parseFloat(quantity) * getExecutionPrice() * 0.01).toFixed(3)}
+                            Ⱥ {Number((parseFloat(quantity) || 0) * (getExecutionPrice() || 0) * 0.01).toFixed(3)}
                           </span>
                         </div>
                       )}
                       <div className="flex justify-between font-bold pt-2 border-t border-phantom-border">
                         <span className="text-phantom-text-primary">Total:</span>
                         <span className="text-phantom-accent-primary">
-                          Ⱥ {estimateCost().toFixed(3)}
+                          Ⱥ {Number(estimateCost() || 0).toFixed(3)}
                         </span>
                       </div>
                     </div>

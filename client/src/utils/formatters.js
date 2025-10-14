@@ -1,5 +1,5 @@
 export const formatCurrency = (amount, currency = 'agon') => {
-  const formatted = parseFloat(amount).toFixed(2);
+  const formatted = Number(parseFloat(amount) || 0).toFixed(2);
   return formatted;
 };
 

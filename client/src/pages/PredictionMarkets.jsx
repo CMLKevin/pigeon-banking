@@ -195,27 +195,27 @@ const PredictionMarkets = () => {
                         <div className="p-4 bg-phantom-bg-tertiary/50 rounded-2xl">
                           <p className="text-xs text-phantom-text-tertiary mb-1">YES</p>
                           <p className={`text-2xl font-bold ${getPriceColor(yesMid)}`}>
-                            {(yesMid * 100).toFixed(1)}¢
+                            {Number((yesMid || 0) * 100).toFixed(1)}¢
                           </p>
                           <div className="mt-2 text-xs">
                             <span className="text-phantom-text-tertiary">Buy: </span>
-                            <span className="text-phantom-text-primary">{(parseFloat(quote.yes_ask) * 100).toFixed(1)}¢</span>
+                            <span className="text-phantom-text-primary">{Number((parseFloat(quote.yes_ask) || 0) * 100).toFixed(1)}¢</span>
                             <span className="text-phantom-text-tertiary mx-2">|</span>
                             <span className="text-phantom-text-tertiary">Sell: </span>
-                            <span className="text-phantom-text-primary">{(parseFloat(quote.yes_bid) * 100).toFixed(1)}¢</span>
+                            <span className="text-phantom-text-primary">{Number((parseFloat(quote.yes_bid) || 0) * 100).toFixed(1)}¢</span>
                           </div>
                         </div>
                         <div className="p-4 bg-phantom-bg-tertiary/50 rounded-2xl">
                           <p className="text-xs text-phantom-text-tertiary mb-1">NO</p>
                           <p className={`text-2xl font-bold ${getPriceColor(noMid)}`}>
-                            {(noMid * 100).toFixed(1)}¢
+                            {Number((noMid || 0) * 100).toFixed(1)}¢
                           </p>
                           <div className="mt-2 text-xs">
                             <span className="text-phantom-text-tertiary">Buy: </span>
-                            <span className="text-phantom-text-primary">{(parseFloat(quote.no_ask) * 100).toFixed(1)}¢</span>
+                            <span className="text-phantom-text-primary">{Number((parseFloat(quote.no_ask) || 0) * 100).toFixed(1)}¢</span>
                             <span className="text-phantom-text-tertiary mx-2">|</span>
                             <span className="text-phantom-text-tertiary">Sell: </span>
-                            <span className="text-phantom-text-primary">{(parseFloat(quote.no_bid) * 100).toFixed(1)}¢</span>
+                            <span className="text-phantom-text-primary">{Number((parseFloat(quote.no_bid) || 0) * 100).toFixed(1)}¢</span>
                           </div>
                         </div>
                       </div>
