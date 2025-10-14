@@ -8,12 +8,8 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      loadUser();
-    } else {
-      setLoading(false);
-    }
+    // Always try to load user via cookie-based session; token may not be in localStorage
+    loadUser();
   }, []);
 
   const loadUser = async () => {
@@ -30,6 +26,7 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (username, password) => {
     const response = await authAPI.login(username, password);
+    // Token is also set as httpOnly cookie; keep local copy for API header if needed
     localStorage.setItem('token', response.data.token);
     setUser(response.data.user);
     return response.data;
@@ -44,6 +41,8 @@ export const AuthProvider = ({ children }) => {
 
   const logout = () => {
     localStorage.removeItem('token');
+    // Clear cookie by setting expired (client-side best effort; server endpoint ideal)
+    document.cookie = 'pp_token=; Max-Age=0; path=/';
     setUser(null);
   };
 

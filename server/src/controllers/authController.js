@@ -1,9 +1,31 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import crypto from 'crypto';
 import db from '../config/database.js';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret_key_change_this_in_production';
-const JWT_EXPIRES_IN = '365d'; // 1 year - users stay logged in for a year
+const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '30d';
+const JWT_ISSUER = process.env.JWT_ISSUER || 'phantompay';
+const JWT_AUDIENCE = process.env.JWT_AUDIENCE || 'phantompay-users';
+
+function issueToken(userId, username, isAdmin, jti) {
+  return jwt.sign(
+    { id: userId, username, is_admin: !!isAdmin, jti },
+    JWT_SECRET,
+    { expiresIn: JWT_EXPIRES_IN, issuer: JWT_ISSUER, audience: JWT_AUDIENCE }
+  );
+}
+
+function setAuthCookie(res, token) {
+  const isProd = process.env.NODE_ENV === 'production';
+  res.cookie('pp_token', token, {
+    httpOnly: true,
+    secure: isProd,
+    sameSite: 'lax',
+    path: '/',
+    maxAge: 1000 * 60 * 60 * 24 * 30
+  });
+}
 
 export const signup = async (req, res) => {
   try {
@@ -63,9 +85,16 @@ export const signup = async (req, res) => {
     const initialStoneWorksDollar = hasBonus ? 100.0 : 0.0;
     await db.exec('INSERT INTO wallets (user_id, agon, stoneworks_dollar) VALUES ($1, $2, $3)', [userId, initialAgon, initialStoneWorksDollar]);
 
-    // Generate token
+    // Create session and token
     const fresh = await db.queryOne('SELECT id, username, is_admin FROM users WHERE id = $1', [userId]);
-    const token = jwt.sign({ id: fresh.id, username: fresh.username, is_admin: !!fresh.is_admin }, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
+    if (!JWT_SECRET) {
+      return res.status(500).json({ error: 'Server auth not configured' });
+    }
+    const jti = crypto.randomUUID();
+    const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+    await db.exec('INSERT INTO user_sessions (jti, user_id, created_at, expires_at, revoked) VALUES ($1, $2, NOW(), $3, FALSE)', [jti, fresh.id, expiresAt]);
+    const token = issueToken(fresh.id, fresh.username, fresh.is_admin, jti);
+    setAuthCookie(res, token);
 
     res.status(201).json({
       message: hasBonus ? 'User created successfully with signup bonus!' : 'User created successfully',
@@ -104,10 +133,14 @@ export const login = async (req, res) => {
       return res.status(401).json({ error: 'Invalid username or password' });
     }
 
-    // Generate token
-    const token = jwt.sign({ id: user.id, username: user.username, is_admin: !!user.is_admin }, JWT_SECRET, { 
-      expiresIn: JWT_EXPIRES_IN 
-    });
+    if (!JWT_SECRET) {
+      return res.status(500).json({ error: 'Server auth not configured' });
+    }
+    const jti = crypto.randomUUID();
+    const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+    await db.exec('INSERT INTO user_sessions (jti, user_id, created_at, expires_at, revoked) VALUES ($1, $2, NOW(), $3, FALSE)', [jti, user.id, expiresAt]);
+    const token = issueToken(user.id, user.username, user.is_admin, jti);
+    setAuthCookie(res, token);
 
     res.json({
       message: 'Login successful',

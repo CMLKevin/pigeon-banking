@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -13,6 +14,7 @@ import gameRoutes from './routes/games.js';
 import predictionRoutes from './routes/prediction.js';
 import cryptoRoutes from './routes/crypto.js';
 import db from './config/database.js';
+import cookieParser from 'cookie-parser';
 import { startSyncJobs, stopSyncJobs } from './jobs/predictionSync.js';
 import * as coinGeckoService from './services/coingeckoService.js';
 
@@ -38,8 +40,18 @@ if (missingVars.length > 0) {
 }
 
 // Middleware
-app.use(cors());
+const allowedOrigins = (process.env.CORS_ORIGINS || '').split(',').map(s => s.trim()).filter(Boolean);
+app.use(cors({
+  origin: function(origin, cb) {
+    if (!origin) return cb(null, true); // Allow same-origin and curl
+    if (allowedOrigins.length === 0 || allowedOrigins.includes(origin)) return cb(null, true);
+    return cb(new Error('Not allowed by CORS'));
+  },
+  credentials: true
+}));
+app.use(cookieParser());
 app.use(express.json());
+app.use(cookieParser());
 
 // Health check
 app.get('/health', (req, res) => {

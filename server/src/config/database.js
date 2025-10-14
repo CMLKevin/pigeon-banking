@@ -104,6 +104,17 @@ const tx = async (fn) => {
 };
 
 const initSchema = async () => {
+  // Sessions
+  await exec(`
+    CREATE TABLE IF NOT EXISTS user_sessions (
+      jti TEXT PRIMARY KEY,
+      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      expires_at TIMESTAMPTZ,
+      revoked BOOLEAN NOT NULL DEFAULT FALSE
+    )
+  `);
+
   // Users
   await exec(`
     CREATE TABLE IF NOT EXISTS users (
