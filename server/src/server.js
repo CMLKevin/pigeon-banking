@@ -14,7 +14,7 @@ import predictionRoutes from './routes/prediction.js';
 import cryptoRoutes from './routes/crypto.js';
 import db from './config/database.js';
 import { startSyncJobs, stopSyncJobs } from './jobs/predictionSync.js';
-import * as coinGeckoService from './services/coinGeckoService.js';
+import * as coinGeckoService from './services/coingeckoService.js';
 
 dotenv.config();
 

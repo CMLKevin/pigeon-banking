@@ -1,5 +1,5 @@
 import db from '../config/database.js';
-import * as coinGeckoService from '../services/coinGeckoService.js';
+import * as coinGeckoService from '../services/coingeckoService.js';
 
 /**
  * Calculate commission fee based on leverage
