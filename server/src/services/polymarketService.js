@@ -170,30 +170,53 @@ export const fetchActiveMarkets = async () => {
 };
 
 // Fetch market details by condition_id
-export const fetchMarketDetails = async (conditionId) => {
+export const fetchMarketDetails = async (marketIdentifier) => {
   const functionStart = Date.now();
-  console.log(`\n[fetchMarketDetails] 🚀 Fetching details for market: ${conditionId}`);
+  console.log(`\n[fetchMarketDetails] 🚀 Fetching details for: ${marketIdentifier}`);
   
   try {
-    const url = `${POLYMARKET_API_BASE}/markets/${conditionId}`;
-    console.log(`[fetchMarketDetails] 🔗 URL: ${url}`);
-    
-    const response = await fetchWithTimeout(url, {
-      headers: {
-        'Accept': 'application/json',
-        'User-Agent': 'PhantomPay/1.0'
-      }
-    });
+    let marketData = null;
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error(`[fetchMarketDetails] ❌ API error ${response.status}: ${errorText.substring(0, 200)}`);
-      throw new Error(`Polymarket API error: ${response.status}`);
+    if (typeof marketIdentifier === 'string' && marketIdentifier.startsWith('0x')) {
+      // Treat as condition_id; query by condition_id
+      const url = `${POLYMARKET_API_BASE}/markets?condition_id=${marketIdentifier}&limit=1`;
+      console.log(`[fetchMarketDetails] 🔗 URL (by condition_id): ${url}`);
+      const response = await fetchWithTimeout(url, {
+        headers: {
+          'Accept': 'application/json',
+          'User-Agent': 'PhantomPay/1.0'
+        }
+      });
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`[fetchMarketDetails] ❌ API error ${response.status}: ${errorText.substring(0, 200)}`);
+        throw new Error(`Polymarket API error: ${response.status}`);
+      }
+      const results = await response.json();
+      marketData = Array.isArray(results) && results.length > 0 ? results[0] : null;
+    } else {
+      // Treat as numeric market id
+      const url = `${POLYMARKET_API_BASE}/markets/${marketIdentifier}`;
+      console.log(`[fetchMarketDetails] 🔗 URL (by id): ${url}`);
+      const response = await fetchWithTimeout(url, {
+        headers: {
+          'Accept': 'application/json',
+          'User-Agent': 'PhantomPay/1.0'
+        }
+      });
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`[fetchMarketDetails] ❌ API error ${response.status}: ${errorText.substring(0, 200)}`);
+        throw new Error(`Polymarket API error: ${response.status}`);
+      }
+      marketData = await response.json();
     }
 
-    const marketData = await response.json();
+    if (!marketData) {
+      throw new Error('Market not found in Polymarket API response');
+    }
+
     const duration = Date.now() - functionStart;
-    
     console.log(`[fetchMarketDetails] ✓ Market data received (${duration}ms)`);
     console.log(`[fetchMarketDetails] 📋 Market structure:`, {
       id: marketData.id,
@@ -233,7 +256,25 @@ export const fetchOrderBook = async (tokenId) => {
     }
 
     const book = await response.json();
-    return book;
+    // Normalize possible formats: arrays [[price, size], ...] or objects { p, q }
+    const normalize = (levels) => {
+      if (!Array.isArray(levels)) return [];
+      return levels.map((lvl) => {
+        if (Array.isArray(lvl)) {
+          const price = parseFloat(lvl[0]);
+          const size = parseFloat(lvl[1] ?? 0);
+          return { price, size };
+        }
+        const price = parseFloat(lvl.price ?? lvl.p ?? 0);
+        const size = parseFloat(lvl.size ?? lvl.q ?? 0);
+        return { price, size };
+      });
+    };
+
+    return {
+      bids: normalize(book.bids),
+      asks: normalize(book.asks)
+    };
   } catch (error) {
     console.error('Error fetching order book from Polymarket:', error);
     return { bids: [], asks: [] };
@@ -299,21 +340,17 @@ export const fetchQuotes = async (yesTokenId, noTokenId) => {
 export const checkMarketResolution = async (conditionId) => {
   try {
     const market = await fetchMarketDetails(conditionId);
-    
-    if (market.closed && market.resolved) {
-      // Determine which outcome won
-      // Polymarket returns payout_numerators array where winning outcome has value 1
+    const closed = market.closed === true || market.state === 'closed';
+    const resolved = market.resolved === true || Array.isArray(market.payout_numerators);
+
+    if (closed && resolved) {
       const payoutNumerators = market.payout_numerators || [];
-      
       if (payoutNumerators.length >= 2) {
-        // Index 0 is typically NO, index 1 is YES
-        if (payoutNumerators[1] === '1') {
-          return { resolved: true, outcome: 'yes' };
-        } else if (payoutNumerators[0] === '1') {
-          return { resolved: true, outcome: 'no' };
-        } else {
-          return { resolved: true, outcome: 'invalid' };
-        }
+        const n0 = typeof payoutNumerators[0] === 'string' ? payoutNumerators[0] : String(payoutNumerators[0]);
+        const n1 = typeof payoutNumerators[1] === 'string' ? payoutNumerators[1] : String(payoutNumerators[1]);
+        if (n1 === '1') return { resolved: true, outcome: 'yes' };
+        if (n0 === '1') return { resolved: true, outcome: 'no' };
+        return { resolved: true, outcome: 'invalid' };
       }
     }
 
@@ -354,9 +391,10 @@ export const fetchResolutions = async () => {
 // Helper to determine outcome from payout numerators
 const determineOutcome = (payoutNumerators) => {
   if (!payoutNumerators || payoutNumerators.length < 2) return null;
-  
-  if (payoutNumerators[1] === '1') return 'yes';
-  if (payoutNumerators[0] === '1') return 'no';
+  const n0 = typeof payoutNumerators[0] === 'string' ? payoutNumerators[0] : String(payoutNumerators[0]);
+  const n1 = typeof payoutNumerators[1] === 'string' ? payoutNumerators[1] : String(payoutNumerators[1]);
+  if (n1 === '1') return 'yes';
+  if (n0 === '1') return 'no';
   return 'invalid';
 };
 
