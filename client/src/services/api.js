@@ -98,5 +98,20 @@ export const predictionAPI = {
   getPlatformStats: () => api.get('/prediction/admin/stats'),
 };
 
+// Crypto Trading endpoints
+export const cryptoAPI = {
+  getCurrentPrices: () => api.get('/crypto/prices'),
+  getHistoricalPrices: (coinId, days = 7) => 
+    api.get(`/crypto/prices/${coinId}/history`, { params: { days } }),
+  getCoinInfo: (coinId) => api.get(`/crypto/coins/${coinId}`),
+  openPosition: (coinId, positionType, leverage, marginAmon) => 
+    api.post('/crypto/positions', { coinId, positionType, leverage, marginAmon }),
+  getUserPositions: (status = 'open') => 
+    api.get('/crypto/positions', { params: { status } }),
+  getPositionDetails: (positionId) => api.get(`/crypto/positions/${positionId}`),
+  closePosition: (positionId) => api.post(`/crypto/positions/${positionId}/close`),
+  getUserStats: () => api.get('/crypto/stats'),
+};
+
 export default api;
 

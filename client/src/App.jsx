@@ -20,6 +20,7 @@ import PredictionMarkets from './pages/PredictionMarkets';
 import PredictionMarketDetail from './pages/PredictionMarketDetail';
 import PredictionPortfolio from './pages/PredictionPortfolio';
 import PredictionAdmin from './pages/PredictionAdmin';
+import Crypto from './pages/Crypto';
 
 function App() {
   return (
@@ -154,6 +155,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <PredictionAdmin />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/crypto"
+            element={
+              <ProtectedRoute>
+                <Crypto />
               </ProtectedRoute>
             }
           />

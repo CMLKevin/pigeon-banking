@@ -11,8 +11,10 @@ import adminRoutes from './routes/admin.js';
 import auctionRoutes from './routes/auction.js';
 import gameRoutes from './routes/games.js';
 import predictionRoutes from './routes/prediction.js';
+import cryptoRoutes from './routes/crypto.js';
 import db from './config/database.js';
 import { startSyncJobs, stopSyncJobs } from './jobs/predictionSync.js';
+const coinGeckoService = require('./services/coinGeckoService');
 
 dotenv.config();
 
@@ -48,8 +50,13 @@ app.use('/api/payment', paymentRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/auctions', auctionRoutes);
+app.use('/api/crypto', cryptoRoutes);
 app.use('/api/games', gameRoutes);
 app.use('/api/prediction', predictionRoutes);
+
+// Start CoinGecko price fetching
+console.log('Starting CoinGecko price fetching service...');
+coinGeckoService.startPriceFetching();
 
 // Start prediction market sync jobs after a delay to ensure database is ready
 // This is especially important for Replit's serverless PostgreSQL

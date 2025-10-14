@@ -11,7 +11,9 @@
     "db:restore": "node scripts/restore-db.js"
   },
   "dependencies": {
+    "@coingecko/coingecko-typescript": "^2.2.0",
     "bcryptjs": "^2.4.3",
+    "coingecko-sdk": "^1.1.3",
     "cors": "^2.8.5",
     "dotenv": "^16.6.1",
     "express": "^4.18.2",

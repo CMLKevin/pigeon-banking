@@ -292,6 +292,39 @@ const initSchema = async () => {
     )
   `);
 
+  // Crypto Trading Tables
+  await exec(`
+    CREATE TABLE IF NOT EXISTS crypto_positions (
+      id SERIAL PRIMARY KEY,
+      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      coin_id TEXT NOT NULL,
+      position_type TEXT NOT NULL,
+      leverage NUMERIC(4,2) NOT NULL,
+      quantity NUMERIC(18,8) NOT NULL,
+      entry_price NUMERIC(18,8) NOT NULL,
+      liquidation_price NUMERIC(18,8),
+      margin_agon NUMERIC(18,6) NOT NULL,
+      unrealized_pnl NUMERIC(18,6) DEFAULT 0,
+      status TEXT NOT NULL DEFAULT 'open',
+      opened_at TIMESTAMPTZ DEFAULT NOW(),
+      closed_at TIMESTAMPTZ,
+      closed_price NUMERIC(18,8),
+      realized_pnl NUMERIC(18,6)
+    )
+  `);
+
+  await exec(`
+    CREATE TABLE IF NOT EXISTS crypto_price_history (
+      id SERIAL PRIMARY KEY,
+      coin_id TEXT NOT NULL,
+      price NUMERIC(18,8) NOT NULL,
+      volume_24h NUMERIC(18,2),
+      market_cap NUMERIC(18,2),
+      change_24h NUMERIC(8,4),
+      recorded_at TIMESTAMPTZ DEFAULT NOW()
+    )
+  `);
+
   // Indexes
   await exec('CREATE INDEX IF NOT EXISTS idx_transactions_from_user ON transactions(from_user_id)');
   await exec('CREATE INDEX IF NOT EXISTS idx_transactions_to_user ON transactions(to_user_id)');
@@ -318,6 +351,11 @@ const initSchema = async () => {
   await exec('CREATE INDEX IF NOT EXISTS idx_prediction_orders_market ON prediction_orders(market_id)');
   await exec('CREATE INDEX IF NOT EXISTS idx_prediction_trades_user ON prediction_trades(user_id)');
   await exec('CREATE INDEX IF NOT EXISTS idx_prediction_trades_market ON prediction_trades(market_id)');
+  await exec('CREATE INDEX IF NOT EXISTS idx_crypto_positions_user ON crypto_positions(user_id)');
+  await exec('CREATE INDEX IF NOT EXISTS idx_crypto_positions_coin ON crypto_positions(coin_id)');
+  await exec('CREATE INDEX IF NOT EXISTS idx_crypto_positions_status ON crypto_positions(status)');
+  await exec('CREATE INDEX IF NOT EXISTS idx_crypto_price_history_coin ON crypto_price_history(coin_id)');
+  await exec('CREATE INDEX IF NOT EXISTS idx_crypto_price_history_recorded_at ON crypto_price_history(recorded_at)');
 };
 
 // Test database connection
