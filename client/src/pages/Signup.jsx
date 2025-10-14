@@ -18,11 +18,6 @@ const Signup = () => {
     e.preventDefault();
     setError('');
 
-    if (!inviteCode) {
-      setError('Invite code is required');
-      return;
-    }
-
     if (password !== confirmPassword) {
       setError('Passwords do not match');
       return;
@@ -86,12 +81,11 @@ const Signup = () => {
             />
 
             <Input
-              label="Invite Code"
+              label="Invite Code (Optional)"
               type="text"
               value={inviteCode}
               onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
-              placeholder="Enter your invite code"
-              required
+              placeholder="Enter your invite code for bonus"
               icon={
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
@@ -144,10 +138,10 @@ const Signup = () => {
                   </svg>
                 </div>
                 <div>
-                  <p className="text-phantom-text-primary font-semibold mb-1">Welcome Bonus!</p>
+                  <p className="text-phantom-text-primary font-semibold mb-1">Invite Code Bonus!</p>
                   <p className="text-sm text-phantom-text-secondary">
-                    New users receive <span className="text-phantom-accent-primary font-semibold">100 Agon</span> and{' '}
-                    <span className="text-phantom-accent-secondary font-semibold">100 Game Chips</span> to get started.
+                    Sign up with an invite code to receive <span className="text-phantom-accent-primary font-semibold">100 Agon</span> and{' '}
+                    <span className="text-phantom-accent-secondary font-semibold">100 Game Chips</span> as a welcome bonus.
                   </p>
                 </div>
               </div>

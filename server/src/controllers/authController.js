@@ -14,10 +14,6 @@ export const signup = async (req, res) => {
       return res.status(400).json({ error: 'Username and password are required' });
     }
 
-    if (!inviteCode) {
-      return res.status(400).json({ error: 'Invite code is required' });
-    }
-
     if (username.length < 3 || username.length > 16) {
       return res.status(400).json({ error: 'Username must be between 3 and 16 characters' });
     }
@@ -32,13 +28,19 @@ export const signup = async (req, res) => {
       return res.status(400).json({ error: 'Username already exists' });
     }
 
-    // Validate invite code
-    const invite = await db.queryOne('SELECT id, is_used FROM invite_codes WHERE code = $1', [inviteCode]);
-    if (!invite) {
-      return res.status(400).json({ error: 'Invalid invite code' });
-    }
-    if (invite.is_used) {
-      return res.status(400).json({ error: 'This invite code has already been used' });
+    // Validate invite code if provided
+    let invite = null;
+    let hasBonus = false;
+    
+    if (inviteCode && inviteCode.trim()) {
+      invite = await db.queryOne('SELECT id, is_used FROM invite_codes WHERE code = $1', [inviteCode.trim()]);
+      if (!invite) {
+        return res.status(400).json({ error: 'Invalid invite code' });
+      }
+      if (invite.is_used) {
+        return res.status(400).json({ error: 'This invite code has already been used' });
+      }
+      hasBonus = true;
     }
 
     // Hash password
@@ -51,24 +53,29 @@ export const signup = async (req, res) => {
     );
     const userId = userRow.id;
 
-    // Mark invite code as used
-    await db.exec('UPDATE invite_codes SET is_used = TRUE, used_by = $1, used_at = NOW() WHERE id = $2', [userId, invite.id]);
+    // Mark invite code as used if provided
+    if (invite) {
+      await db.exec('UPDATE invite_codes SET is_used = TRUE, used_by = $1, used_at = NOW() WHERE id = $2', [userId, invite.id]);
+    }
 
-    // Create wallet with initial balance (100 of each currency)
-    await db.exec('INSERT INTO wallets (user_id, agon, stoneworks_dollar) VALUES ($1, $2, $3)', [userId, 100.0, 100.0]);
+    // Create wallet with initial balance only if invite code was provided
+    const initialAgon = hasBonus ? 100.0 : 0.0;
+    const initialStoneWorksDollar = hasBonus ? 100.0 : 0.0;
+    await db.exec('INSERT INTO wallets (user_id, agon, stoneworks_dollar) VALUES ($1, $2, $3)', [userId, initialAgon, initialStoneWorksDollar]);
 
     // Generate token
     const fresh = await db.queryOne('SELECT id, username, is_admin FROM users WHERE id = $1', [userId]);
     const token = jwt.sign({ id: fresh.id, username: fresh.username, is_admin: !!fresh.is_admin }, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
 
     res.status(201).json({
-      message: 'User created successfully',
+      message: hasBonus ? 'User created successfully with signup bonus!' : 'User created successfully',
       token,
       user: {
         id: userId,
         username,
         is_admin: !!fresh.is_admin
-      }
+      },
+      hasBonus
     });
   } catch (error) {
     console.error('Signup error:', error);
