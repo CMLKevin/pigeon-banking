@@ -16,6 +16,10 @@ import Games from './pages/Games';
 import CoinFlip from './pages/CoinFlip';
 import Blackjack from './pages/Blackjack';
 import Plinko from './pages/Plinko';
+import PredictionMarkets from './pages/PredictionMarkets';
+import PredictionMarketDetail from './pages/PredictionMarketDetail';
+import PredictionPortfolio from './pages/PredictionPortfolio';
+import PredictionAdmin from './pages/PredictionAdmin';
 
 function App() {
   return (
@@ -118,6 +122,38 @@ function App() {
             element={
               <ProtectedRoute>
                 <Plinko />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/prediction-markets"
+            element={
+              <ProtectedRoute>
+                <PredictionMarkets />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/prediction-markets/:id"
+            element={
+              <ProtectedRoute>
+                <PredictionMarketDetail />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/prediction-portfolio"
+            element={
+              <ProtectedRoute>
+                <PredictionPortfolio />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/prediction-admin"
+            element={
+              <ProtectedRoute>
+                <PredictionAdmin />
               </ProtectedRoute>
             }
           />

@@ -81,5 +81,21 @@ export const auctionAPI = {
   cancelAuction: (id) => api.delete(`/auctions/${id}`),
 };
 
+// Prediction Market endpoints
+export const predictionAPI = {
+  getMarkets: () => api.get('/prediction/markets'),
+  getMarketById: (id) => api.get(`/prediction/markets/${id}`),
+  placeOrder: (id, side, action, quantity) => 
+    api.post(`/prediction/markets/${id}/order`, { side, action, quantity }),
+  getPortfolio: () => api.get('/prediction/portfolio'),
+  // Admin endpoints
+  getAvailableMarkets: () => api.get('/prediction/admin/available-markets'),
+  whitelistMarket: (pm_market_id) => api.post('/prediction/admin/markets/whitelist', { pm_market_id }),
+  updateMarketStatus: (id, status) => api.put(`/prediction/admin/markets/${id}/status`, { status }),
+  removeMarket: (id) => api.delete(`/prediction/admin/markets/${id}`),
+  triggerSettlement: (id, outcome) => api.post(`/prediction/admin/markets/${id}/settle`, { outcome }),
+  getPlatformStats: () => api.get('/prediction/admin/stats'),
+};
+
 export default api;
 

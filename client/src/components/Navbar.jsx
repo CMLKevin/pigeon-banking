@@ -1,12 +1,19 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useState, useRef, useEffect } from 'react';
 
 const Navbar = () => {
   const { user, logout } = useAuth();
   const location = useLocation();
+  const [marketsDropdownOpen, setMarketsDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
 
   const isActive = (path) => {
     return location.pathname === path;
+  };
+
+  const isMarketsActive = () => {
+    return location.pathname.startsWith('/prediction') || location.pathname.startsWith('/portfolio');
   };
 
   const navLinkClass = (path) => {
@@ -16,6 +23,26 @@ const Navbar = () => {
         : 'text-phantom-text-secondary hover:text-phantom-text-primary hover:bg-phantom-bg-secondary'
     }`;
   };
+
+  const navDropdownClass = () => {
+    return `px-4 py-2.5 rounded-2xl font-medium transition-all duration-200 cursor-pointer ${
+      isMarketsActive()
+        ? 'bg-gradient-phantom text-white shadow-glow'
+        : 'text-phantom-text-secondary hover:text-phantom-text-primary hover:bg-phantom-bg-secondary'
+    }`;
+  };
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setMarketsDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   return (
     <nav className="bg-phantom-bg-secondary/50 backdrop-blur-xl border-b border-phantom-border sticky top-0 z-50">
@@ -82,6 +109,73 @@ const Navbar = () => {
                   Games
                 </span>
               </Link>
+              
+              {/* Markets Dropdown */}
+              <div className="relative" ref={dropdownRef}>
+                <button
+                  onClick={() => setMarketsDropdownOpen(!marketsDropdownOpen)}
+                  className={navDropdownClass()}
+                >
+                  <span className="flex items-center gap-2">
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                    Markets
+                    <svg className={`w-4 h-4 transition-transform ${marketsDropdownOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </span>
+                </button>
+                
+                {marketsDropdownOpen && (
+                  <div className="absolute top-full mt-2 w-56 bg-phantom-bg-secondary/95 backdrop-blur-xl rounded-2xl shadow-xl border border-phantom-border py-2 z-50">
+                    <Link
+                      to="/prediction-markets"
+                      className="flex items-center gap-3 px-4 py-3 text-phantom-text-secondary hover:text-phantom-text-primary hover:bg-phantom-bg-tertiary transition-colors"
+                      onClick={() => setMarketsDropdownOpen(false)}
+                    >
+                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                      </svg>
+                      <div>
+                        <div className="font-medium">Prediction Markets</div>
+                        <div className="text-xs text-phantom-text-tertiary">Trade on outcomes</div>
+                      </div>
+                    </Link>
+                    <Link
+                      to="/prediction-portfolio"
+                      className="flex items-center gap-3 px-4 py-3 text-phantom-text-secondary hover:text-phantom-text-primary hover:bg-phantom-bg-tertiary transition-colors"
+                      onClick={() => setMarketsDropdownOpen(false)}
+                    >
+                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                      </svg>
+                      <div>
+                        <div className="font-medium">Portfolio</div>
+                        <div className="text-xs text-phantom-text-tertiary">View positions & P&L</div>
+                      </div>
+                    </Link>
+                    {user?.is_admin && (
+                      <>
+                        <div className="my-2 border-t border-phantom-border"></div>
+                        <Link
+                          to="/prediction-admin"
+                          className="flex items-center gap-3 px-4 py-3 text-phantom-text-secondary hover:text-phantom-text-primary hover:bg-phantom-bg-tertiary transition-colors"
+                          onClick={() => setMarketsDropdownOpen(false)}
+                        >
+                          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                          </svg>
+                          <div>
+                            <div className="font-medium">Admin Panel</div>
+                            <div className="text-xs text-phantom-text-tertiary">Manage markets</div>
+                          </div>
+                        </Link>
+                      </>
+                    )}
+                  </div>
+                )}
+              </div>
               {user?.is_admin && (
                 <Link to="/admin" className={navLinkClass('/admin')}>
                   <span className="flex items-center gap-2">

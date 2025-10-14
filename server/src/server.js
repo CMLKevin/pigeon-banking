@@ -10,6 +10,8 @@ import userRoutes from './routes/user.js';
 import adminRoutes from './routes/admin.js';
 import auctionRoutes from './routes/auction.js';
 import gameRoutes from './routes/games.js';
+import predictionRoutes from './routes/prediction.js';
+import { startSyncJobs, stopSyncJobs } from './jobs/predictionSync.js';
 
 dotenv.config();
 
@@ -37,6 +39,26 @@ app.use('/api/users', userRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/auctions', auctionRoutes);
 app.use('/api/games', gameRoutes);
+app.use('/api/prediction', predictionRoutes);
+
+// Start prediction market sync jobs (only in production or if enabled)
+if (process.env.PREDICTION_ENABLED !== 'false') {
+  startSyncJobs();
+  console.log('Prediction market sync jobs enabled');
+}
+
+// Handle graceful shutdown
+process.on('SIGTERM', () => {
+  console.log('SIGTERM received, stopping sync jobs...');
+  stopSyncJobs();
+  process.exit(0);
+});
+
+process.on('SIGINT', () => {
+  console.log('SIGINT received, stopping sync jobs...');
+  stopSyncJobs();
+  process.exit(0);
+});
 
 // Serve static files in production
 if (isProduction) {
