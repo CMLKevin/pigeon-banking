@@ -84,7 +84,7 @@ export const auctionAPI = {
 // Prediction Market endpoints
 export const predictionAPI = {
   getMarkets: () => api.get('/prediction/markets'),
-  getMarketById: (id) => api.get(`/prediction/markets/${id}`),
+  getMarketById: (id, params = {}) => api.get(`/prediction/markets/${id}`, { params }),
   placeOrder: (id, side, action, quantity) => 
     api.post(`/prediction/markets/${id}/order`, { side, action, quantity }),
   getPortfolio: () => api.get('/prediction/portfolio'),

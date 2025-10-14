@@ -45,10 +45,11 @@ export const getMarkets = async (req, res) => {
   }
 };
 
-// Get market details with quotes history
+// Get market details with quotes history (supports range via ?days=10)
 export const getMarketById = async (req, res) => {
   try {
     const { id } = req.params;
+    const { days } = req.query;
 
     const market = await db.queryOne(`
       SELECT *
@@ -60,19 +61,32 @@ export const getMarketById = async (req, res) => {
       return res.status(404).json({ error: 'Market not found' });
     }
 
-    // Get recent quotes (last 100)
-    const quotes = await db.query(`
-      SELECT yes_bid, yes_ask, no_bid, no_ask, created_at
-      FROM prediction_quotes
-      WHERE market_id = $1
-      ORDER BY created_at DESC
-      LIMIT 100
-    `, [id]);
+    // Get quotes history
+    let quotes;
+    if (days && !isNaN(parseInt(days, 10))) {
+      const interval = `${parseInt(days, 10)} days`;
+      quotes = await db.query(`
+        SELECT yes_bid, yes_ask, no_bid, no_ask, created_at
+        FROM prediction_quotes
+        WHERE market_id = $1 AND created_at >= NOW() - $2::interval
+        ORDER BY created_at ASC
+        LIMIT 5000
+      `, [id, interval]);
+    } else {
+      quotes = await db.query(`
+        SELECT yes_bid, yes_ask, no_bid, no_ask, created_at
+        FROM prediction_quotes
+        WHERE market_id = $1
+        ORDER BY created_at DESC
+        LIMIT 100
+      `, [id]);
+      quotes = quotes.reverse();
+    }
 
     // Get last quote
-    const lastQuote = quotes.length > 0 ? quotes[0] : null;
+    const lastQuote = quotes.length > 0 ? quotes[quotes.length - 1] : null;
 
-    res.json({ market, quotes: quotes.reverse(), lastQuote });
+    res.json({ market, quotes, lastQuote });
   } catch (error) {
     console.error('Get market error:', error);
     res.status(500).json({ error: 'Failed to fetch market' });

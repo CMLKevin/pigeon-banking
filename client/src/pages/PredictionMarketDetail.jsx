@@ -4,6 +4,7 @@ import Navbar from '../components/Navbar';
 import Button from '../components/Button';
 import Input from '../components/Input';
 import QuoteChart from '../components/prediction/QuoteChart';
+import ProbabilityChart from '../components/prediction/ProbabilityChart';
 import { predictionAPI, walletAPI } from '../services/api';
 import { formatCurrency } from '../utils/formatters';
 
@@ -17,6 +18,7 @@ const PredictionMarketDetail = () => {
   const [trading, setTrading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [rangeDays, setRangeDays] = useState(10); // 10, 30, 90
   
   // Trade form state
   const [side, setSide] = useState('yes');
@@ -28,12 +30,12 @@ const PredictionMarketDetail = () => {
     // Refresh every 15 seconds
     const interval = setInterval(loadData, 15000);
     return () => clearInterval(interval);
-  }, [id]);
+  }, [id, rangeDays]);
 
   const loadData = async () => {
     try {
       const [marketRes, walletRes] = await Promise.all([
-        predictionAPI.getMarketById(id),
+        predictionAPI.getMarketById(id, { days: rangeDays }),
         walletAPI.getWallet()
       ]);
       setMarket(marketRes.data.market);
@@ -211,9 +213,41 @@ const PredictionMarketDetail = () => {
               </div>
             )}
 
-            {/* Quote History Chart */}
+            {/* Probability & Quote Charts */}
+            <div className="bg-phantom-bg-secondary/60 backdrop-blur-xl rounded-3xl shadow-card border border-phantom-border p-8">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-bold text-phantom-text-primary">Probability</h2>
+                <div className="flex items-center gap-2">
+                  {[10, 30, 90].map((d) => (
+                    <button
+                      key={d}
+                      onClick={() => setRangeDays(d)}
+                      className={`px-3 py-1.5 rounded-xl text-sm font-medium transition-colors ${
+                        rangeDays === d
+                          ? 'bg-gradient-phantom text-white'
+                          : 'bg-phantom-bg-tertiary text-phantom-text-secondary hover:text-phantom-text-primary'
+                      }`}
+                    >
+                      {d}D
+                    </button>
+                  ))}
+                </div>
+              </div>
+              {quotes && quotes.length > 1 ? (
+                <ProbabilityChart quotes={quotes} />
+              ) : (
+                <div className="h-64 flex items-center justify-center">
+                  <p className="text-phantom-text-tertiary">Not enough data to render probability</p>
+                </div>
+              )}
+            </div>
+
+            {/* Quote History */}
             {quotes && quotes.length > 0 && (
-              <div className="bg-phantom-bg-secondary/60 backdrop-blur-xl rounded-3xl shadow-card border border-phantom-border p-8">
+              <div className="mt-6 bg-phantom-bg-secondary/60 backdrop-blur-xl rounded-3xl shadow-card border border-phantom-border p-8">
+                <div className="mb-4">
+                  <h2 className="text-xl font-bold text-phantom-text-primary">Bid/Ask History</h2>
+                </div>
                 <QuoteChart quotes={quotes} side="both" />
               </div>
             )}
