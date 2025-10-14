@@ -4,11 +4,14 @@ import * as polymarket from '../services/polymarketService.js';
 // Get all available Polymarket markets (for selection)
 export const getAvailableMarkets = async (req, res) => {
   try {
+    console.log('[Prediction Admin] Fetching markets from Polymarket API...');
     const markets = await polymarket.fetchActiveMarkets();
+    console.log(`[Prediction Admin] Fetched ${markets.length} markets from Polymarket`);
     
     // Get already whitelisted IDs
-    const whitelisted = await db.query('SELECT pm_market_id FROM prediction_markets');
+    const whitelisted = await db.query('SELECT pm_market_id, question, status FROM prediction_markets');
     const whitelistedIds = new Set(whitelisted.map(m => m.pm_market_id));
+    console.log(`[Prediction Admin] Currently ${whitelisted.length} whitelisted markets`);
 
     // Mark which ones are already added
     const marketsWithStatus = markets.map(m => ({
@@ -16,10 +19,35 @@ export const getAvailableMarkets = async (req, res) => {
       isWhitelisted: whitelistedIds.has(m.pm_market_id)
     }));
 
-    res.json({ markets: marketsWithStatus });
+    res.json({ 
+      markets: marketsWithStatus,
+      whitelistedMarkets: whitelisted,
+      stats: {
+        totalAvailable: markets.length,
+        totalWhitelisted: whitelisted.length,
+        availableToAdd: marketsWithStatus.filter(m => !m.isWhitelisted).length
+      }
+    });
   } catch (error) {
-    console.error('Get available markets error:', error);
-    res.status(500).json({ error: 'Failed to fetch available markets' });
+    console.error('[Prediction Admin] Get available markets error:', error.message);
+    console.error('[Prediction Admin] Full error:', error);
+    
+    // Still return whitelisted markets even if Polymarket API fails
+    try {
+      const whitelisted = await db.query('SELECT * FROM prediction_markets ORDER BY created_at DESC');
+      res.json({ 
+        markets: [],
+        whitelistedMarkets: whitelisted,
+        error: `Failed to fetch from Polymarket: ${error.message}`,
+        stats: {
+          totalAvailable: 0,
+          totalWhitelisted: whitelisted.length,
+          availableToAdd: 0
+        }
+      });
+    } catch (dbError) {
+      res.status(500).json({ error: 'Failed to fetch markets from both Polymarket and database' });
+    }
   }
 };
 

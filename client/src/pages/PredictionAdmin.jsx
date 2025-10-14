@@ -9,9 +9,14 @@ const PredictionAdmin = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [availableMarkets, setAvailableMarkets] = useState([]);
+  const [whitelistedMarkets, setWhitelistedMarkets] = useState([]);
+  const [stats, setStats] = useState(null);
+  const [apiError, setApiError] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [manualMarketId, setManualMarketId] = useState('');
+  const [showManualAdd, setShowManualAdd] = useState(false);
 
   // Redirect if not admin
   useEffect(() => {
@@ -29,10 +34,18 @@ const PredictionAdmin = () => {
   const loadAvailableMarkets = async () => {
     try {
       const res = await predictionAPI.getAvailableMarkets();
-      setAvailableMarkets(res.data.markets);
+      setAvailableMarkets(res.data.markets || []);
+      setWhitelistedMarkets(res.data.whitelistedMarkets || []);
+      setStats(res.data.stats);
+      if (res.data.error) {
+        setApiError(res.data.error);
+      } else {
+        setApiError('');
+      }
     } catch (error) {
       console.error('Failed to load markets:', error);
       setError('Failed to load available markets');
+      setApiError(error.response?.data?.error || error.message);
     } finally {
       setLoading(false);
     }
@@ -45,11 +58,22 @@ const PredictionAdmin = () => {
     try {
       await predictionAPI.whitelistMarket(pm_market_id);
       setSuccess('Market added successfully!');
+      setManualMarketId('');
+      setShowManualAdd(false);
       await loadAvailableMarkets();
       setTimeout(() => setSuccess(''), 3000);
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to add market');
     }
+  };
+
+  const handleManualAdd = async (e) => {
+    e.preventDefault();
+    if (!manualMarketId.trim()) {
+      setError('Please enter a market ID');
+      return;
+    }
+    await handleWhitelist(manualMarketId.trim());
   };
 
   const handleRemove = async (id) => {
