@@ -8,8 +8,12 @@ export const getAvailableMarkets = async (req, res) => {
     const markets = await polymarket.fetchActiveMarkets();
     console.log(`[Prediction Admin] Fetched ${markets.length} markets from Polymarket`);
     
-    // Get already whitelisted IDs
-    const whitelisted = await db.query('SELECT pm_market_id, question, status FROM prediction_markets');
+    // Get already whitelisted markets (include id and fields used by the UI)
+    const whitelisted = await db.query(
+      `SELECT id, pm_market_id, question, status, end_date, yes_token_id, no_token_id
+       FROM prediction_markets
+       ORDER BY created_at DESC`
+    );
     const whitelistedIds = new Set(whitelisted.map(m => m.pm_market_id));
     console.log(`[Prediction Admin] Currently ${whitelisted.length} whitelisted markets`);
 
@@ -299,6 +303,12 @@ export const getPlatformStats = async (req, res) => {
 export const removeMarket = async (req, res) => {
   try {
     const { id } = req.params;
+
+    // Ensure market exists
+    const existing = await db.queryOne('SELECT id FROM prediction_markets WHERE id = $1', [id]);
+    if (!existing) {
+      return res.status(404).json({ error: 'Market not found' });
+    }
 
     // Check if there are open positions
     const openPositions = await db.queryOne(`
