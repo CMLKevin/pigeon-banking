@@ -1,6 +1,5 @@
 import express from 'express';
 import cors from 'cors';
-import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -14,7 +13,6 @@ import gameRoutes from './routes/games.js';
 import predictionRoutes from './routes/prediction.js';
 import cryptoRoutes from './routes/crypto.js';
 import db from './config/database.js';
-import cookieParser from 'cookie-parser';
 import { startSyncJobs, stopSyncJobs } from './jobs/predictionSync.js';
 import * as coinGeckoService from './services/coingeckoService.js';
 
@@ -49,7 +47,6 @@ app.use(cors({
   },
   credentials: true
 }));
-app.use(cookieParser());
 app.use(express.json());
 app.use(cookieParser());
 
