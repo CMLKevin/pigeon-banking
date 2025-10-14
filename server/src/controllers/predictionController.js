@@ -303,56 +303,61 @@ export const getPortfolio = async (req, res) => {
     const wallet = await db.queryOne('SELECT agon FROM wallets WHERE user_id = $1', [userId]);
     const cash = parseFloat(wallet.agon) || 0;
 
-    // Get all positions
+    // Get all positions with latest quotes in a single query (optimized for Replit/serverless)
     const positions = await db.query(`
       SELECT 
         p.*,
         m.question,
         m.status,
         m.pm_market_id,
-        m.end_date
+        m.end_date,
+        q.yes_bid,
+        q.yes_ask,
+        q.no_bid,
+        q.no_ask
       FROM prediction_positions p
       JOIN prediction_markets m ON p.market_id = m.id
+      LEFT JOIN LATERAL (
+        SELECT yes_bid, yes_ask, no_bid, no_ask
+        FROM prediction_quotes
+        WHERE market_id = p.market_id
+        ORDER BY created_at DESC
+        LIMIT 1
+      ) q ON true
       WHERE p.user_id = $1
       ORDER BY p.updated_at DESC
     `, [userId]);
 
-    // Get latest quotes for mark-to-market
-    const positionsWithMtM = await Promise.all(
-      positions.map(async (pos) => {
-        const quote = await db.queryOne(`
-          SELECT yes_bid, yes_ask, no_bid, no_ask
-          FROM prediction_quotes
-          WHERE market_id = $1
-          ORDER BY created_at DESC
-          LIMIT 1
-        `, [pos.market_id]);
+    // Calculate mark-to-market values
+    const positionsWithMtM = positions.map((pos) => {
+      let currentPrice = 0.5; // Default mid-price
+      
+      if (pos.yes_bid && pos.yes_ask && pos.no_bid && pos.no_ask) {
+        currentPrice = pos.side === 'yes' 
+          ? (parseFloat(pos.yes_bid) + parseFloat(pos.yes_ask)) / 2
+          : (parseFloat(pos.no_bid) + parseFloat(pos.no_ask)) / 2;
+      }
 
-        let currentPrice = 0.5; // Default mid-price
-        if (quote) {
-          currentPrice = pos.side === 'yes' 
-            ? (parseFloat(quote.yes_bid) + parseFloat(quote.yes_ask)) / 2
-            : (parseFloat(quote.no_bid) + parseFloat(quote.no_ask)) / 2;
-        }
+      const qty = parseFloat(pos.quantity);
+      const avgPrice = parseFloat(pos.avg_price);
+      const marketValue = qty * currentPrice;
+      const cost = qty * avgPrice;
+      const unrealizedPnl = marketValue - cost;
 
-        const qty = parseFloat(pos.quantity);
-        const avgPrice = parseFloat(pos.avg_price);
-        const marketValue = qty * currentPrice;
-        const cost = qty * avgPrice;
-        const unrealizedPnl = marketValue - cost;
+      // Remove quote fields from response
+      const { yes_bid, yes_ask, no_bid, no_ask, ...posData } = pos;
 
-        return {
-          ...pos,
-          currentPrice,
-          marketValue,
-          cost,
-          unrealizedPnl,
-          quantity: qty,
-          avg_price: avgPrice,
-          realized_pnl: parseFloat(pos.realized_pnl)
-        };
-      })
-    );
+      return {
+        ...posData,
+        currentPrice,
+        marketValue,
+        cost,
+        unrealizedPnl,
+        quantity: qty,
+        avg_price: avgPrice,
+        realized_pnl: parseFloat(pos.realized_pnl)
+      };
+    });
 
     // Calculate totals
     const totalUnrealizedPnl = positionsWithMtM.reduce((sum, p) => sum + p.unrealizedPnl, 0);
@@ -360,12 +365,21 @@ export const getPortfolio = async (req, res) => {
     const totalMarketValue = positionsWithMtM.reduce((sum, p) => sum + p.marketValue, 0);
     const equity = cash + totalMarketValue;
 
-    // Get recent trades
+    // Get recent trades (with proper aliasing to avoid confusion)
     const trades = await db.query(`
       SELECT 
-        t.*,
-        m.question,
-        o.action
+        t.id,
+        t.order_id,
+        t.user_id,
+        t.market_id,
+        t.side,
+        t.quantity,
+        t.exec_price,
+        t.cost_agon,
+        t.created_at,
+        m.question as market_question,
+        o.action,
+        o.status
       FROM prediction_trades t
       JOIN prediction_orders o ON t.order_id = o.id
       JOIN prediction_markets m ON t.market_id = m.id

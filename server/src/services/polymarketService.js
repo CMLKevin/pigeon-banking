@@ -2,13 +2,48 @@ import fetch from 'node-fetch';
 
 const POLYMARKET_API_BASE = 'https://gamma-api.polymarket.com';
 const CLOB_API_BASE = 'https://clob.polymarket.com';
+const FETCH_TIMEOUT = 10000; // 10 seconds timeout
+const MAX_RETRIES = 3;
+const RETRY_DELAY = 1000; // 1 second
+
+// Helper function to fetch with timeout and retry
+const fetchWithTimeout = async (url, options = {}, retries = MAX_RETRIES) => {
+  for (let attempt = 0; attempt < retries; attempt++) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT);
+
+    try {
+      const response = await fetch(url, {
+        ...options,
+        signal: controller.signal
+      });
+      clearTimeout(timeout);
+      return response;
+    } catch (error) {
+      clearTimeout(timeout);
+      
+      // Don't retry on abort (timeout) or if it's the last attempt
+      if (error.name === 'AbortError') {
+        if (attempt === retries - 1) {
+          throw new Error(`Request timeout after ${FETCH_TIMEOUT}ms`);
+        }
+      } else if (attempt === retries - 1) {
+        throw error;
+      }
+      
+      // Wait before retrying
+      await new Promise(resolve => setTimeout(resolve, RETRY_DELAY * (attempt + 1)));
+    }
+  }
+};
 
 // Fetch active markets from Polymarket
 export const fetchActiveMarkets = async () => {
   try {
-    const response = await fetch(`${POLYMARKET_API_BASE}/markets`, {
+    const response = await fetchWithTimeout(`${POLYMARKET_API_BASE}/markets`, {
       headers: {
-        'Accept': 'application/json'
+        'Accept': 'application/json',
+        'User-Agent': 'PhantomPay/1.0'
       }
     });
 
@@ -52,9 +87,10 @@ export const fetchActiveMarkets = async () => {
 // Fetch market details by condition_id
 export const fetchMarketDetails = async (conditionId) => {
   try {
-    const response = await fetch(`${POLYMARKET_API_BASE}/markets/${conditionId}`, {
+    const response = await fetchWithTimeout(`${POLYMARKET_API_BASE}/markets/${conditionId}`, {
       headers: {
-        'Accept': 'application/json'
+        'Accept': 'application/json',
+        'User-Agent': 'PhantomPay/1.0'
       }
     });
 
@@ -72,9 +108,10 @@ export const fetchMarketDetails = async (conditionId) => {
 // Fetch order book for a token
 export const fetchOrderBook = async (tokenId) => {
   try {
-    const response = await fetch(`${CLOB_API_BASE}/book?token_id=${tokenId}`, {
+    const response = await fetchWithTimeout(`${CLOB_API_BASE}/book?token_id=${tokenId}`, {
       headers: {
-        'Accept': 'application/json'
+        'Accept': 'application/json',
+        'User-Agent': 'PhantomPay/1.0'
       }
     });
 
@@ -165,9 +202,10 @@ export const checkMarketResolution = async (conditionId) => {
 // Fetch multiple resolved markets
 export const fetchResolutions = async () => {
   try {
-    const response = await fetch(`${POLYMARKET_API_BASE}/markets?closed=true&resolved=true&limit=50`, {
+    const response = await fetchWithTimeout(`${POLYMARKET_API_BASE}/markets?closed=true&resolved=true&limit=50`, {
       headers: {
-        'Accept': 'application/json'
+        'Accept': 'application/json',
+        'User-Agent': 'PhantomPay/1.0'
       }
     });
 

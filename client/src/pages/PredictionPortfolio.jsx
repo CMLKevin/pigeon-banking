@@ -33,27 +33,39 @@ const PredictionPortfolio = () => {
       return;
     }
 
-    // Prepare CSV data
+    // Helper function to escape CSV values properly
+    const escapeCSV = (value) => {
+      if (value === null || value === undefined) return '';
+      const str = String(value);
+      // Escape quotes by doubling them and wrap in quotes if contains special chars
+      if (str.includes('"') || str.includes(',') || str.includes('\n') || str.includes('\r')) {
+        return `"${str.replace(/"/g, '""')}"`;
+      }
+      return str;
+    };
+
+    // Prepare CSV data with proper escaping
     const headers = ['Date', 'Market', 'Side', 'Action', 'Quantity', 'Price', 'Cost (Agon)', 'Status'];
     const rows = portfolio.trades.map(trade => [
       new Date(trade.created_at).toLocaleString(),
-      trade.market_question,
-      trade.side.toUpperCase(),
-      trade.action,
-      trade.quantity,
-      trade.exec_price,
-      trade.cost_agon,
-      trade.status
+      trade.market_question || '',
+      (trade.side || '').toUpperCase(),
+      trade.action || '',
+      trade.quantity || 0,
+      trade.exec_price || 0,
+      trade.cost_agon || 0,
+      trade.status || ''
     ]);
 
-    // Build CSV string
+    // Build CSV string with proper escaping
     const csvContent = [
-      headers.join(','),
-      ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
+      headers.map(escapeCSV).join(','),
+      ...rows.map(row => row.map(escapeCSV).join(','))
     ].join('\n');
 
-    // Create download link
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    // Create download link with BOM for proper Excel UTF-8 handling
+    const BOM = '\uFEFF';
+    const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
     link.setAttribute('href', url);
@@ -62,6 +74,7 @@ const PredictionPortfolio = () => {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    URL.revokeObjectURL(url); // Clean up
   };
 
   if (loading) {
