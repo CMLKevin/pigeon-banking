@@ -116,14 +116,17 @@ export const fetchActiveMarkets = async () => {
     }
     
     // Filter for active, non-archived markets with liquidity
+    // IMPORTANT: Only include non-negRisk markets as they have clobTokenIds
     console.log(`[fetchActiveMarkets] 🔍 Filtering markets...`);
     const activeMarkets = markets.filter(m => {
       const isActive = m.active === true;
       const isNotArchived = m.archived === false;
       const isNotClosed = m.closed === false;
-      const hasVolume = parseFloat(m.volume || 0) > 100;
+      const hasVolume = parseFloat(m.volume || m.volumeClob || 0) > 10; // Lower threshold
+      const isNotNegRisk = m.negRisk !== true; // Exclude negRisk markets (they don't have clobTokenIds)
+      const hasConditionId = m.conditionId && m.conditionId.length > 0; // Must have valid conditionId
       
-      return isActive && isNotArchived && isNotClosed && hasVolume;
+      return isActive && isNotArchived && isNotClosed && hasVolume && isNotNegRisk && hasConditionId;
     });
     
     console.log(`[fetchActiveMarkets] ✓ Filtered to ${activeMarkets.length} active markets`);
@@ -132,7 +135,9 @@ export const fetchActiveMarkets = async () => {
       active: markets.filter(m => m.active === true).length,
       notArchived: markets.filter(m => m.archived === false).length,
       notClosed: markets.filter(m => m.closed === false).length,
-      withVolume: markets.filter(m => parseFloat(m.volume || 0) > 100).length,
+      withVolume: markets.filter(m => parseFloat(m.volume || m.volumeClob || 0) > 10).length,
+      notNegRisk: markets.filter(m => m.negRisk !== true).length,
+      withConditionId: markets.filter(m => m.conditionId && m.conditionId.length > 0).length,
       final: activeMarkets.length
     });
 
