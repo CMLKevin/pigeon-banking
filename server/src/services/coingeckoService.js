@@ -2,7 +2,7 @@ const { CoinGeckoAPI } = require('@coingecko/coingecko-typescript');
 
 // Initialize CoinGecko client with API key
 const coinGeckoClient = new CoinGeckoAPI({
-  apiKey: process.env.COINGECKO_API_KEY
+  apiKey: process.env.COINGECKO_API_KEY || 'CG-DZE6q6KdGmN9kUqoaJCoWHEq'
 });
 
 // Map of supported coins
@@ -35,21 +35,32 @@ async function fetchCurrentPrices() {
     // Transform the response
     const prices = {};
     for (const [coinId, data] of Object.entries(response)) {
-      prices[coinId] = {
-        ...SUPPORTED_COINS[coinId],
-        price: data.usd,
-        change_24h: data.usd_24h_change || 0,
-        volume_24h: data.usd_24h_vol || 0,
-        market_cap: data.usd_market_cap || 0,
-        last_updated: new Date()
-      };
+      if (data && data.usd) {
+        prices[coinId] = {
+          ...SUPPORTED_COINS[coinId],
+          price: Number(data.usd),
+          change_24h: Number(data.usd_24h_change || 0),
+          volume_24h: Number(data.usd_24h_vol || 0),
+          market_cap: Number(data.usd_market_cap || 0),
+          last_updated: new Date()
+        };
+      }
     }
 
-    priceCache = prices;
-    lastFetchTime = Date.now();
+    // Only update cache if we got valid prices
+    if (Object.keys(prices).length > 0) {
+      priceCache = prices;
+      lastFetchTime = Date.now();
+    }
+    
     return prices;
   } catch (error) {
     console.error('Error fetching CoinGecko prices:', error);
+    // Return cached prices if available
+    if (Object.keys(priceCache).length > 0) {
+      console.log('Returning cached prices due to API error');
+      return priceCache;
+    }
     throw error;
   }
 }

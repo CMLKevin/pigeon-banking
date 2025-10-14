@@ -86,7 +86,7 @@ export const getCoinInfo = async (req, res) => {
  * Open a new crypto position
  */
 export const openPosition = async (req, res) => {
-  const { coinId, positionType, leverage, marginAmon } = req.body;
+  const { coinId, positionType, leverage, marginAmon: marginAgon } = req.body;
   const userId = req.user.id;
   
   try {
@@ -100,12 +100,12 @@ export const openPosition = async (req, res) => {
     }
     
     const leverageNum = parseFloat(leverage);
-    if (leverageNum < 1 || leverageNum > 10) {
+    if (leverageNum < 1 || leverageNum > 10 || !isFinite(leverageNum)) {
       return res.status(400).json({ error: 'Leverage must be between 1x and 10x' });
     }
     
-    const marginAgonNum = parseFloat(marginAmon);
-    if (marginAgonNum <= 0) {
+    const marginAgonNum = parseFloat(marginAgon);
+    if (marginAgonNum <= 0 || !isFinite(marginAgonNum)) {
       return res.status(400).json({ error: 'Margin must be positive' });
     }
     

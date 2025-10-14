@@ -484,6 +484,109 @@ router.get('/metrics', async (req, res) => {
       ORDER BY count DESC
     `);
 
+    // Crypto Trading Analytics
+    const cryptoTotalsRow = await db.queryOne(`
+      SELECT 
+        COUNT(1) AS total_positions,
+        COUNT(CASE WHEN status = 'open' THEN 1 END) AS open_positions,
+        COUNT(CASE WHEN status = 'closed' THEN 1 END) AS closed_positions,
+        COUNT(DISTINCT user_id) AS unique_traders,
+        SUM(margin_agon) FILTER (WHERE status = 'open') AS locked_margin,
+        SUM(margin_agon) FILTER (WHERE status = 'closed') AS total_volume,
+        SUM(realized_pnl) FILTER (WHERE status = 'closed') AS total_pnl,
+        SUM(realized_pnl) FILTER (WHERE status = 'closed' AND realized_pnl > 0) AS total_profit,
+        ABS(SUM(realized_pnl) FILTER (WHERE status = 'closed' AND realized_pnl < 0)) AS total_loss,
+        COUNT(CASE WHEN status = 'closed' AND realized_pnl > 0 THEN 1 END) AS winning_positions,
+        COUNT(CASE WHEN status = 'closed' AND realized_pnl < 0 THEN 1 END) AS losing_positions,
+        AVG(leverage) AS avg_leverage
+      FROM crypto_positions
+    `);
+
+    const cryptoTotals = cryptoTotalsRow ? {
+      total_positions: Number(cryptoTotalsRow.total_positions || 0),
+      open_positions: Number(cryptoTotalsRow.open_positions || 0),
+      closed_positions: Number(cryptoTotalsRow.closed_positions || 0),
+      unique_traders: Number(cryptoTotalsRow.unique_traders || 0),
+      locked_margin: Number(cryptoTotalsRow.locked_margin || 0),
+      total_volume: Number(cryptoTotalsRow.total_volume || 0),
+      total_pnl: Number(cryptoTotalsRow.total_pnl || 0),
+      total_profit: Number(cryptoTotalsRow.total_profit || 0),
+      total_loss: Number(cryptoTotalsRow.total_loss || 0),
+      winning_positions: Number(cryptoTotalsRow.winning_positions || 0),
+      losing_positions: Number(cryptoTotalsRow.losing_positions || 0),
+      avg_leverage: Number(Number(cryptoTotalsRow.avg_leverage || 0).toFixed(2)),
+      win_rate: cryptoTotalsRow.closed_positions > 0 
+        ? Number(((cryptoTotalsRow.winning_positions || 0) / cryptoTotalsRow.closed_positions * 100).toFixed(2))
+        : 0,
+      house_pnl: Number(-(cryptoTotalsRow.total_pnl || 0)) // House profit is inverse of player P&L
+    } : {
+      total_positions: 0, open_positions: 0, closed_positions: 0, unique_traders: 0,
+      locked_margin: 0, total_volume: 0, total_pnl: 0, total_profit: 0, total_loss: 0,
+      winning_positions: 0, losing_positions: 0, avg_leverage: 0, win_rate: 0, house_pnl: 0
+    };
+
+    // Crypto positions by coin
+    const cryptoByCoin = await db.query(`
+      SELECT coin_id,
+        COUNT(1) AS positions,
+        COUNT(CASE WHEN status = 'open' THEN 1 END) AS open_count,
+        COUNT(CASE WHEN status = 'closed' THEN 1 END) AS closed_count,
+        SUM(margin_agon) FILTER (WHERE status = 'closed') AS volume,
+        SUM(realized_pnl) FILTER (WHERE status = 'closed') AS net_pnl
+      FROM crypto_positions
+      GROUP BY coin_id
+      ORDER BY positions DESC
+    `);
+
+    // Crypto positions by day (last 14 days)
+    const cryptoByDay = await db.query(`
+      SELECT opened_at::date AS day,
+        COUNT(1) AS positions_opened,
+        SUM(margin_agon) AS volume,
+        COUNT(CASE WHEN position_type = 'long' THEN 1 END) AS long_positions,
+        COUNT(CASE WHEN position_type = 'short' THEN 1 END) AS short_positions
+      FROM crypto_positions
+      WHERE opened_at >= NOW() - INTERVAL '14 days'
+      GROUP BY opened_at::date
+      ORDER BY day DESC
+      LIMIT 14
+    `);
+
+    // Top crypto traders
+    const topCryptoTraders = await db.query(`
+      SELECT u.id, u.username,
+        COUNT(cp.id) AS total_positions,
+        COUNT(CASE WHEN cp.status = 'open' THEN 1 END) AS open_positions,
+        COUNT(CASE WHEN cp.status = 'closed' THEN 1 END) AS closed_positions,
+        SUM(cp.margin_agon) FILTER (WHERE cp.status = 'closed') AS total_volume,
+        SUM(cp.realized_pnl) FILTER (WHERE cp.status = 'closed') AS net_pnl,
+        COUNT(CASE WHEN cp.status = 'closed' AND cp.realized_pnl > 0 THEN 1 END) AS wins
+      FROM users u
+      JOIN crypto_positions cp ON cp.user_id = u.id
+      WHERE u.disabled = FALSE
+      GROUP BY u.id
+      ORDER BY total_positions DESC
+      LIMIT 10
+    `);
+
+    // Leverage distribution
+    const leverageDistribution = await db.query(`
+      SELECT 
+        CASE 
+          WHEN leverage < 2 THEN '1x'
+          WHEN leverage < 3 THEN '2x'
+          WHEN leverage < 5 THEN '3-4x'
+          WHEN leverage < 8 THEN '5-7x'
+          ELSE '8-10x'
+        END AS leverage_range,
+        COUNT(1) AS positions,
+        AVG(leverage) AS avg_leverage,
+        SUM(margin_agon) FILTER (WHERE status = 'closed') AS volume
+      FROM crypto_positions
+      GROUP BY leverage_range
+      ORDER BY avg_leverage
+    `);
+
     res.json({ 
       totals, 
       activity24h, 
@@ -506,7 +609,12 @@ router.get('/metrics', async (req, res) => {
       plinkoTotals,
       plinkoByDay,
       topPlinkoPlayers,
-      plinkoRiskDistribution
+      plinkoRiskDistribution,
+      cryptoTotals,
+      cryptoByCoin,
+      cryptoByDay,
+      topCryptoTraders,
+      leverageDistribution
     });
   } catch (e) {
     console.error('Metrics error:', e);
