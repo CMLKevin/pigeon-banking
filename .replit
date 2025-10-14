@@ -6,8 +6,10 @@ modules = ["nodejs-20", "postgresql-16"]
 channel = "stable-23_05"
 
 [deployment]
-run = ["sh", "-c", "npm run install:all && npm run start:prod"]
+build = ["sh", "-c", "npm run install:all && npm run build:prod"]
+run = ["sh", "-c", "npm run start:prod"]
 deploymentTarget = "cloudrun"
+ignorePorts = false
 
 [env]
 PATH = "/home/runner/$REPL_SLUG/.config/npm/node_global/bin:/home/runner/$REPL_SLUG/node_modules/.bin"

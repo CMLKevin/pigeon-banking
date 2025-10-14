@@ -10,7 +10,8 @@
     "client": "cd client && npm run dev",
     "build": "cd client && npm run build",
     "start": "cd server && npm start",
-    "start:prod": "npm run build && NODE_ENV=production npm run start",
+    "start:prod": "NODE_ENV=production cd server && npm start",
+    "build:prod": "npm run build",
     "check-deployment": "node check-deployment.js"
   },
   "keywords": ["payment", "minecraft", "cryptocurrency"],

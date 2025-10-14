@@ -1,4 +1,4 @@
-const { CoinGeckoAPI } = require('@coingecko/coingecko-typescript');
+import { CoinGeckoAPI } from '@coingecko/coingecko-typescript';
 
 // Initialize CoinGecko client with API key
 const coinGeckoClient = new CoinGeckoAPI({
@@ -160,7 +160,7 @@ function startPriceFetching() {
   }, CACHE_DURATION);
 }
 
-module.exports = {
+export {
   SUPPORTED_COINS,
   getCurrentPrices,
   getCoinPrice,
