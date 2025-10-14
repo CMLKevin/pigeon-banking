@@ -9,9 +9,10 @@ The Crypto Trading feature allows users to trade Bitcoin (BTC), Ethereum (ETH), 
 - **Live Price Data**: Real-time cryptocurrency prices from CoinGecko API, updated every 30 seconds
 - **Leveraged Trading**: Trade with 1x to 10x leverage
 - **Long & Short Positions**: Bet on both rising and falling prices
+- **Multiple Positions**: Open multiple positions simultaneously on the same or different coins
 - **Dynamic Commission**: Commission scales from 1% (1x leverage) to 5% (10x leverage)
 - **Historical Charts**: View price history for 1, 7, or 30 days
-- **Position Management**: View open positions with real-time P&L tracking
+- **Position Management**: View all open positions with real-time P&L tracking
 - **Trading Statistics**: Track win rate, total P&L, and trading history
 
 ## Setup
@@ -56,7 +57,13 @@ The database schema is automatically created when you start the server. Two new 
 3. Select leverage (1x to 10x)
 4. Enter margin amount in Agon (Ⱥ)
 5. Review commission and position value
-6. Click "Open Position"
+6. Click "Open New Position"
+
+**Note**: You can open multiple positions at the same time, even on the same cryptocurrency! This allows you to:
+- Open both long and short positions to hedge your risk
+- Use different leverage levels for different strategies
+- Dollar-cost average by opening positions at different prices
+- Test multiple trading strategies simultaneously
 
 ### Commission Structure
 
@@ -106,10 +113,13 @@ Example with 10x leverage:
 
 ### Closing a Position
 
-1. Navigate to your open positions
-2. Click "Close Position" on the position you want to close
-3. Confirm the action
-4. Your margin + P&L (if any) is returned to your Agon balance
+1. Navigate to your open positions section
+2. View your position summary showing all positions grouped by coin
+3. Click "Close Position" on the specific position you want to close
+4. Confirm the action
+5. Your margin + P&L (if any) is returned to your Agon balance
+
+**Note**: Closing one position does not affect your other open positions. Each position is managed independently.
 
 ## API Endpoints
 

@@ -318,20 +318,61 @@ const Crypto = () => {
 
             {/* Open Positions */}
             <div className="bg-phantom-bg-secondary/60 backdrop-blur-xl rounded-3xl shadow-card border border-phantom-border p-6">
-              <h2 className="text-2xl font-bold text-phantom-text-primary mb-6">Open Positions</h2>
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-bold text-phantom-text-primary">Open Positions</h2>
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-phantom-accent-primary/10 border border-phantom-accent-primary/30">
+                  <span className="text-sm font-semibold text-phantom-accent-primary">{positions.length}</span>
+                  <span className="text-xs text-phantom-text-tertiary">position{positions.length !== 1 ? 's' : ''}</span>
+                </div>
+              </div>
+              
               {positions.length === 0 ? (
                 <div className="text-center py-12">
                   <p className="text-phantom-text-secondary">No open positions</p>
                   <p className="text-sm text-phantom-text-tertiary mt-2">Open your first position to start trading</p>
+                  <p className="text-xs text-phantom-text-tertiary mt-1">💡 You can open multiple positions on different coins or strategies</p>
                 </div>
               ) : (
-                <div className="space-y-4">
-                  {positions.map(position => {
+                <>
+                  {/* Position Summary by Coin */}
+                  {positions.length > 0 && (
+                    <div className="grid grid-cols-3 gap-3 mb-6 pb-6 border-b border-phantom-border">
+                      {coins.map(coin => {
+                        const coinPositions = positions.filter(p => p.coin_id === coin.id);
+                        if (coinPositions.length === 0) return null;
+                        
+                        const longCount = coinPositions.filter(p => p.position_type === 'long').length;
+                        const shortCount = coinPositions.filter(p => p.position_type === 'short').length;
+                        
+                        return (
+                          <div key={coin.id} className="bg-phantom-bg-tertiary/50 rounded-xl p-3 border border-phantom-border">
+                            <div className="flex items-center gap-2 mb-2">
+                              <div className={`w-6 h-6 rounded-lg bg-gradient-to-br ${coin.color} flex items-center justify-center shadow-glow-sm`}>
+                                <span className="text-white font-bold text-[10px]">{coin.symbol}</span>
+                              </div>
+                              <span className="text-sm font-bold text-phantom-text-primary">{coinPositions.length}</span>
+                            </div>
+                            <div className="flex gap-2 text-[10px]">
+                              {longCount > 0 && (
+                                <span className="text-green-500 font-medium">{longCount} LONG</span>
+                              )}
+                              {shortCount > 0 && (
+                                <span className="text-red-500 font-medium">{shortCount} SHORT</span>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                  
+                  <div className="space-y-4">
+                    {positions.map(position => {
                     const coin = coins.find(c => c.id === position.coin_id);
                     const isProfitable = Number(position.unrealized_pnl || 0) >= 0;
                     
                     return (
-                      <div key={position.id} className="bg-phantom-bg-tertiary/50 rounded-2xl border border-phantom-border p-6">
+                      <div key={position.id} className="bg-phantom-bg-tertiary/50 rounded-2xl border border-phantom-border p-6 hover:border-phantom-accent-primary/30 transition-all">
                         <div className="flex items-center justify-between mb-4">
                           <div className="flex items-center gap-3">
                             <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${coin.color} flex items-center justify-center shadow-glow-sm`}>
@@ -341,6 +382,9 @@ const Crypto = () => {
                               <p className="text-lg font-bold text-phantom-text-primary">{coin.name}</p>
                               <p className="text-sm text-phantom-text-tertiary">
                                 {position.position_type.toUpperCase()} • {Number(position.leverage).toFixed(1)}x Leverage
+                              </p>
+                              <p className="text-xs text-phantom-text-tertiary">
+                                Position #{position.id} • Opened {new Date(position.opened_at).toLocaleDateString()}
                               </p>
                             </div>
                           </div>
@@ -390,7 +434,8 @@ const Crypto = () => {
                       </div>
                     );
                   })}
-                </div>
+                  </div>
+                </>
               )}
             </div>
           </div>
@@ -398,7 +443,10 @@ const Crypto = () => {
           {/* Right Column - Trading Panel */}
           <div className="lg:col-span-1">
             <div className="bg-phantom-bg-secondary/60 backdrop-blur-xl rounded-3xl shadow-card border border-phantom-border p-6 sticky top-24">
-              <h2 className="text-2xl font-bold text-phantom-text-primary mb-6">Open Position</h2>
+              <div className="mb-6">
+                <h2 className="text-2xl font-bold text-phantom-text-primary mb-2">Open New Position</h2>
+                <p className="text-xs text-phantom-text-tertiary">💡 You can open multiple positions simultaneously</p>
+              </div>
               
               <form onSubmit={handleOpenPosition} className="space-y-6">
                 {/* Coin Selection */}
