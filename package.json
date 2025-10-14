@@ -10,7 +10,7 @@
     "client": "cd client && npm run dev",
     "build": "cd client && npm run build",
     "start": "cd server && npm start",
-    "start:prod": "NODE_ENV=production cd server && npm start",
+    "start:prod": "cd server && NODE_ENV=production npm start",
     "build:prod": "npm run build",
     "check-deployment": "node check-deployment.js"
   },

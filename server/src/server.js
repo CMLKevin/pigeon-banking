@@ -25,6 +25,9 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 const isProduction = process.env.NODE_ENV === 'production';
 
+console.log(`🚀 Starting server in ${process.env.NODE_ENV || 'development'} mode`);
+console.log(`🔧 isProduction: ${isProduction}`);
+
 // Validate required environment variables for Replit
 const requiredEnvVars = ['DATABASE_URL', 'JWT_SECRET'];
 const missingVars = requiredEnvVars.filter(varName => !process.env[varName]);
@@ -104,13 +107,19 @@ process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 // Serve static files in production
 if (isProduction) {
   const clientDistPath = path.join(__dirname, '../../client/dist');
+  console.log(`📁 Serving static files from: ${clientDistPath}`);
+  console.log(`📁 Current directory (__dirname): ${__dirname}`);
+  
   app.use(express.static(clientDistPath));
   
   // Handle client-side routing - serve index.html for all non-API routes
   app.get('*', (req, res) => {
-    res.sendFile(path.join(clientDistPath, 'index.html'));
+    const indexPath = path.join(clientDistPath, 'index.html');
+    console.log(`📄 Serving index.html from: ${indexPath}`);
+    res.sendFile(indexPath);
   });
 } else {
+  console.log('🔧 Running in development mode - not serving static files');
   // Development 404 handler for non-API routes
   app.use((req, res) => {
     res.status(404).json({ error: 'Route not found' });
