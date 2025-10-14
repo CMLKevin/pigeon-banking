@@ -1,5 +1,5 @@
 import express from 'express';
-import { authenticateToken, isAdmin } from '../middleware/auth.js';
+import { authenticateToken, requireAdmin } from '../middleware/auth.js';
 import {
   getMarkets,
   getMarketById,
@@ -24,12 +24,12 @@ router.post('/markets/:id/order', authenticateToken, placeOrder);
 router.get('/portfolio', authenticateToken, getPortfolio);
 
 // Admin routes
-router.get('/admin/available-markets', authenticateToken, isAdmin, getAvailableMarkets);
-router.post('/admin/markets/whitelist', authenticateToken, isAdmin, whitelistMarket);
-router.put('/admin/markets/:id/status', authenticateToken, isAdmin, updateMarketStatus);
-router.delete('/admin/markets/:id', authenticateToken, isAdmin, removeMarket);
-router.post('/admin/markets/:id/settle', authenticateToken, isAdmin, triggerSettlement);
-router.get('/admin/stats', authenticateToken, isAdmin, getPlatformStats);
+router.get('/admin/available-markets', authenticateToken, requireAdmin, getAvailableMarkets);
+router.post('/admin/markets/whitelist', authenticateToken, requireAdmin, whitelistMarket);
+router.put('/admin/markets/:id/status', authenticateToken, requireAdmin, updateMarketStatus);
+router.delete('/admin/markets/:id', authenticateToken, requireAdmin, removeMarket);
+router.post('/admin/markets/:id/settle', authenticateToken, requireAdmin, triggerSettlement);
+router.get('/admin/stats', authenticateToken, requireAdmin, getPlatformStats);
 
 export default router;
 
