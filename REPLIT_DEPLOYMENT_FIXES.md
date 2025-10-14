@@ -6,10 +6,19 @@
 **Problem:** Server was using `require()` and `module.exports` syntax, but `package.json` is configured with `"type": "module"` for ES6 modules.
 
 **Fixed Files:**
-- `server/src/services/coingeckoService.js` - Changed `require` to `import` and `module.exports` to `export`
+- `server/src/services/coingeckoService.js` - Replaced CoinGecko TypeScript SDK with REST API using `node-fetch`
 - `server/src/controllers/cryptoController.js` - Changed `require` to `import`
 - `server/src/server.js` - Changed `require` to `import`
 - `server/src/routes/crypto.js` - Fixed middleware import from `requireAuth` to `authenticateToken`
+
+### 1b. ✅ CoinGecko API Integration Fix
+**Problem:** The `@coingecko/coingecko-typescript` package had export issues and wasn't compatible with ES6 modules.
+
+**Solution:** Replaced the TypeScript SDK with direct REST API calls using `node-fetch`:
+- Removed `@coingecko/coingecko-typescript` and `coingecko-sdk` dependencies
+- Implemented direct API calls to CoinGecko REST API v3
+- Added proper error handling and response caching
+- All API calls use proper authentication headers with API key
 
 ### 2. ✅ Build Process Optimization
 **Problem:** The deployment was running `npm run install:all && npm run start:prod` which installs dependencies AND builds the client during startup, causing timeout issues.
@@ -99,6 +108,9 @@ NODE_ENV=production cd server && npm start
 - ✅ Fixed 3 files using CommonJS `require()` → ES6 `import`
 - ✅ Fixed 1 file using CommonJS `module.exports` → ES6 `export`
 - ✅ Fixed 1 incorrect middleware import name
+- ✅ Fixed case-sensitive import path (`coinGeckoService.js` → `coingeckoService.js`)
+- ✅ Replaced CoinGecko TypeScript SDK with REST API using `node-fetch`
+- ✅ Removed 2 unnecessary dependencies from `server/package.json`
 - ✅ Optimized deployment scripts in `.replit`
 - ✅ Separated build and run phases for faster startup
 
