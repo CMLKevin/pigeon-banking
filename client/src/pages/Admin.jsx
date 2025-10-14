@@ -365,7 +365,7 @@ const Admin = () => {
                 <StatCard 
                   title="Unique Players" 
                   value={metrics.coinflipTotals?.unique_players || 0} 
-                  sub={`Win rate: ${(metrics.coinflipTotals?.win_rate || 0).toFixed(2)}%`}
+                  sub={`Win rate: ${Number(metrics.coinflipTotals?.win_rate || 0).toFixed(2)}%`}
                 />
                 <StatCard 
                   title="Total Bet (◉)" 
@@ -440,7 +440,7 @@ const Admin = () => {
                 <StatCard 
                   title="Unique Players" 
                   value={metrics.blackjackTotals?.unique_players || 0} 
-                  sub={`Win rate: ${(metrics.blackjackTotals?.win_rate || 0).toFixed(2)}%`}
+                  sub={`Win rate: ${Number(metrics.blackjackTotals?.win_rate || 0).toFixed(2)}%`}
                 />
                 <StatCard 
                   title="Blackjacks & Pushes" 
@@ -843,7 +843,7 @@ const Admin = () => {
                   <StatCard 
                     title="Total Bids" 
                     value={metrics.auctionTotals.total_bids || 0}
-                    sub={`${metrics.auctionTotals.unique_bidders || 0} unique bidders • ${(metrics.auctionTotals.avg_bids_per_auction || 0).toFixed(1)} avg/auction`}
+                    sub={`${metrics.auctionTotals.unique_bidders || 0} unique bidders • ${Number(metrics.auctionTotals.avg_bids_per_auction || 0).toFixed(1)} avg/auction`}
                     icon={
                       <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M7 11.5V14m0-2.5v-6a1.5 1.5 0 113 0m-3 6a1.5 1.5 0 00-3 0v2a7.5 7.5 0 0015 0v-5a1.5 1.5 0 00-3 0m-6-3V11m0-5.5v-1a1.5 1.5 0 013 0v1m0 0V11m0-5.5a1.5 1.5 0 013 0v3m0 0V11" />
