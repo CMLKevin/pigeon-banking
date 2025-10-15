@@ -5,8 +5,7 @@ import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Dashboard from './pages/Dashboard';
 import Swap from './pages/Swap';
-import Send from './pages/Send';
-import Users from './pages/Users';
+import UsersAndPayments from './pages/UsersAndPayments';
 import Admin from './pages/Admin';
 import AdminLogin from './pages/AdminLogin';
 import Auctions from './pages/Auctions';
@@ -43,20 +42,16 @@ function App() {
             }
           />
           <Route
-            path="/send"
+            path="/users"
             element={
               <ProtectedRoute>
-                <Send />
+                <UsersAndPayments />
               </ProtectedRoute>
             }
           />
           <Route
-            path="/users"
-            element={
-              <ProtectedRoute>
-                <Users />
-              </ProtectedRoute>
-            }
+            path="/send"
+            element={<Navigate to="/users" replace />}
           />
           <Route
             path="/admin"

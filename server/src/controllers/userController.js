@@ -3,10 +3,12 @@ import db from '../config/database.js';
 export const getAllUsers = async (req, res) => {
   try {
     const users = await db.query(
-      `SELECT id, username, created_at, is_admin, disabled
-       FROM users
-       WHERE id != $1
-       ORDER BY username ASC`,
+      `SELECT u.id, u.username, u.created_at, u.is_admin, u.disabled,
+              w.agon, w.stoneworks_dollar
+       FROM users u
+       LEFT JOIN wallets w ON u.id = w.user_id
+       WHERE u.id != $1
+       ORDER BY u.username ASC`,
       [req.user.id]
     );
 
@@ -26,10 +28,12 @@ export const searchUsers = async (req, res) => {
     }
 
     const users = await db.query(
-      `SELECT id, username, created_at
-       FROM users
-       WHERE username ILIKE $1 AND id != $2
-       ORDER BY username ASC
+      `SELECT u.id, u.username, u.created_at,
+              w.agon, w.stoneworks_dollar
+       FROM users u
+       LEFT JOIN wallets w ON u.id = w.user_id
+       WHERE u.username ILIKE $1 AND u.id != $2
+       ORDER BY u.username ASC
        LIMIT 20`,
       [
         `%${q}%`,
