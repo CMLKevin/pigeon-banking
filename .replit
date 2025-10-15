@@ -19,6 +19,10 @@ npm_config_prefix = "/home/runner/$REPL_SLUG/.config/npm/node_global"
 localPort = 3001
 externalPort = 80
 
+[[ports]]
+localPort = 5000
+externalPort = 5000
+
 [deployment.env]
 NODE_ENV = "production"
 PGCONNECT_TIMEOUT = "30"
