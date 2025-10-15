@@ -150,17 +150,6 @@ const Dashboard = () => {
                 <p className="text-sm text-phantom-text-secondary">Up to 1000x multiplier</p>
               </div>
             </Link>
-            <Link to="/games/crash">
-              <div className="group p-6 bg-phantom-bg-tertiary/50 border-2 border-phantom-border rounded-2xl hover:border-phantom-accent-primary hover:shadow-glow-sm transition-all duration-300 cursor-pointer transform hover:scale-105">
-                <div className="w-14 h-14 bg-gradient-to-br from-red-500 to-orange-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-md">
-                  <svg className="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                  </svg>
-                </div>
-                <h3 className="font-bold text-phantom-text-primary text-lg mb-1">Crash</h3>
-                <p className="text-sm text-phantom-text-secondary">Cash out • Up to 10000x</p>
-              </div>
-            </Link>
             <Link to="/games">
               <div className="group p-6 bg-phantom-bg-tertiary/50 border-2 border-phantom-border rounded-2xl hover:border-phantom-accent-primary hover:shadow-glow-sm transition-all duration-300 cursor-pointer transform hover:scale-105">
                 <div className="w-14 h-14 bg-gradient-to-br from-yellow-500 to-amber-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-md">
