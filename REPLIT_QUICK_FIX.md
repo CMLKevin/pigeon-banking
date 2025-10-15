@@ -54,7 +54,6 @@ Go to Replit → 🔒 **Secrets** and set:
 
 **Optional:**
 - `NODE_ENV` - Set to `production` for deployments
-- `PREDICTION_ENABLED` - Set to `false` to disable prediction markets
 - `PGCONNECT_TIMEOUT` - Set to `30` for database connection timeout
 
 ### 3. Verify Installation ✅
@@ -75,7 +74,6 @@ You should see:
 ```
 ✓ PostgreSQL database connected successfully
 Agon server is running on port 3001
-✓ Prediction market sync jobs started
 ```
 
 ---
@@ -210,7 +208,6 @@ This is already configured in your `.replit` file! ✅
 ```
 ✓ PostgreSQL database connected successfully
 Agon server is running on port 3001
-✓ Prediction market sync jobs started
 ```
 
 ### In Browser:

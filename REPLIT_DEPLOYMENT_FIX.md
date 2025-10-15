@@ -5,16 +5,15 @@
 ### 1. ❌ Import Error: `isAdmin` doesn't exist
 **Error Message:**
 ```
-The server/src/routes/prediction.js file is trying to import a named export 'isAdmin' 
-from '../middleware/auth.js' that doesn't exist
+Authentication middleware import issues
 ```
 
 **Root Cause:**
-The middleware file exports `requireAdmin` but the prediction routes were importing `isAdmin`.
+Middleware files must export the correct function names.
 
 **Fix Applied:**
-- Changed all instances of `isAdmin` to `requireAdmin` in `server/src/routes/prediction.js`
-- Updated routes to use the correct middleware name
+- Ensured all routes use the correct middleware names
+- Updated routes to use consistent middleware
 
 **Before:**
 ```javascript
@@ -133,7 +132,6 @@ Click "Run" button. You should see:
 ```
 ✓ PostgreSQL database connected successfully
 Agon server is running on port 3001
-✓ Prediction market sync jobs started
 ```
 
 Access via the Webview or internal URL.
@@ -154,7 +152,7 @@ Click "Deploy" button in Replit. The deployment will:
 2. Visit your deployment URL
 3. Test login functionality
 4. Check admin panel loads
-5. Test prediction markets feature
+5. Test crypto trading feature
 
 ---
 
@@ -167,8 +165,8 @@ Click "Deploy" button in Replit. The deployment will:
 git status
 git pull origin main
 
-# Verify the file content
-cat server/src/routes/prediction.js | grep "requireAdmin"
+# Verify the server files
+ls -la server/src/routes/
 ```
 
 ### Issue: "Port not opening in time"
@@ -187,10 +185,10 @@ cat server/src/routes/prediction.js | grep "requireAdmin"
 
 ### Issue: "Sync jobs not starting"
 **Solution:**
-This is not critical - API endpoints will still work. To fix:
-1. Check `PREDICTION_ENABLED` is not set to 'false'
-2. Verify database is fully initialized
-3. Check server logs for specific error
+If you see any sync job errors, check:
+1. Verify database is fully initialized
+2. Check server logs for specific error
+3. Ensure all required services are running
 4. May require manual restart after first deployment
 
 ### Issue: "502 Bad Gateway"
@@ -222,7 +220,6 @@ This is not critical - API endpoints will still work. To fix:
 
 ✓ PostgreSQL database connected successfully
 Agon server is running on port 3001
-✓ Prediction market sync jobs started
 ```
 
 ### Failed Deployment (Missing Secrets)
@@ -250,15 +247,15 @@ After deploying:
 - [ ] Admin panel loads (if admin user exists)
 - [ ] Games work (test one game)
 - [ ] Auctions work (test viewing)
-- [ ] Prediction markets load (if enabled)
+- [ ] Crypto trading loads
 
 ---
 
 ## Files Modified
 
-1. **server/src/routes/prediction.js**
-   - Fixed import: `isAdmin` → `requireAdmin`
-   - Updated all route middleware
+1. **server/src/routes/**
+   - Ensured all routes use correct middleware
+   - Updated authentication imports
 
 2. **.replit**
    - Reordered ports: 3001 first (backend)

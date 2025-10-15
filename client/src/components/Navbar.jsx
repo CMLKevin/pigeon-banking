@@ -13,7 +13,7 @@ const Navbar = () => {
   };
 
   const isMarketsActive = () => {
-    return location.pathname.startsWith('/prediction') || location.pathname.startsWith('/portfolio') || location.pathname.startsWith('/crypto');
+    return location.pathname.startsWith('/crypto');
   };
 
   const navLinkClass = (path) => {
@@ -130,32 +130,6 @@ const Navbar = () => {
                 {marketsDropdownOpen && (
                   <div className="absolute top-full mt-2 w-56 bg-phantom-bg-secondary/95 backdrop-blur-xl rounded-2xl shadow-xl border border-phantom-border py-2 z-50">
                     <Link
-                      to="/prediction-markets"
-                      className="flex items-center gap-3 px-4 py-3 text-phantom-text-secondary hover:text-phantom-text-primary hover:bg-phantom-bg-tertiary transition-colors"
-                      onClick={() => setMarketsDropdownOpen(false)}
-                    >
-                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                      </svg>
-                      <div>
-                        <div className="font-medium">Prediction Markets</div>
-                        <div className="text-xs text-phantom-text-tertiary">Trade on outcomes</div>
-                      </div>
-                    </Link>
-                    <Link
-                      to="/prediction-portfolio"
-                      className="flex items-center gap-3 px-4 py-3 text-phantom-text-secondary hover:text-phantom-text-primary hover:bg-phantom-bg-tertiary transition-colors"
-                      onClick={() => setMarketsDropdownOpen(false)}
-                    >
-                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-                      </svg>
-                      <div>
-                        <div className="font-medium">Portfolio</div>
-                        <div className="text-xs text-phantom-text-tertiary">View positions & P&L</div>
-                      </div>
-                    </Link>
-                    <Link
                       to="/crypto"
                       className="flex items-center gap-3 px-4 py-3 text-phantom-text-secondary hover:text-phantom-text-primary hover:bg-phantom-bg-tertiary transition-colors"
                       onClick={() => setMarketsDropdownOpen(false)}
@@ -168,24 +142,6 @@ const Navbar = () => {
                         <div className="text-xs text-phantom-text-tertiary">Leveraged crypto positions</div>
                       </div>
                     </Link>
-                    {user?.is_admin && (
-                      <>
-                        <div className="my-2 border-t border-phantom-border"></div>
-                        <Link
-                          to="/prediction-admin"
-                          className="flex items-center gap-3 px-4 py-3 text-phantom-text-secondary hover:text-phantom-text-primary hover:bg-phantom-bg-tertiary transition-colors"
-                          onClick={() => setMarketsDropdownOpen(false)}
-                        >
-                          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                          </svg>
-                          <div>
-                            <div className="font-medium">Admin Panel</div>
-                            <div className="text-xs text-phantom-text-tertiary">Manage markets</div>
-                          </div>
-                        </Link>
-                      </>
-                    )}
                   </div>
                 )}
               </div>

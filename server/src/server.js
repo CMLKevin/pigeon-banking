@@ -11,10 +11,8 @@ import userRoutes from './routes/user.js';
 import adminRoutes from './routes/admin.js';
 import auctionRoutes from './routes/auction.js';
 import gameRoutes from './routes/games.js';
-import predictionRoutes from './routes/prediction.js';
 import cryptoRoutes from './routes/crypto.js';
 import db from './config/database.js';
-import { startSyncJobs, stopSyncJobs } from './jobs/predictionSync.js';
 import * as coinGeckoService from './services/coingeckoService.js';
 
 dotenv.config();
@@ -65,38 +63,16 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/auctions', auctionRoutes);
 app.use('/api/crypto', cryptoRoutes);
 app.use('/api/games', gameRoutes);
-app.use('/api/prediction', predictionRoutes);
 
 // Start CoinGecko price fetching
 console.log('Starting CoinGecko price fetching service...');
 coinGeckoService.startPriceFetching();
-
-// Start prediction market sync jobs after a delay to ensure database is ready
-// This is especially important for Replit's serverless PostgreSQL
-if (process.env.PREDICTION_ENABLED !== 'false') {
-  // Wait 5 seconds before starting sync jobs to ensure database is fully initialized
-  setTimeout(() => {
-    try {
-      startSyncJobs();
-      console.log('✓ Prediction market sync jobs started');
-    } catch (error) {
-      console.error('❌ Failed to start prediction sync jobs:', error);
-      console.error('Sync jobs will not run, but API endpoints will still work');
-    }
-  }, 5000);
-} else {
-  console.log('ℹ Prediction market sync jobs disabled (PREDICTION_ENABLED=false)');
-}
 
 // Handle graceful shutdown (important for Replit deployments)
 const gracefulShutdown = async (signal) => {
   console.log(`${signal} received, shutting down gracefully...`);
   
   try {
-    // Stop sync jobs first
-    stopSyncJobs();
-    console.log('✓ Sync jobs stopped');
-    
     // Close database connection
     if (db && db.shutdown) {
       await db.shutdown();

@@ -221,88 +221,6 @@ const initSchema = async () => {
     )
   `);
 
-  // Prediction Markets
-  await exec(`
-    CREATE TABLE IF NOT EXISTS prediction_markets (
-      id SERIAL PRIMARY KEY,
-      pm_market_id TEXT UNIQUE NOT NULL,
-      question TEXT NOT NULL,
-      status TEXT NOT NULL DEFAULT 'active',
-      resolution TEXT,
-      yes_token_id TEXT,
-      no_token_id TEXT,
-      end_date TIMESTAMPTZ,
-      metadata JSONB DEFAULT '{}'::jsonb,
-      created_at TIMESTAMPTZ DEFAULT NOW(),
-      updated_at TIMESTAMPTZ DEFAULT NOW()
-    )
-  `);
-
-  await exec(`
-    CREATE TABLE IF NOT EXISTS prediction_quotes (
-      id SERIAL PRIMARY KEY,
-      market_id INTEGER NOT NULL REFERENCES prediction_markets(id) ON DELETE CASCADE,
-      yes_bid NUMERIC(18,6) NOT NULL,
-      yes_ask NUMERIC(18,6) NOT NULL,
-      no_bid NUMERIC(18,6) NOT NULL,
-      no_ask NUMERIC(18,6) NOT NULL,
-      src_timestamp TIMESTAMPTZ,
-      created_at TIMESTAMPTZ DEFAULT NOW()
-    )
-  `);
-
-  await exec(`
-    CREATE TABLE IF NOT EXISTS prediction_positions (
-      id SERIAL PRIMARY KEY,
-      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-      market_id INTEGER NOT NULL REFERENCES prediction_markets(id) ON DELETE CASCADE,
-      side TEXT NOT NULL,
-      quantity NUMERIC(18,6) NOT NULL DEFAULT 0,
-      avg_price NUMERIC(18,6) NOT NULL DEFAULT 0,
-      realized_pnl NUMERIC(18,6) NOT NULL DEFAULT 0,
-      updated_at TIMESTAMPTZ DEFAULT NOW(),
-      UNIQUE(user_id, market_id, side)
-    )
-  `);
-
-  await exec(`
-    CREATE TABLE IF NOT EXISTS prediction_orders (
-      id SERIAL PRIMARY KEY,
-      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-      market_id INTEGER NOT NULL REFERENCES prediction_markets(id) ON DELETE CASCADE,
-      side TEXT NOT NULL,
-      action TEXT NOT NULL,
-      quantity NUMERIC(18,6) NOT NULL,
-      exec_price NUMERIC(18,6) NOT NULL,
-      cost_agon NUMERIC(18,6) NOT NULL,
-      status TEXT NOT NULL DEFAULT 'filled',
-      created_at TIMESTAMPTZ DEFAULT NOW()
-    )
-  `);
-
-  await exec(`
-    CREATE TABLE IF NOT EXISTS prediction_trades (
-      id SERIAL PRIMARY KEY,
-      order_id INTEGER NOT NULL REFERENCES prediction_orders(id) ON DELETE CASCADE,
-      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-      market_id INTEGER NOT NULL REFERENCES prediction_markets(id) ON DELETE CASCADE,
-      side TEXT NOT NULL,
-      quantity NUMERIC(18,6) NOT NULL,
-      exec_price NUMERIC(18,6) NOT NULL,
-      cost_agon NUMERIC(18,6) NOT NULL,
-      created_at TIMESTAMPTZ DEFAULT NOW()
-    )
-  `);
-
-  await exec(`
-    CREATE TABLE IF NOT EXISTS prediction_settlements (
-      id SERIAL PRIMARY KEY,
-      market_id INTEGER NOT NULL REFERENCES prediction_markets(id) ON DELETE CASCADE,
-      resolved_outcome TEXT NOT NULL,
-      settled_at TIMESTAMPTZ DEFAULT NOW()
-    )
-  `);
-
   // Crypto Trading Tables
   await exec(`
     CREATE TABLE IF NOT EXISTS crypto_positions (
@@ -352,16 +270,6 @@ const initSchema = async () => {
   await exec('CREATE INDEX IF NOT EXISTS idx_bids_bidder ON bids(bidder_id)');
   await exec('CREATE INDEX IF NOT EXISTS idx_game_history_user ON game_history(user_id)');
   await exec('CREATE INDEX IF NOT EXISTS idx_game_history_created_at ON game_history(created_at)');
-  await exec('CREATE INDEX IF NOT EXISTS idx_prediction_markets_pm_id ON prediction_markets(pm_market_id)');
-  await exec('CREATE INDEX IF NOT EXISTS idx_prediction_markets_status ON prediction_markets(status)');
-  await exec('CREATE INDEX IF NOT EXISTS idx_prediction_quotes_market ON prediction_quotes(market_id)');
-  await exec('CREATE INDEX IF NOT EXISTS idx_prediction_quotes_created_at ON prediction_quotes(created_at)');
-  await exec('CREATE INDEX IF NOT EXISTS idx_prediction_positions_user ON prediction_positions(user_id)');
-  await exec('CREATE INDEX IF NOT EXISTS idx_prediction_positions_market ON prediction_positions(market_id)');
-  await exec('CREATE INDEX IF NOT EXISTS idx_prediction_orders_user ON prediction_orders(user_id)');
-  await exec('CREATE INDEX IF NOT EXISTS idx_prediction_orders_market ON prediction_orders(market_id)');
-  await exec('CREATE INDEX IF NOT EXISTS idx_prediction_trades_user ON prediction_trades(user_id)');
-  await exec('CREATE INDEX IF NOT EXISTS idx_prediction_trades_market ON prediction_trades(market_id)');
   await exec('CREATE INDEX IF NOT EXISTS idx_crypto_positions_user ON crypto_positions(user_id)');
   await exec('CREATE INDEX IF NOT EXISTS idx_crypto_positions_coin ON crypto_positions(coin_id)');
   await exec('CREATE INDEX IF NOT EXISTS idx_crypto_positions_status ON crypto_positions(status)');
