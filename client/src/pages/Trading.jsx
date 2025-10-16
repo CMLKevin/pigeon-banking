@@ -99,11 +99,28 @@ export default function Trading() {
         withTimeout(cryptoAPI.getUserPositions('open'), 7000)
       ]);
 
-      if (pricesRes.status === 'fulfilled') setPrices(pricesRes.value.data.prices || {});
-      if (walletRes.status === 'fulfilled') setWallet(walletRes.value.data);
-      if (positionsRes.status === 'fulfilled') setPositions(positionsRes.value.data.positions || []);
+      if (pricesRes.status === 'fulfilled') {
+        setPrices(pricesRes.value.data.prices || {});
+      } else {
+        console.error('Failed to load prices:', pricesRes.reason);
+      }
+
+      if (walletRes.status === 'fulfilled') {
+        const walletData = walletRes.value.data.wallet || walletRes.value.data;
+        console.log('Wallet data received:', walletData);
+        console.log('Agon balance:', walletData?.agon);
+        setWallet(walletData);
+      } else {
+        console.error('Failed to load wallet:', walletRes.reason);
+      }
+
+      if (positionsRes.status === 'fulfilled') {
+        setPositions(positionsRes.value.data.positions || []);
+      } else {
+        console.error('Failed to load positions:', positionsRes.reason);
+      }
     } catch (e) {
-      console.error(e);
+      console.error('Load error:', e);
       setError('Failed to load data');
     } finally {
       setLoading(false);
@@ -175,7 +192,7 @@ export default function Trading() {
   const lastUpdated = selectedData?.last_updated ? new Date(selectedData.last_updated) : null;
   const lastUpdatedAgeSec = lastUpdated ? Math.max(0, Math.floor((Date.now() - lastUpdated.getTime()) / 1000)) : null;
   const marginNum = parseFloat(marginAmount) || 0;
-  const walletAgon = wallet ? parseFloat(wallet.agon) : 0;
+  const walletAgon = wallet && wallet.agon != null ? parseFloat(wallet.agon) : 0;
   const canSubmit = !!wallet && marginNum > 0 && isFinite(marginNum) && leverage >= 1 && leverage <= 10 && ['long','short'].includes(positionType) && marginNum <= walletAgon && !!selectedPrice;
 
   const commission = useMemo(() => marginNum * commissionRate, [marginNum, commissionRate]);
@@ -274,7 +291,7 @@ export default function Trading() {
             <div className="bg-phantom-bg-tertiary/50 rounded-lg p-3">
               <div className="text-[10px] text-phantom-text-tertiary uppercase tracking-wide mb-1">Wallet Balance</div>
               <div className="text-lg font-bold text-phantom-accent-primary">
-                {wallet ? `Ⱥ ${Number(wallet.agon).toFixed(2)}` : '--'}
+                {wallet && wallet.agon != null ? `Ⱥ ${Number(wallet.agon).toFixed(2)}` : '--'}
               </div>
             </div>
             <div className="bg-phantom-bg-tertiary/50 rounded-lg p-3">
@@ -476,7 +493,7 @@ export default function Trading() {
                 </svg>
                 Available Balance
               </div>
-              <div className="text-3xl font-bold text-phantom-accent-primary mb-1">{wallet ? `Ⱥ ${Number(wallet.agon).toFixed(2)}` : '--'}</div>
+              <div className="text-3xl font-bold text-phantom-accent-primary mb-1">{wallet && wallet.agon != null ? `Ⱥ ${Number(wallet.agon).toFixed(2)}` : '--'}</div>
               <div className="text-xs text-phantom-text-tertiary">Ready to trade</div>
             </div>
             <div className="bg-phantom-bg-secondary/50 border border-phantom-border rounded-2xl p-6">
