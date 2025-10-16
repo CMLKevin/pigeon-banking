@@ -1,5 +1,5 @@
 import db from '../config/database.js';
-import { getAssetPrice, isSupportedTradingAsset } from '../services/tradingPriceService.js';
+import { getAssetPrice, isSupportedTradingAsset, getCombinedCurrentPricesCached } from '../services/tradingPriceService.js';
 
 /**
  * Calculate commission fee based on leverage
@@ -351,37 +351,36 @@ export const getUserPositions = async (req, res) => {
       status !== 'all' ? [userId, status] : [userId]
     );
     
-    // Get current prices and calculate unrealized PnL for open positions
+    // Get current prices from cache and calculate unrealized PnL for open positions (non-blocking)
     if (status === 'open' || status === 'all') {
       try {
-        const { getCombinedCurrentPrices } = await import('../services/tradingPriceService.js');
-        const prices = await getCombinedCurrentPrices();
-        
+        const prices = await getCombinedCurrentPricesCached();
         positions.forEach(pos => {
-          if (pos.status === 'open' && prices[pos.coin_id]) {
-            const currentPrice = prices[pos.coin_id].price;
+          const priceObj = prices[pos.coin_id];
+          if (pos.status === 'open' && priceObj && priceObj.price != null) {
+            const currentPrice = Number(priceObj.price);
             const entryPrice = parseFloat(pos.entry_price);
             const margin = parseFloat(pos.margin_agon);
             const leverage = parseFloat(pos.leverage);
-            
-            let unrealizedPnl;
-            if (pos.position_type === 'long') {
-              const priceDiff = currentPrice - entryPrice;
-              unrealizedPnl = (priceDiff / entryPrice) * margin * leverage;
-            } else {
-              const priceDiff = entryPrice - currentPrice;
-              unrealizedPnl = (priceDiff / entryPrice) * margin * leverage;
+            if (isFinite(currentPrice) && isFinite(entryPrice) && entryPrice > 0 && isFinite(margin) && isFinite(leverage)) {
+              let unrealizedPnl;
+              if (pos.position_type === 'long') {
+                const priceDiff = currentPrice - entryPrice;
+                unrealizedPnl = (priceDiff / entryPrice) * margin * leverage;
+              } else {
+                const priceDiff = entryPrice - currentPrice;
+                unrealizedPnl = (priceDiff / entryPrice) * margin * leverage;
+              }
+              pos.current_price = currentPrice;
+              pos.unrealized_pnl = unrealizedPnl;
+              pos.total_value = margin + unrealizedPnl;
+              pos.pnl_percentage = (unrealizedPnl / margin) * 100;
             }
-            
-            pos.current_price = currentPrice;
-            pos.unrealized_pnl = unrealizedPnl;
-            pos.total_value = margin + unrealizedPnl;
-            pos.pnl_percentage = (unrealizedPnl / margin) * 100;
           }
         });
       } catch (priceError) {
-        console.error('Error fetching prices for positions:', priceError);
-        // Continue without price updates if API fails
+        console.error('Error enriching positions with cached prices:', priceError);
+        // Continue without price updates if cache is empty
       }
     }
     

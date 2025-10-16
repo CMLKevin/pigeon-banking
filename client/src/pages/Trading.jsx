@@ -82,17 +82,25 @@ export default function Trading() {
     return netMargin * leverage;
   }, [marginAmount, commissionRate, leverage]);
 
+  const withTimeout = (p, ms) => {
+    return Promise.race([
+      p,
+      new Promise((_, reject) => setTimeout(() => reject(new Error('Request timed out')), ms))
+    ]);
+  };
+
   const load = async () => {
     try {
       setLoading(true);
-      const [pricesRes, walletRes, positionsRes] = await Promise.all([
-        tradingAPI.getCurrentPrices(),
-        walletAPI.getWallet(),
-        cryptoAPI.getUserPositions('open')
+      const [pricesRes, walletRes, positionsRes] = await Promise.allSettled([
+        withTimeout(tradingAPI.getCurrentPrices(), 7000),
+        withTimeout(walletAPI.getWallet(), 7000),
+        withTimeout(cryptoAPI.getUserPositions('open'), 7000)
       ]);
-      setPrices(pricesRes.data.prices || {});
-      setWallet(walletRes.data);
-      setPositions(positionsRes.data.positions || []);
+
+      if (pricesRes.status === 'fulfilled') setPrices(pricesRes.value.data.prices || {});
+      if (walletRes.status === 'fulfilled') setWallet(walletRes.value.data);
+      if (positionsRes.status === 'fulfilled') setPositions(positionsRes.value.data.positions || []);
     } catch (e) {
       console.error(e);
       setError('Failed to load data');

@@ -1,5 +1,9 @@
 import { getSupportedAssetPrices, SUPPORTED_STOCKS_AND_ASSETS, getPriceForSymbol, getSupportedCryptoPrices, SUPPORTED_CRYPTO, getCachedPriceForSymbol } from './polygonService.js';
 
+let isWarming = false;
+let lastWarmAt = 0;
+const MIN_WARM_INTERVAL_MS = 60000; // don't warm more than once per minute
+
 export const SUPPORTED_TRADING_ASSETS = {
   // Crypto (ids align with existing crypto UI/backend)
   bitcoin: { type: 'crypto' },
@@ -45,6 +49,24 @@ export async function getCombinedCurrentPricesCached() {
     }
   }
   return combined;
+}
+
+export async function warmPricesIfNeeded() {
+  const now = Date.now();
+  if (isWarming) return false;
+  if (now - lastWarmAt < MIN_WARM_INTERVAL_MS) return false;
+  isWarming = true;
+  try {
+    await getSupportedCryptoPrices();
+    await getSupportedAssetPrices();
+    lastWarmAt = Date.now();
+    return true;
+  } catch (e) {
+    console.warn('Price warm failed:', e.message);
+    return false;
+  } finally {
+    isWarming = false;
+  }
 }
 
 export async function getCombinedCurrentPrices() {

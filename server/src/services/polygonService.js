@@ -3,6 +3,7 @@ import fetch from 'node-fetch';
 // Polygon API config
 const POLYGON_API_KEY = process.env.POLYGON_API_KEY || 'quOm95IrOskctPxm8Qa_luWT8thYX3Gc';
 const POLYGON_BASE_URL = 'https://api.polygon.io';
+const POLYGON_ENABLE_LAST = (process.env.POLYGON_ENABLE_LAST || 'false').toLowerCase() === 'true';
 
 // Map supported non-crypto assets to Polygon symbols
 // Gold uses currency-like metal pair XAUUSD on Polygon (prefixed with C:)
@@ -40,7 +41,7 @@ async function waitForRateLimit() {
   
   if (timeSinceLastCall < API_CALL_DELAY_MS) {
     const waitTime = API_CALL_DELAY_MS - timeSinceLastCall;
-    console.log(`Rate limiting: waiting ${Math.round(waitTime / 1000)}s before next API call`);
+    console.log(`Rate limiting: target ${Math.round(API_CALL_DELAY_MS / 1000)}s, waiting ${Math.round(waitTime / 1000)}s before next API call`);
     await delay(waitTime);
   }
   
@@ -64,26 +65,24 @@ async function polygonJson(url) {
 
 // Fetch latest price for a Polygon symbol using aggregates (previous close + last trade)
 async function fetchLatestForSymbol(symbol) {
-  // Try last trade endpoint first
+  // Build endpoints
   const isCurrency = symbol.startsWith('C:');
   const isCrypto = symbol.startsWith('X:');
-  // Build endpoint per market
-  let lastUrl;
-  if (isCrypto) {
-    // X:BTCUSD -> /v2/last/trade/crypto/BTC/USD
-    const pair = symbol.slice(2);
-    const from = pair.slice(0, 3);
-    const to = pair.slice(3);
-    lastUrl = `${POLYGON_BASE_URL}/v2/last/trade/crypto/${encodeURIComponent(from)}/${encodeURIComponent(to)}?apiKey=${POLYGON_API_KEY}`;
-  } else if (isCurrency) {
-    // C:XAUUSD -> /v1/last_quote/currencies/XAU/USD
-    const pair = symbol.slice(2);
-    const from = pair.slice(0, 3);
-    const to = pair.slice(3);
-    lastUrl = `${POLYGON_BASE_URL}/v1/last_quote/currencies/${encodeURIComponent(from)}/${encodeURIComponent(to)}?apiKey=${POLYGON_API_KEY}`;
-  } else {
-    // Stocks
-    lastUrl = `${POLYGON_BASE_URL}/v2/last/trade/${encodeURIComponent(symbol)}?apiKey=${POLYGON_API_KEY}`;
+  let lastUrl = null;
+  if (POLYGON_ENABLE_LAST) {
+    if (isCrypto) {
+      const pair = symbol.slice(2);
+      const from = pair.slice(0, 3);
+      const to = pair.slice(3);
+      lastUrl = `${POLYGON_BASE_URL}/v2/last/trade/crypto/${encodeURIComponent(from)}/${encodeURIComponent(to)}?apiKey=${POLYGON_API_KEY}`;
+    } else if (isCurrency) {
+      const pair = symbol.slice(2);
+      const from = pair.slice(0, 3);
+      const to = pair.slice(3);
+      lastUrl = `${POLYGON_BASE_URL}/v1/last_quote/currencies/${encodeURIComponent(from)}/${encodeURIComponent(to)}?apiKey=${POLYGON_API_KEY}`;
+    } else {
+      lastUrl = `${POLYGON_BASE_URL}/v2/last/trade/${encodeURIComponent(symbol)}?apiKey=${POLYGON_API_KEY}`;
+    }
   }
   const prevCloseUrl = `${POLYGON_BASE_URL}/v2/aggs/ticker/${encodeURIComponent(symbol)}/prev?adjusted=true&apiKey=${POLYGON_API_KEY}`;
 
@@ -92,19 +91,17 @@ async function fetchLatestForSymbol(symbol) {
   let prevClosePrice = null;
 
   try {
-    // Apply rate limiting before API calls
+    // Apply rate limiting and fetch data based on plan
+    let lastAny = null;
+    if (POLYGON_ENABLE_LAST && lastUrl) {
+      await waitForRateLimit();
+      lastAny = await polygonJson(lastUrl).catch(err => {
+        console.warn(`Failed to fetch last ${isCurrency ? 'quote' : 'trade'} for ${symbol}:`, err.message);
+        return null;
+      });
+    }
+
     await waitForRateLimit();
-    
-    // Fetch last trade or last quote depending on asset class
-    const lastAny = await polygonJson(lastUrl).catch(err => {
-      console.warn(`Failed to fetch last ${isCurrency ? 'quote' : 'trade'} for ${symbol}:`, err.message);
-      return null;
-    });
-    
-    // Wait before next API call
-    await waitForRateLimit();
-    
-    // Fetch previous close for 24h change
     const prevClose = await polygonJson(prevCloseUrl).catch(err => {
       console.warn(`Failed to fetch prev close for ${symbol}:`, err.message);
       return null;
