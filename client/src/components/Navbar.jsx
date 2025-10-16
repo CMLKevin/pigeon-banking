@@ -1,7 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useState, useRef, useEffect } from 'react';
-import NotificationCenter from './NotificationCenter';
 
 const Navbar = () => {
   const { user, logout } = useAuth();
@@ -160,7 +159,6 @@ const Navbar = () => {
           </div>
 
           <div className="flex items-center space-x-4">
-            <NotificationCenter />
             <div className="hidden sm:flex items-center space-x-3 px-4 py-2.5 bg-phantom-bg-tertiary rounded-2xl border border-phantom-border">
               <div className="w-9 h-9 bg-gradient-phantom rounded-full flex items-center justify-center text-white font-bold text-sm shadow-md">
                 {user?.username?.charAt(0).toUpperCase()}

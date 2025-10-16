@@ -5,14 +5,12 @@ import Button from '../components/Button';
 import Input from '../components/Input';
 import { auctionAPI, walletAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
-import { useNotifications } from '../context/NotificationContext';
 import { formatCurrency } from '../utils/formatters';
 
 const AuctionDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { addNotification } = useNotifications();
   const [auction, setAuction] = useState(null);
   const [bids, setBids] = useState([]);
   const [wallet, setWallet] = useState(null);
@@ -82,15 +80,6 @@ const AuctionDetail = () => {
     try {
       await auctionAPI.placeBid(id, parseFloat(bidAmount));
       setSuccess('Bid placed successfully!');
-      
-      // Add notification
-      addNotification({
-        type: 'success',
-        title: 'Bid Placed Successfully',
-        message: `Your bid of Ⱥ ${formatCurrency(bidAmount)} has been placed on "${auction.item_name}"`,
-        category: 'bid'
-      });
-      
       await loadData();
       
       setTimeout(() => setSuccess(''), 3000);
@@ -111,15 +100,6 @@ const AuctionDetail = () => {
     try {
       await auctionAPI.confirmDelivery(id);
       setSuccess('Delivery confirmed! Payment has been released to the seller.');
-      
-      // Add notification
-      addNotification({
-        type: 'success',
-        title: 'Delivery Confirmed',
-        message: `Payment of Ⱥ ${formatCurrency(auction.current_bid)} has been released to ${auction.seller_username}`,
-        category: 'escrow'
-      });
-      
       await loadData();
       
       setTimeout(() => {
@@ -147,15 +127,6 @@ const AuctionDetail = () => {
     try {
       await auctionAPI.reportDeliveryIssue(id, issueType, issueDescription);
       setSuccess('Issue reported successfully. Admin will review your case.');
-      
-      // Add notification
-      addNotification({
-        type: 'warning',
-        title: 'Issue Reported',
-        message: `Delivery issue reported for "${auction.item_name}". Admin will review your case.`,
-        category: 'delivery'
-      });
-      
       setShowIssueForm(false);
       setIssueType('');
       setIssueDescription('');
