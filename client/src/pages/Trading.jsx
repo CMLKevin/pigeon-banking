@@ -378,12 +378,12 @@ export default function Trading() {
               <TradingViewChart 
                 symbol={ASSETS.find(a => a.id === selectedAsset)?.tvSymbol || 'BTCUSD'} 
                 theme="dark" 
-                height={550}
+                height={650}
               />
             </div>
 
             {/* Asset Selection - Below Chart */}
-            <div className="bg-phantom-bg-secondary/50 border border-phantom-border rounded-2xl p-5 shadow-lg">
+            <div className="bg-phantom-bg-secondary/50 border border-phantom-border rounded-2xl p-6 shadow-lg" style={{minHeight: '200px'}}>
               <div className="text-sm font-semibold text-phantom-text-primary mb-4 flex items-center gap-2">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
@@ -633,57 +633,57 @@ export default function Trading() {
                 const assetInfo = ASSETS.find(a => a.id === p.coin_id);
                 return (
                   <div key={p.id} className="bg-phantom-bg-tertiary/40 rounded-xl p-5 border border-phantom-border/50 hover:border-phantom-accent-primary/30 transition-all">
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex items-center gap-2">
-                        <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${assetInfo?.color || 'from-gray-500 to-gray-600'} flex items-center justify-center text-white text-xs font-bold`}>
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${assetInfo?.color || 'from-gray-500 to-gray-600'} flex items-center justify-center text-white text-sm font-bold`}>
                           {assetInfo?.symbol || p.coin_id.slice(0,3).toUpperCase()}
                         </div>
                         <div>
-                          <div className="text-sm font-bold text-phantom-text-primary">{assetInfo?.name || p.coin_id}</div>
-                          <div className="text-[11px] text-phantom-text-tertiary">
+                          <div className="text-base font-bold text-phantom-text-primary">{assetInfo?.name || p.coin_id}</div>
+                          <div className="text-xs text-phantom-text-tertiary">
                             {p.position_type === 'long' ? '📈' : '📉'} {p.position_type.toUpperCase()} • {Number(p.leverage).toFixed(0)}x
                           </div>
                         </div>
                       </div>
-                      <div className={`px-2 py-1 rounded-lg text-xs font-bold ${pnlPct == null ? 'bg-phantom-bg-tertiary text-phantom-text-tertiary' : pnlPct >= 0 ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
+                      <div className={`px-3 py-1.5 rounded-lg text-sm font-bold ${pnlPct == null ? 'bg-phantom-bg-tertiary text-phantom-text-tertiary' : pnlPct >= 0 ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
                         {pnlPct == null ? '--' : `${pnlPct >= 0 ? '+' : ''}${pnlPct.toFixed(2)}%`}
                       </div>
                     </div>
-                    <div className="grid grid-cols-3 gap-3 mb-3 text-xs">
+                    <div className="grid grid-cols-3 gap-4 mb-4 text-sm">
                       <div>
-                        <div className="text-phantom-text-tertiary">Entry Price</div>
+                        <div className="text-phantom-text-tertiary mb-1">Entry Price</div>
                         <div className="text-phantom-text-primary font-semibold">${Number(p.entry_price).toFixed(2)}</div>
                       </div>
                       <div>
-                        <div className="text-phantom-text-tertiary">Current Price</div>
+                        <div className="text-phantom-text-tertiary mb-1">Current Price</div>
                         <div className="text-phantom-text-primary font-semibold">{priceNow != null ? `$${priceNow.toFixed(2)}` : '--'}</div>
                       </div>
                       <div>
-                        <div className="text-phantom-text-tertiary">Margin</div>
+                        <div className="text-phantom-text-tertiary mb-1">Margin</div>
                         <div className="text-phantom-text-primary font-semibold">Ⱥ {Number(p.margin_agon).toFixed(2)}</div>
                       </div>
                       <div>
-                        <div className="text-phantom-text-tertiary">P&L</div>
+                        <div className="text-phantom-text-tertiary mb-1">P&L</div>
                         <div className={`font-semibold ${pnlAmount == null ? 'text-phantom-text-tertiary' : pnlAmount >= 0 ? 'text-green-500' : 'text-red-500'}`}>
                           {pnlAmount == null ? '--' : `${pnlAmount >= 0 ? '+' : ''}Ⱥ ${pnlAmount.toFixed(2)}`}
                         </div>
                       </div>
                       <div>
-                        <div className="text-phantom-text-tertiary">Daily Fee</div>
+                        <div className="text-phantom-text-tertiary mb-1">Daily Fee</div>
                         <div className="text-yellow-500 font-semibold">
                           {p.daily_fee != null ? `Ⱥ ${Number(p.daily_fee).toFixed(4)}` : '--'}
                         </div>
                       </div>
                       <div>
-                        <div className="text-phantom-text-tertiary">Total Value</div>
+                        <div className="text-phantom-text-tertiary mb-1">Total Value</div>
                         <div className="text-phantom-accent-primary font-bold">Ⱥ {val.toFixed(2)}</div>
                       </div>
                     </div>
-                    <div className="flex items-center justify-end pt-3 border-t border-phantom-border">
+                    <div className="flex items-center justify-end pt-4 border-t border-phantom-border">
                       <button
                         onClick={() => handleClose(p.id)}
                         disabled={!!closing[p.id]}
-                        className="px-4 py-2 text-sm font-semibold rounded-lg bg-red-500/10 border border-red-500/30 text-red-500 hover:bg-red-500/20 hover:border-red-500/50 disabled:opacity-50 transition-all"
+                        className="px-5 py-2.5 text-sm font-semibold rounded-lg bg-red-500/10 border border-red-500/30 text-red-500 hover:bg-red-500/20 hover:border-red-500/50 disabled:opacity-50 transition-all"
                       >
                         {closing[p.id] ? 'Closing...' : 'Close Position'}
                       </button>
