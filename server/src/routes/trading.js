@@ -9,10 +9,19 @@ router.use(authenticateToken);
 router.get('/prices', async (req, res) => {
   try {
     const prices = await getCombinedCurrentPrices();
-    res.json({ success: true, prices });
+    
+    // If we got at least some prices, return them
+    if (Object.keys(prices).length > 0) {
+      return res.json({ success: true, prices });
+    }
+    
+    // If no prices available, return empty object with success
+    console.warn('No prices available from API, returning empty object');
+    res.json({ success: true, prices: {} });
   } catch (e) {
     console.error('Error fetching trading prices:', e);
-    res.status(500).json({ error: 'Failed to fetch trading prices' });
+    // Return empty prices instead of error to prevent frontend crash
+    res.json({ success: true, prices: {}, warning: 'Price data temporarily unavailable' });
   }
 });
 

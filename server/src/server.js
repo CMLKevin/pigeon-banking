@@ -14,7 +14,6 @@ import gameRoutes from './routes/games.js';
 import cryptoRoutes from './routes/crypto.js';
 import tradingRoutes from './routes/trading.js';
 import db from './config/database.js';
-// CoinGecko no longer used for pricing; keeping imports removed
 import { startMaintenanceFeeScheduler } from './jobs/maintenanceFees.js';
 
 dotenv.config();
@@ -67,8 +66,7 @@ app.use('/api/crypto', cryptoRoutes);
 app.use('/api/trading', tradingRoutes);
 app.use('/api/games', gameRoutes);
 
-// Start CoinGecko price fetching
-// CoinGecko price fetching disabled after migration to Polygon pricing
+// Price fetching now handled by Polygon.io API via tradingPriceService
 
 // Start maintenance fee scheduler
 console.log('Starting maintenance fee scheduler...');

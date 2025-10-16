@@ -1,19 +1,12 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { useState, useRef, useEffect } from 'react';
 
 const Navbar = () => {
   const { user, logout } = useAuth();
   const location = useLocation();
-  const [marketsDropdownOpen, setMarketsDropdownOpen] = useState(false);
-  const dropdownRef = useRef(null);
 
   const isActive = (path) => {
     return location.pathname === path;
-  };
-
-  const isMarketsActive = () => {
-    return location.pathname.startsWith('/crypto') || location.pathname.startsWith('/trading');
   };
 
   const navLinkClass = (path) => {
@@ -23,26 +16,6 @@ const Navbar = () => {
         : 'text-phantom-text-secondary hover:text-phantom-text-primary hover:bg-phantom-bg-secondary'
     }`;
   };
-
-  const navDropdownClass = () => {
-    return `px-4 py-2.5 rounded-2xl font-medium transition-all duration-200 cursor-pointer ${
-      isMarketsActive()
-        ? 'bg-gradient-phantom text-white shadow-glow'
-        : 'text-phantom-text-secondary hover:text-phantom-text-primary hover:bg-phantom-bg-secondary'
-    }`;
-  };
-
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setMarketsDropdownOpen(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
 
   return (
     <nav className="bg-phantom-bg-secondary/50 backdrop-blur-xl border-b border-phantom-border sticky top-0 z-50">
@@ -110,41 +83,14 @@ const Navbar = () => {
                 </span>
               </Link>
               
-              {/* Markets Dropdown */}
-              <div className="relative" ref={dropdownRef}>
-                <button
-                  onClick={() => setMarketsDropdownOpen(!marketsDropdownOpen)}
-                  className={navDropdownClass()}
-                >
-                  <span className="flex items-center gap-2">
-                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                    </svg>
-                    Markets
-                    <svg className={`w-4 h-4 transition-transform ${marketsDropdownOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </span>
-                </button>
-                
-                {marketsDropdownOpen && (
-                  <div className="absolute top-full mt-2 w-56 bg-phantom-bg-secondary/95 backdrop-blur-xl rounded-2xl shadow-xl border border-phantom-border py-2 z-50">
-                    <Link
-                      to="/trading"
-                      className="flex items-center gap-3 px-4 py-3 text-phantom-text-secondary hover:text-phantom-text-primary hover:bg-phantom-bg-tertiary transition-colors"
-                      onClick={() => setMarketsDropdownOpen(false)}
-                    >
-                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                      <div>
-                        <div className="font-medium">Trading</div>
-                        <div className="text-xs text-phantom-text-tertiary">Crypto + Stocks + Gold</div>
-                      </div>
-                    </Link>
-                  </div>
-                )}
-              </div>
+              <Link to="/trading" className={navLinkClass('/trading')}>
+                <span className="flex items-center gap-2">
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  Trading
+                </span>
+              </Link>
               {user?.is_admin && (
                 <Link to="/admin" className={navLinkClass('/admin')}>
                   <span className="flex items-center gap-2">

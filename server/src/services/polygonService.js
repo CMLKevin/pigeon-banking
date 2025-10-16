@@ -27,7 +27,14 @@ const MIN_REFRESH_MS = 15000; // 15 seconds
 async function polygonJson(url) {
   const res = await fetch(url);
   if (!res.ok) {
-    throw new Error(`Polygon API error: ${res.status} ${res.statusText}`);
+    const errorMsg = `Polygon API error: ${res.status} ${res.statusText}`;
+    if (res.status === 403) {
+      throw new Error(`API access forbidden (403) - may be rate limited or API key issue`);
+    }
+    if (res.status === 429) {
+      throw new Error(`Rate limit exceeded (429) - too many requests`);
+    }
+    throw new Error(errorMsg);
   }
   return res.json();
 }
@@ -43,8 +50,14 @@ async function fetchLatestForSymbol(symbol) {
 
   try {
     const [lastTrade, prevClose] = await Promise.all([
-      polygonJson(lastTradeUrl),
-      polygonJson(prevCloseUrl)
+      polygonJson(lastTradeUrl).catch(err => {
+        console.warn(`Failed to fetch last trade for ${symbol}:`, err.message);
+        return null;
+      }),
+      polygonJson(prevCloseUrl).catch(err => {
+        console.warn(`Failed to fetch prev close for ${symbol}:`, err.message);
+        return null;
+      })
     ]);
 
     if (lastTrade && lastTrade.results && lastTrade.results.price) {
@@ -61,7 +74,7 @@ async function fetchLatestForSymbol(symbol) {
       changePct = ((lastPrice - prevClosePrice) / prevClosePrice) * 100;
     }
   } catch (e) {
-    // Bubble up after allowing cached fallback by caller
+    console.error(`Error processing price data for ${symbol}:`, e.message);
     throw e;
   }
 
@@ -83,13 +96,22 @@ export async function getPriceForSymbol(symbol) {
     return cache; // serve cached within 15s window
   }
 
-  const fresh = await fetchLatestForSymbol(symbol);
-  const entry = {
-    ...fresh,
-    last_fetch_ms: now
-  };
-  symbolCache.set(symbol, entry);
-  return entry;
+  try {
+    const fresh = await fetchLatestForSymbol(symbol);
+    const entry = {
+      ...fresh,
+      last_fetch_ms: now
+    };
+    symbolCache.set(symbol, entry);
+    return entry;
+  } catch (error) {
+    console.warn(`Failed to fetch fresh price for ${symbol}, using cache if available:`, error.message);
+    if (cache) {
+      console.log(`Returning stale cache for ${symbol}`);
+      return cache;
+    }
+    throw error;
+  }
 }
 
 export async function getSupportedAssetPrices() {
@@ -99,10 +121,13 @@ export async function getSupportedAssetPrices() {
         const data = await getPriceForSymbol(asset.symbol);
         return [asset.id, { id: asset.id, symbol: asset.symbol, name: asset.name, price: data.price, change_24h: data.change_24h, last_updated: data.last_updated }];
       } catch (e) {
+        console.warn(`Failed to get price for ${asset.id}:`, e.message);
         const cache = symbolCache.get(asset.symbol);
         if (cache) {
+          console.log(`Using cached data for ${asset.id}`);
           return [asset.id, { id: asset.id, symbol: asset.symbol, name: asset.name, price: cache.price, change_24h: cache.change_24h, last_updated: cache.last_updated }];
         }
+        // Return null to skip this asset if no cache available
         return [asset.id, null];
       }
     })
@@ -122,10 +147,13 @@ export async function getSupportedCryptoPrices() {
         const data = await getPriceForSymbol(asset.symbol);
         return [asset.id, { id: asset.id, symbol: asset.symbol, name: asset.name, price: data.price, change_24h: data.change_24h, last_updated: data.last_updated }];
       } catch (e) {
+        console.warn(`Failed to get price for ${asset.id}:`, e.message);
         const cache = symbolCache.get(asset.symbol);
         if (cache) {
+          console.log(`Using cached data for ${asset.id}`);
           return [asset.id, { id: asset.id, symbol: asset.symbol, name: asset.name, price: cache.price, change_24h: cache.change_24h, last_updated: cache.last_updated }];
         }
+        // Return null to skip this asset if no cache available
         return [asset.id, null];
       }
     })
