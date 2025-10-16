@@ -1,6 +1,6 @@
 import express from 'express';
 import { authenticateToken } from '../middleware/auth.js';
-import { getCombinedCurrentPrices, getCombinedCurrentPricesCached } from '../services/tradingPriceService.js';
+import { getCombinedCurrentPricesCached, warmPricesIfNeeded } from '../services/tradingPriceService.js';
 
 const router = express.Router();
 
@@ -12,13 +12,13 @@ router.get('/prices', async (req, res) => {
     const cached = await getCombinedCurrentPricesCached();
     if (Object.keys(cached).length > 0) {
       // Warm missing assets in background (do not await)
-      Promise.resolve(getCombinedCurrentPrices()).catch(() => {});
+      Promise.resolve(warmPricesIfNeeded()).catch(() => {});
       return res.json({ success: true, prices: cached });
     }
 
     // No cache yet: trigger background warm and return empty
     console.warn('No prices in cache yet. Triggering background warm.');
-    Promise.resolve(getCombinedCurrentPrices()).catch(() => {});
+    Promise.resolve(warmPricesIfNeeded()).catch(() => {});
     return res.json({ success: true, prices: {}, warning: 'Warming price cache' });
   } catch (e) {
     console.error('Error fetching trading prices:', e);
