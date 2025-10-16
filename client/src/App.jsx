@@ -16,7 +16,7 @@ import Games from './pages/Games';
 import CoinFlip from './pages/CoinFlip';
 import Blackjack from './pages/Blackjack';
 import Plinko from './pages/Plinko';
-import Crypto from './pages/Crypto';
+import Trading from './pages/Trading';
 
 function App() {
   return (
@@ -130,7 +130,15 @@ function App() {
             path="/crypto"
             element={
               <ProtectedRoute>
-                <Crypto />
+                <Trading />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/trading"
+            element={
+              <ProtectedRoute>
+                <Trading />
               </ProtectedRoute>
             }
           />

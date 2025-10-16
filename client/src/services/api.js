@@ -103,5 +103,10 @@ export const cryptoAPI = {
   getUserStats: () => api.get('/crypto/stats'),
 };
 
+// Unified Trading endpoints
+export const tradingAPI = {
+  getCurrentPrices: () => api.get('/trading/prices'),
+};
+
 export default api;
 

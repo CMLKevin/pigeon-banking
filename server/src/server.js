@@ -12,8 +12,10 @@ import adminRoutes from './routes/admin.js';
 import auctionRoutes from './routes/auction.js';
 import gameRoutes from './routes/games.js';
 import cryptoRoutes from './routes/crypto.js';
+import tradingRoutes from './routes/trading.js';
 import db from './config/database.js';
-import * as coinGeckoService from './services/coingeckoService.js';
+// CoinGecko no longer used for pricing; keeping imports removed
+import { startMaintenanceFeeScheduler } from './jobs/maintenanceFees.js';
 
 dotenv.config();
 
@@ -62,11 +64,15 @@ app.use('/api/users', userRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/auctions', auctionRoutes);
 app.use('/api/crypto', cryptoRoutes);
+app.use('/api/trading', tradingRoutes);
 app.use('/api/games', gameRoutes);
 
 // Start CoinGecko price fetching
-console.log('Starting CoinGecko price fetching service...');
-coinGeckoService.startPriceFetching();
+// CoinGecko price fetching disabled after migration to Polygon pricing
+
+// Start maintenance fee scheduler
+console.log('Starting maintenance fee scheduler...');
+startMaintenanceFeeScheduler();
 
 // Handle graceful shutdown (important for Replit deployments)
 const gracefulShutdown = async (signal) => {

@@ -1,5 +1,5 @@
 import db from '../config/database.js';
-import * as coinGeckoService from '../services/coingeckoService.js';
+import { getAssetPrice, isSupportedTradingAsset } from '../services/tradingPriceService.js';
 
 /**
  * Calculate commission fee based on leverage
@@ -30,13 +30,25 @@ function calculateLiquidationPrice(entryPrice, leverage, positionType) {
   }
 }
 
+function calculateDailyMaintenanceRate(leverage) {
+  const minRate = 0.001; // 0.1%
+  const maxRate = 0.01; // 1%
+  const minLev = 1;
+  const maxLev = 10;
+  const lev = Math.min(Math.max(Number(leverage) || 1, minLev), maxLev);
+  return minRate + ((lev - minLev) / (maxLev - minLev)) * (maxRate - minRate);
+}
+
 /**
  * Get current prices for all supported coins
  */
 export const getCurrentPrices = async (req, res) => {
   try {
-    const prices = await coinGeckoService.getCurrentPrices();
-    res.json({ success: true, prices });
+    const { getCombinedCurrentPrices } = await import('../services/tradingPriceService.js');
+    const prices = await getCombinedCurrentPrices();
+    const subset = ['bitcoin', 'ethereum', 'dogecoin'];
+    const filtered = Object.fromEntries(Object.entries(prices).filter(([k]) => subset.includes(k)));
+    res.json({ success: true, prices: filtered });
   } catch (error) {
     console.error('Error getting current prices:', error);
     res.status(500).json({ error: 'Failed to fetch current prices' });
@@ -51,8 +63,9 @@ export const getHistoricalPrices = async (req, res) => {
     const { coinId } = req.params;
     const { days = 7 } = req.query;
     
-    if (!coinGeckoService.SUPPORTED_COINS[coinId]) {
-      return res.status(400).json({ error: 'Unsupported coin' });
+    // Accept both crypto coinIds and new trading assets (gold, tsla, aapl, nvda)
+    if (!isSupportedTradingAsset(coinId)) {
+      return res.status(400).json({ error: 'Unsupported asset' });
     }
     
     const prices = await coinGeckoService.getHistoricalPrices(coinId, parseInt(days));
@@ -122,7 +135,7 @@ export const openPosition = async (req, res) => {
       }
       
       // Get current price
-      const currentPrice = await coinGeckoService.getCoinPrice(coinId);
+      const currentPrice = await getAssetPrice(coinId);
       if (!currentPrice) {
         throw new Error('Failed to fetch current price');
       }
@@ -146,8 +159,8 @@ export const openPosition = async (req, res) => {
       const position = await t.queryOne(
         `INSERT INTO crypto_positions (
           user_id, coin_id, position_type, leverage, quantity, 
-          entry_price, liquidation_price, margin_agon, status
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'open')
+          entry_price, liquidation_price, margin_agon, status, last_maintenance_fee_at, total_maintenance_fees
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'open', NOW(), 0)
         RETURNING *`,
         [userId, coinId, positionType, leverageNum, quantity, entryPrice, liquidationPrice, netMargin]
       );
@@ -204,7 +217,7 @@ export const closePosition = async (req, res) => {
       }
       
       // Get current price
-      const currentPrice = await coinGeckoService.getCoinPrice(position.coin_id);
+      const currentPrice = await getAssetPrice(position.coin_id);
       if (!currentPrice) {
         throw new Error('Failed to fetch current price');
       }
@@ -361,7 +374,7 @@ export const getPositionDetails = async (req, res) => {
     
     // Get current price if position is open
     if (position.status === 'open') {
-      const currentPrice = await coinGeckoService.getCoinPrice(position.coin_id);
+      const currentPrice = await getAssetPrice(position.coin_id);
       if (currentPrice) {
         const entryPrice = parseFloat(position.entry_price);
         const margin = parseFloat(position.margin_agon);
