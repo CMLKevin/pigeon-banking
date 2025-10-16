@@ -250,6 +250,10 @@ export default function Trading() {
           out.unrealized_pnl = unrealizedPnl;
           out.total_value = margin + unrealizedPnl;
           out.pnl_percentage = margin > 0 ? (unrealizedPnl / margin) * 100 : null;
+          
+          // Calculate daily maintenance fee
+          const maintenanceFeeRate = 0.001 + ((lev - 1) / 9) * 0.009;
+          out.daily_fee = margin * maintenanceFeeRate;
         }
       }
       return out;
@@ -338,103 +342,201 @@ export default function Trading() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 py-6">
+      <div className="max-w-[1800px] mx-auto px-6 py-8">
         {Object.keys(prices || {}).length === 0 && (
-          <div className="mb-4 bg-yellow-500/10 border border-yellow-500/30 text-yellow-500 px-4 py-3 rounded-xl text-sm flex items-center gap-2">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="mb-6 bg-yellow-500/10 border border-yellow-500/30 text-yellow-500 px-5 py-4 rounded-xl text-sm flex items-center gap-3">
+            <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
             </svg>
-            <span>Live prices are temporarily unavailable. Data will appear as it is fetched.</span>
+            <span>Live prices are loading. Data will appear as it is fetched.</span>
           </div>
         )}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 space-y-6">
-            {/* TradingView Chart */}
-            <div className="bg-phantom-bg-secondary/50 border border-phantom-border rounded-2xl p-4 overflow-hidden">
-              <TradingViewChart 
-                symbol={ASSETS.find(a => a.id === selectedAsset)?.tvSymbol || 'BTCUSD'} 
-                theme="dark" 
-                height={450}
-              />
-            </div>
-
-            <div className="flex gap-2 overflow-x-auto pb-2 -mb-2">
-              {ASSETS.map(a => {
-                const data = prices[a.id];
-                const p = data?.price;
-                const ch = Number(data?.change_24h ?? 0);
-                const active = selectedAsset === a.id;
-                return (
-                  <button
-                    key={a.id}
-                    type="button"
-                    onClick={() => setSelectedAsset(a.id)}
-                    className={`min-w-[120px] px-3 py-2 rounded-xl border transition-all ${
-                      active
-                        ? 'bg-gradient-phantom text-white shadow-glow border-transparent'
-                        : 'bg-phantom-bg-secondary/50 border-phantom-border text-phantom-text-secondary hover:text-phantom-text-primary hover:bg-phantom-bg-tertiary'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="text-xs font-medium">{a.symbol}</div>
-                      <div className={`text-[11px] ${ch >= 0 ? 'text-green-400' : 'text-red-400'}`}>{(isFinite(ch) ? ch : 0).toFixed(2)}%</div>
-                    </div>
-                    <div className="text-sm font-semibold">{p != null ? `$${Number(p).toFixed(2)}` : '--'}</div>
-                  </button>
-                );
-              })}
-            </div>
-            <div className="bg-phantom-bg-secondary/50 border border-phantom-border rounded-2xl p-6">
-              <div className="flex items-center justify-between mb-6">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          <div className="lg:col-span-8 space-y-6">
+            {/* TradingView Chart - Larger */}
+            <div className="bg-phantom-bg-secondary/50 border border-phantom-border rounded-2xl p-6 overflow-hidden shadow-lg">
+              <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
-                  <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${selected.color} flex items-center justify-center text-white font-bold`}>
+                  <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${selected.color} flex items-center justify-center text-white font-bold shadow-md`}>
                     {selected.symbol}
                   </div>
                   <div>
-                    <div className="text-lg font-semibold text-phantom-text-primary">{selected.name}</div>
+                    <div className="text-xl font-bold text-phantom-text-primary">{selected.name}</div>
                     <div className="text-sm text-phantom-text-tertiary">{selected.symbol}</div>
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className="text-2xl font-bold text-phantom-text-primary">${selectedPrice ? selectedPrice.toFixed(2) : '--'}</div>
-                  <div className={`text-sm ${((prices[selectedAsset]?.change_24h || 0) >= 0) ? 'text-green-500' : 'text-red-500'}`}>
-                    {(Number(prices[selectedAsset]?.change_24h ?? 0)).toFixed(2)}%
+                  <div className="text-3xl font-bold text-phantom-text-primary">${selectedPrice ? selectedPrice.toFixed(2) : '--'}</div>
+                  <div className={`text-base font-semibold ${((prices[selectedAsset]?.change_24h || 0) >= 0) ? 'text-green-500' : 'text-red-500'}`}>
+                    {(Number(prices[selectedAsset]?.change_24h ?? 0)).toFixed(2)}% {((prices[selectedAsset]?.change_24h || 0) >= 0) ? '↑' : '↓'}
                   </div>
                   {lastUpdatedAgeSec != null && (
-                    <div className="text-[11px] text-phantom-text-tertiary">Updated {lastUpdatedAgeSec}s ago</div>
+                    <div className="text-xs text-phantom-text-tertiary mt-1">Updated {lastUpdatedAgeSec}s ago</div>
                   )}
-                  <div className="mt-1">
+                </div>
+              </div>
+              <TradingViewChart 
+                symbol={ASSETS.find(a => a.id === selectedAsset)?.tvSymbol || 'BTCUSD'} 
+                theme="dark" 
+                height={550}
+              />
+            </div>
+
+            {/* Asset Selection - Below Chart */}
+            <div className="bg-phantom-bg-secondary/50 border border-phantom-border rounded-2xl p-5 shadow-lg">
+              <div className="text-sm font-semibold text-phantom-text-primary mb-4 flex items-center gap-2">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
+                </svg>
+                Select Asset
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-3">
+                {ASSETS.map(a => {
+                  const data = prices[a.id];
+                  const p = data?.price;
+                  const ch = Number(data?.change_24h ?? 0);
+                  const active = selectedAsset === a.id;
+                  return (
+                    <button
+                      key={a.id}
+                      type="button"
+                      onClick={() => setSelectedAsset(a.id)}
+                      className={`p-4 rounded-xl border-2 transition-all duration-200 ${
+                        active
+                          ? 'bg-gradient-phantom text-white shadow-glow border-transparent scale-105'
+                          : 'bg-phantom-bg-tertiary/30 border-phantom-border text-phantom-text-secondary hover:text-phantom-text-primary hover:bg-phantom-bg-tertiary hover:border-phantom-accent-primary/30'
+                      }`}
+                    >
+                      <div className="text-xs font-bold mb-1">{a.symbol}</div>
+                      <div className="text-sm font-semibold mb-1">{p != null ? `$${Number(p).toFixed(2)}` : '--'}</div>
+                      <div className={`text-[11px] font-medium ${active ? 'text-white/80' : ch >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                        {ch >= 0 ? '+' : ''}{(isFinite(ch) ? ch : 0).toFixed(2)}%
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          {/* Right Side: Trading Controls */}
+          <div className="lg:col-span-4 space-y-6">
+            {/* Available Balance Card */}
+            <div className="bg-gradient-to-br from-phantom-accent-primary/10 to-phantom-accent-secondary/10 border-2 border-phantom-accent-primary/30 rounded-2xl p-6 shadow-lg">
+              <div className="text-sm text-phantom-text-secondary mb-2 flex items-center gap-2">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                </svg>
+                Available Balance
+              </div>
+              <div className="text-4xl font-bold text-phantom-accent-primary mb-1">
+                {wallet && wallet.agon != null ? `Ⱥ ${Number(wallet.agon).toFixed(2)}` : '--'}
+              </div>
+              <div className="text-xs text-phantom-text-tertiary">Ready to trade</div>
+            </div>
+
+            {/* Trading Form */}
+            <div className="bg-phantom-bg-secondary/50 border border-phantom-border rounded-2xl p-6 shadow-lg">
+              <div className="text-lg font-bold text-phantom-text-primary mb-6 flex items-center gap-2">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                </svg>
+                Open Position
+              </div>
+
+              <form onSubmit={handleSubmit} className="space-y-5">
+                {/* Position Type Toggle */}
+                <div>
+                  <label className="block text-sm font-semibold text-phantom-text-primary mb-3">
+                    Position Type
+                  </label>
+                  <div className="grid grid-cols-2 gap-3">
                     <button
                       type="button"
-                      onClick={handleRefresh}
-                      disabled={refreshing}
-                      className="px-3 py-1 text-xs rounded-lg border border-phantom-border text-phantom-text-secondary hover:bg-phantom-bg-tertiary disabled:opacity-50"
+                      onClick={() => setPositionType('long')}
+                      className={`py-4 px-4 rounded-xl font-bold text-sm transition-all duration-200 ${
+                        positionType === 'long'
+                          ? 'bg-green-500 text-white shadow-lg shadow-green-500/30 scale-105'
+                          : 'bg-phantom-bg-tertiary/50 text-phantom-text-secondary border border-phantom-border hover:bg-green-500/10 hover:border-green-500/30 hover:text-green-400'
+                      }`}
                     >
-                      {refreshing ? 'Refreshing...' : 'Refresh'}
+                      <div className="flex items-center justify-center gap-2">
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                        </svg>
+                        LONG
+                      </div>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPositionType('short')}
+                      className={`py-4 px-4 rounded-xl font-bold text-sm transition-all duration-200 ${
+                        positionType === 'short'
+                          ? 'bg-red-500 text-white shadow-lg shadow-red-500/30 scale-105'
+                          : 'bg-phantom-bg-tertiary/50 text-phantom-text-secondary border border-phantom-border hover:bg-red-500/10 hover:border-red-500/30 hover:text-red-400'
+                      }`}
+                    >
+                      <div className="flex items-center justify-center gap-2">
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6" />
+                        </svg>
+                        SHORT
+                      </div>
                     </button>
                   </div>
                 </div>
-              </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <Select label="Asset" value={selectedAsset} onChange={setSelectedAsset} options={ASSETS.map(a => ({ value: a.id, label: `${a.name} (${a.symbol})` }))} />
-                <Select label="Position" value={positionType} onChange={setPositionType} options={[{ value: 'long', label: 'Long' }, { value: 'short', label: 'Short' }]} />
-                <Select label="Leverage" value={leverage} onChange={(v) => setLeverage(Number(v))} options={Array.from({ length: 10 }, (_, i) => ({ value: i + 1, label: `${i + 1}x` }))} />
-                <Input label="Margin (Ⱥ)" type="number" value={marginAmount} onChange={(e) => setMarginAmount(e.target.value)} min="0" step="0.01" placeholder="0.00" />
-              </div>
-              <div className="flex gap-2 mt-2">
-                {[0.25, 0.5, 0.75, 1].map(pct => (
-                  <button
-                    key={pct}
-                    type="button"
-                    disabled={!wallet || walletAgon <= 0}
-                    onClick={() => handleQuickMargin(pct)}
-                    className="px-3 py-1 text-xs rounded-lg border border-phantom-border text-phantom-text-secondary hover:bg-phantom-bg-tertiary disabled:opacity-50"
-                  >
-                    {Math.round(pct * 100)}%
-                  </button>
-                ))}
-              </div>
+                {/* Leverage Slider */}
+                <div>
+                  <label className="block text-sm font-semibold text-phantom-text-primary mb-3">
+                    Leverage: <span className="text-phantom-accent-primary text-lg">{leverage}x</span>
+                  </label>
+                  <div className="space-y-3">
+                    <input
+                      type="range"
+                      min="1"
+                      max="10"
+                      step="1"
+                      value={leverage}
+                      onChange={(e) => setLeverage(Number(e.target.value))}
+                      className="w-full h-3 bg-phantom-bg-tertiary rounded-lg appearance-none cursor-pointer"
+                      style={{
+                        background: `linear-gradient(to right, rgb(139, 92, 246) 0%, rgb(139, 92, 246) ${((leverage - 1) / 9) * 100}%, rgb(55, 65, 81) ${((leverage - 1) / 9) * 100}%, rgb(55, 65, 81) 100%)`
+                      }}
+                    />
+                    <div className="flex justify-between text-xs text-phantom-text-tertiary px-1">
+                      {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(x => (
+                        <span key={x} className={leverage === x ? 'text-phantom-accent-primary font-bold scale-110' : ''}>{x}x</span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Investment Amount */}
+                <div>
+                  <Input 
+                    label="Investment Amount (Ⱥ)" 
+                    type="number" 
+                    value={marginAmount} 
+                    onChange={(e) => setMarginAmount(e.target.value)} 
+                    min="0" 
+                    step="0.01" 
+                    placeholder="0.00"
+                  />
+                  <div className="flex gap-2 mt-3">
+                    {[0.25, 0.5, 0.75, 1].map(pct => (
+                      <button
+                        key={pct}
+                        type="button"
+                        disabled={!wallet || walletAgon <= 0}
+                        onClick={() => handleQuickMargin(pct)}
+                        className="flex-1 px-3 py-2 text-xs font-semibold rounded-lg border border-phantom-border text-phantom-text-secondary hover:bg-phantom-accent-primary/10 hover:border-phantom-accent-primary/30 hover:text-phantom-accent-primary disabled:opacity-50 transition-all"
+                      >
+                        {Math.round(pct * 100)}%
+                      </button>
+                    ))}
+                  </div>
+                </div>
 
               {marginAmount && parseFloat(marginAmount) > 0 && (
                 <div className="mt-4 bg-phantom-bg-tertiary/50 rounded-xl p-4 space-y-2">
@@ -486,111 +588,109 @@ export default function Trading() {
                 </div>
               )}
 
-              <Button className="mt-4 w-full" onClick={handleSubmit} disabled={isSubmitting || !canSubmit}>
-                {isSubmitting ? 'Submitting...' : 'Open Position'}
-              </Button>
-              {(!isSubmitting && !canSubmit && disabledReason) && (
-                <div className="mt-2 text-xs text-phantom-text-tertiary">{disabledReason}</div>
-              )}
+                <Button type="submit" className="w-full" disabled={isSubmitting || !canSubmit}>
+                  {isSubmitting ? 'Opening Position...' : 'Open Position'}
+                </Button>
+                {(!isSubmitting && !canSubmit && disabledReason) && (
+                  <div className="mt-2 text-xs text-phantom-text-tertiary text-center">{disabledReason}</div>
+                )}
+              </form>
             </div>
           </div>
+        </div>
 
-          <div className="space-y-6">
-            <div className="bg-gradient-to-br from-phantom-accent-primary/10 to-phantom-accent-secondary/10 border border-phantom-accent-primary/30 rounded-2xl p-6">
-              <div className="text-phantom-text-secondary text-sm mb-2 flex items-center gap-2">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-                </svg>
-                Available Balance
+        {/* Open Positions - Full Width Below */}
+        <div className="mt-8">
+          <div className="bg-phantom-bg-secondary/50 border border-phantom-border rounded-2xl p-6 shadow-lg">
+            <div className="flex items-center justify-between mb-6">
+              <div className="text-lg font-bold text-phantom-text-primary">Your Open Positions</div>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setPositionsFilter('all')}
+                  className={`px-3 py-1 text-xs rounded-lg border ${positionsFilter === 'all' ? 'bg-gradient-phantom text-white border-transparent' : 'border-phantom-border text-phantom-text-secondary hover:bg-phantom-bg-tertiary'}`}
+                >
+                  All
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPositionsFilter('selected')}
+                  className={`px-3 py-1 text-xs rounded-lg border ${positionsFilter === 'selected' ? 'bg-gradient-phantom text-white border-transparent' : 'border-phantom-border text-phantom-text-secondary hover:bg-phantom-bg-tertiary'}`}
+                >
+                  {selected?.symbol || 'Selected'}
+                </button>
               </div>
-              <div className="text-3xl font-bold text-phantom-accent-primary mb-1">{wallet && wallet.agon != null ? `Ⱥ ${Number(wallet.agon).toFixed(2)}` : '--'}</div>
-              <div className="text-xs text-phantom-text-tertiary">Ready to trade</div>
             </div>
-            <div className="bg-phantom-bg-secondary/50 border border-phantom-border rounded-2xl p-6">
-              <div className="flex items-center justify-between mb-3">
-                <div className="text-phantom-text-primary font-semibold">Your Open Positions</div>
-                <div className="flex gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setPositionsFilter('all')}
-                    className={`px-3 py-1 text-xs rounded-lg border ${positionsFilter === 'all' ? 'bg-gradient-phantom text-white border-transparent' : 'border-phantom-border text-phantom-text-secondary hover:bg-phantom-bg-tertiary'}`}
-                  >
-                    All
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setPositionsFilter('selected')}
-                    className={`px-3 py-1 text-xs rounded-lg border ${positionsFilter === 'selected' ? 'bg-gradient-phantom text-white border-transparent' : 'border-phantom-border text-phantom-text-secondary hover:bg-phantom-bg-tertiary'}`}
-                  >
-                    {selected?.symbol || 'Selected'}
-                  </button>
-                </div>
-              </div>
-              <div className="space-y-3">
-                {filteredPositions.length === 0 && (
-                  <div className="text-phantom-text-tertiary text-sm">No open positions.</div>
-                )}
-                {filteredPositions.map((p) => {
-                  const val = Number((p.total_value ?? p.margin_agon) || 0);
-                  const pnlPct = p.pnl_percentage != null ? Number(p.pnl_percentage) : null;
-                  const priceNow = p.current_price != null ? Number(p.current_price) : null;
-                  const pnlAmount = p.unrealized_pnl != null ? Number(p.unrealized_pnl) : null;
-                  const assetInfo = ASSETS.find(a => a.id === p.coin_id);
-                  return (
-                    <div key={p.id} className="bg-phantom-bg-tertiary/40 rounded-xl p-4 border border-phantom-border/50 hover:border-phantom-accent-primary/30 transition-all">
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="flex items-center gap-2">
-                          <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${assetInfo?.color || 'from-gray-500 to-gray-600'} flex items-center justify-center text-white text-xs font-bold`}>
-                            {assetInfo?.symbol || p.coin_id.slice(0,3).toUpperCase()}
-                          </div>
-                          <div>
-                            <div className="text-sm font-bold text-phantom-text-primary">{assetInfo?.name || p.coin_id}</div>
-                            <div className="text-[11px] text-phantom-text-tertiary">
-                              {p.position_type === 'long' ? '📈' : '📉'} {p.position_type.toUpperCase()} • {Number(p.leverage).toFixed(0)}x
-                            </div>
-                          </div>
-                        </div>
-                        <div className={`px-2 py-1 rounded-lg text-xs font-bold ${pnlPct == null ? 'bg-phantom-bg-tertiary text-phantom-text-tertiary' : pnlPct >= 0 ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
-                          {pnlPct == null ? '--' : `${pnlPct >= 0 ? '+' : ''}${pnlPct.toFixed(2)}%`}
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-2 gap-2 mb-3 text-xs">
-                        <div>
-                          <div className="text-phantom-text-tertiary">Entry Price</div>
-                          <div className="text-phantom-text-primary font-semibold">${Number(p.entry_price).toFixed(2)}</div>
+            <div className="space-y-4">
+              {filteredPositions.length === 0 && (
+                <div className="text-phantom-text-tertiary text-sm">No open positions.</div>
+              )}
+              {filteredPositions.map((p) => {
+                const val = Number((p.total_value ?? p.margin_agon) || 0);
+                const pnlPct = p.pnl_percentage != null ? Number(p.pnl_percentage) : null;
+                const priceNow = p.current_price != null ? Number(p.current_price) : null;
+                const pnlAmount = p.unrealized_pnl != null ? Number(p.unrealized_pnl) : null;
+                const assetInfo = ASSETS.find(a => a.id === p.coin_id);
+                return (
+                  <div key={p.id} className="bg-phantom-bg-tertiary/40 rounded-xl p-5 border border-phantom-border/50 hover:border-phantom-accent-primary/30 transition-all">
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex items-center gap-2">
+                        <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${assetInfo?.color || 'from-gray-500 to-gray-600'} flex items-center justify-center text-white text-xs font-bold`}>
+                          {assetInfo?.symbol || p.coin_id.slice(0,3).toUpperCase()}
                         </div>
                         <div>
-                          <div className="text-phantom-text-tertiary">Current Price</div>
-                          <div className="text-phantom-text-primary font-semibold">{priceNow != null ? `$${priceNow.toFixed(2)}` : '--'}</div>
-                        </div>
-                        <div>
-                          <div className="text-phantom-text-tertiary">Margin</div>
-                          <div className="text-phantom-text-primary font-semibold">Ⱥ {Number(p.margin_agon).toFixed(2)}</div>
-                        </div>
-                        <div>
-                          <div className="text-phantom-text-tertiary">P&L</div>
-                          <div className={`font-semibold ${pnlAmount == null ? 'text-phantom-text-tertiary' : pnlAmount >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                            {pnlAmount == null ? '--' : `${pnlAmount >= 0 ? '+' : ''}Ⱥ ${pnlAmount.toFixed(2)}`}
+                          <div className="text-sm font-bold text-phantom-text-primary">{assetInfo?.name || p.coin_id}</div>
+                          <div className="text-[11px] text-phantom-text-tertiary">
+                            {p.position_type === 'long' ? '📈' : '📉'} {p.position_type.toUpperCase()} • {Number(p.leverage).toFixed(0)}x
                           </div>
                         </div>
                       </div>
-                      <div className="flex items-center justify-between pt-3 border-t border-phantom-border">
-                        <div>
-                          <div className="text-[10px] text-phantom-text-tertiary">Total Value</div>
-                          <div className="text-base font-bold text-phantom-accent-primary">Ⱥ {val.toFixed(2)}</div>
-                        </div>
-                        <button
-                          onClick={() => handleClose(p.id)}
-                          disabled={!!closing[p.id]}
-                          className="px-4 py-2 text-sm font-semibold rounded-lg bg-red-500/10 border border-red-500/30 text-red-500 hover:bg-red-500/20 hover:border-red-500/50 disabled:opacity-50 transition-all"
-                        >
-                          {closing[p.id] ? 'Closing...' : 'Close Position'}
-                        </button>
+                      <div className={`px-2 py-1 rounded-lg text-xs font-bold ${pnlPct == null ? 'bg-phantom-bg-tertiary text-phantom-text-tertiary' : pnlPct >= 0 ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
+                        {pnlPct == null ? '--' : `${pnlPct >= 0 ? '+' : ''}${pnlPct.toFixed(2)}%`}
                       </div>
                     </div>
-                  );
-                })}
-              </div>
+                    <div className="grid grid-cols-3 gap-3 mb-3 text-xs">
+                      <div>
+                        <div className="text-phantom-text-tertiary">Entry Price</div>
+                        <div className="text-phantom-text-primary font-semibold">${Number(p.entry_price).toFixed(2)}</div>
+                      </div>
+                      <div>
+                        <div className="text-phantom-text-tertiary">Current Price</div>
+                        <div className="text-phantom-text-primary font-semibold">{priceNow != null ? `$${priceNow.toFixed(2)}` : '--'}</div>
+                      </div>
+                      <div>
+                        <div className="text-phantom-text-tertiary">Margin</div>
+                        <div className="text-phantom-text-primary font-semibold">Ⱥ {Number(p.margin_agon).toFixed(2)}</div>
+                      </div>
+                      <div>
+                        <div className="text-phantom-text-tertiary">P&L</div>
+                        <div className={`font-semibold ${pnlAmount == null ? 'text-phantom-text-tertiary' : pnlAmount >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                          {pnlAmount == null ? '--' : `${pnlAmount >= 0 ? '+' : ''}Ⱥ ${pnlAmount.toFixed(2)}`}
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-phantom-text-tertiary">Daily Fee</div>
+                        <div className="text-yellow-500 font-semibold">
+                          {p.daily_fee != null ? `Ⱥ ${Number(p.daily_fee).toFixed(4)}` : '--'}
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-phantom-text-tertiary">Total Value</div>
+                        <div className="text-phantom-accent-primary font-bold">Ⱥ {val.toFixed(2)}</div>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-end pt-3 border-t border-phantom-border">
+                      <button
+                        onClick={() => handleClose(p.id)}
+                        disabled={!!closing[p.id]}
+                        className="px-4 py-2 text-sm font-semibold rounded-lg bg-red-500/10 border border-red-500/30 text-red-500 hover:bg-red-500/20 hover:border-red-500/50 disabled:opacity-50 transition-all"
+                      >
+                        {closing[p.id] ? 'Closing...' : 'Close Position'}
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>
