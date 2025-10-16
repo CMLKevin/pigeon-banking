@@ -8,7 +8,10 @@ import {
   confirmDelivery,
   getMyAuctions,
   getMyBids,
-  cancelAuction
+  cancelAuction,
+  reportDeliveryIssue,
+  autoReleaseEscrow,
+  getEscrowStatus
 } from '../controllers/auctionController.js';
 
 const router = express.Router();
@@ -36,6 +39,15 @@ router.post('/:id/bid', placeBid);
 
 // Confirm delivery (buyer confirms receipt, releases escrow)
 router.post('/:id/confirm-delivery', confirmDelivery);
+
+// Report delivery issue (dispute)
+router.post('/:id/report-issue', reportDeliveryIssue);
+
+// Auto-release escrow (admin only)
+router.post('/:id/auto-release', autoReleaseEscrow);
+
+// Get escrow status for user
+router.get('/escrow/status', getEscrowStatus);
 
 // Cancel auction
 router.delete('/:id', cancelAuction);

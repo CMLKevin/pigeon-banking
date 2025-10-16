@@ -377,6 +377,226 @@ export const confirmDelivery = async (req, res) => {
   }
 };
 
+// Report delivery issue (dispute)
+export const reportDeliveryIssue = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { issueType, description } = req.body;
+
+    if (!issueType || !description) {
+      return res.status(400).json({ error: 'Issue type and description are required' });
+    }
+
+    const validIssueTypes = ['item_not_received', 'item_damaged', 'wrong_item', 'seller_unresponsive'];
+    if (!validIssueTypes.includes(issueType)) {
+      return res.status(400).json({ error: 'Invalid issue type' });
+    }
+
+    await db.tx(async (q) => {
+      // Get auction details
+      const auction = await q.queryOne('SELECT * FROM auctions WHERE id = $1', [id]);
+      
+      if (!auction) {
+        throw new Error('Auction not found');
+      }
+
+      if (auction.status !== 'ended') {
+        throw new Error('Auction must be ended to report delivery issues');
+      }
+
+      if (auction.highest_bidder_id !== req.user.id) {
+        throw new Error('Only the winning bidder can report delivery issues');
+      }
+
+      if (auction.status === 'completed') {
+        throw new Error('Cannot report issues on completed auctions');
+      }
+
+      // Create dispute record
+      await q.exec(`
+        INSERT INTO auction_disputes (auction_id, reporter_id, issue_type, description, status, created_at)
+        VALUES ($1, $2, $3, $4, 'pending', NOW())
+      `, [id, req.user.id, issueType, description]);
+
+      // Log activity
+      await q.exec('INSERT INTO activity_logs (user_id, action, metadata) VALUES ($1, $2, $3::jsonb)'
+        , [req.user.id, 'delivery_issue_reported', JSON.stringify({ 
+          auctionId: id, 
+          issueType, 
+          description 
+        })]);
+
+      // Notify seller
+      await q.exec('INSERT INTO activity_logs (user_id, action, metadata) VALUES ($1, $2, $3::jsonb)'
+        , [auction.seller_id, 'delivery_issue_reported_against', JSON.stringify({ 
+          auctionId: id, 
+          issueType, 
+          reporterId: req.user.id 
+        })]);
+
+      // Update auction status to disputed
+      await q.exec("UPDATE auctions SET status = 'disputed' WHERE id = $1", [id]);
+    });
+
+    res.json({ message: 'Delivery issue reported. Admin will review the case.' });
+  } catch (error) {
+    console.error('Report delivery issue error:', error);
+    res.status(400).json({ error: error.message || 'Failed to report delivery issue' });
+  }
+};
+
+// Auto-release escrow after timeout (admin function)
+export const autoReleaseEscrow = async (req, res) => {
+  try {
+    // Only admins can trigger auto-release
+    if (!req.user.is_admin) {
+      return res.status(403).json({ error: 'Admin access required' });
+    }
+
+    const { id } = req.params;
+    const { reason } = req.body;
+
+    await db.tx(async (q) => {
+      // Get auction details
+      const auction = await q.queryOne('SELECT * FROM auctions WHERE id = $1', [id]);
+      
+      if (!auction) {
+        throw new Error('Auction not found');
+      }
+
+      if (auction.status !== 'ended' && auction.status !== 'disputed') {
+        throw new Error('Auction must be ended or disputed to auto-release escrow');
+      }
+
+      if (!auction.highest_bidder_id || !auction.current_bid) {
+        throw new Error('No winning bid found');
+      }
+
+      // Calculate amounts
+      const commissionRate = 0.05;
+      const grossAmount = parseFloat(auction.current_bid) || 0;
+      const commissionAmount = parseFloat((grossAmount * commissionRate).toFixed(2));
+      const netToSeller = parseFloat((grossAmount - commissionAmount).toFixed(2));
+
+      // Find admin account
+      const admin = await q.queryOne('SELECT id, username FROM users WHERE is_admin = TRUE ORDER BY id ASC LIMIT 1');
+
+      // Release escrow
+      await q.exec('UPDATE wallets SET agon = agon + $1 WHERE user_id = $2', [netToSeller, auction.seller_id]);
+      if (admin && admin.id) {
+        await q.exec('UPDATE wallets SET agon = agon + $1 WHERE user_id = $2', [commissionAmount, admin.id]);
+      }
+
+      // Remove from bidder's escrow
+      await q.exec('UPDATE wallets SET agon_escrow = agon_escrow - $1 WHERE user_id = $2', [grossAmount, auction.highest_bidder_id]);
+
+      // Mark auction as completed
+      await q.exec("UPDATE auctions SET status = 'completed', completed_at = NOW() WHERE id = $1", [id]);
+
+      // Create transaction records
+      await q.exec(
+        `INSERT INTO transactions (from_user_id, to_user_id, transaction_type, currency, amount, description)
+         VALUES ($1, $2, 'auction', 'agon', $3, $4)`,
+        [auction.highest_bidder_id, auction.seller_id, netToSeller, `Auction payment (auto-released) for ${auction.item_name}`]
+      );
+
+      if (admin && admin.id && commissionAmount > 0) {
+        await q.exec(
+          `INSERT INTO transactions (from_user_id, to_user_id, transaction_type, currency, amount, description)
+           VALUES ($1, $2, 'commission', 'agon', $3, $4)`,
+          [auction.highest_bidder_id, admin.id, commissionAmount, `Auction commission (auto-released) for ${auction.item_name}`]
+        );
+      }
+
+      // Log activities
+      await q.exec('INSERT INTO activity_logs (user_id, action, metadata) VALUES ($1, $2, $3::jsonb)'
+        , [auction.seller_id, 'auction_auto_completed', JSON.stringify({ 
+          auctionId: id, 
+          grossAmount, 
+          netToSeller, 
+          commissionAmount,
+          reason 
+        })]);
+
+      await q.exec('INSERT INTO activity_logs (user_id, action, metadata) VALUES ($1, $2, $3::jsonb)'
+        , [auction.highest_bidder_id, 'escrow_auto_released', JSON.stringify({ 
+          auctionId: id, 
+          amount: grossAmount,
+          reason 
+        })]);
+
+      if (admin && admin.id && commissionAmount > 0) {
+        await q.exec('INSERT INTO activity_logs (user_id, action, metadata) VALUES ($1, $2, $3::jsonb)'
+          , [admin.id, 'auction_commission_auto_received', JSON.stringify({ 
+            auctionId: id, 
+            commissionAmount, 
+            sellerId: auction.seller_id,
+            reason 
+          })]);
+      }
+    });
+
+    res.json({ message: 'Escrow auto-released successfully' });
+  } catch (error) {
+    console.error('Auto-release escrow error:', error);
+    res.status(400).json({ error: error.message || 'Failed to auto-release escrow' });
+  }
+};
+
+// Get escrow status for user
+export const getEscrowStatus = async (req, res) => {
+  try {
+    const { status = 'active' } = req.query;
+
+    let whereClause = '';
+    let params = [req.user.id];
+
+    if (status === 'active') {
+      whereClause = `AND a.status IN ('active', 'ended', 'disputed')`;
+    } else if (status === 'completed') {
+      whereClause = `AND a.status = 'completed'`;
+    } else if (status === 'all') {
+      whereClause = '';
+    }
+
+    const escrowData = await db.query(`
+      SELECT 
+        a.id,
+        a.item_name,
+        a.current_bid,
+        a.status,
+        a.end_date,
+        a.completed_at,
+        seller.username as seller_username,
+        bidder.username as highest_bidder_username,
+        CASE 
+          WHEN a.seller_id = $1 THEN 'seller'
+          WHEN a.highest_bidder_id = $1 THEN 'buyer'
+          ELSE 'other'
+        END as user_role,
+        CASE 
+          WHEN a.seller_id = $1 AND a.status = 'ended' THEN 'awaiting_confirmation'
+          WHEN a.highest_bidder_id = $1 AND a.status = 'ended' THEN 'confirm_delivery'
+          WHEN a.highest_bidder_id = $1 AND a.status = 'disputed' THEN 'dispute_pending'
+          WHEN a.status = 'completed' THEN 'completed'
+          ELSE 'active'
+        END as escrow_status
+      FROM auctions a
+      LEFT JOIN users seller ON a.seller_id = seller.id
+      LEFT JOIN users bidder ON a.highest_bidder_id = bidder.id
+      WHERE (a.seller_id = $1 OR a.highest_bidder_id = $1)
+        AND a.highest_bidder_id IS NOT NULL
+        ${whereClause}
+      ORDER BY a.created_at DESC
+    `, params);
+
+    res.json({ escrowTransactions: escrowData });
+  } catch (error) {
+    console.error('Get escrow status error:', error);
+    res.status(500).json({ error: 'Failed to fetch escrow status' });
+  }
+};
+
 // Get user's auctions (selling)
 export const getMyAuctions = async (req, res) => {
   try {

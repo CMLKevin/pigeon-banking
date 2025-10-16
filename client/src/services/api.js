@@ -77,6 +77,12 @@ export const auctionAPI = {
     api.post('/auctions', { itemName, itemDescription, rarity, durability, startingPrice, daysUntilEnd }),
   placeBid: (id, amount) => api.post(`/auctions/${id}/bid`, { amount }),
   confirmDelivery: (id) => api.post(`/auctions/${id}/confirm-delivery`),
+  reportDeliveryIssue: (id, issueType, description) => 
+    api.post(`/auctions/${id}/report-issue`, { issueType, description }),
+  autoReleaseEscrow: (id, reason) => 
+    api.post(`/auctions/${id}/auto-release`, { reason }),
+  getEscrowStatus: (status = 'active') => 
+    api.get('/auctions/escrow/status', { params: { status } }),
   getMyAuctions: () => api.get('/auctions/my-auctions'),
   getMyBids: () => api.get('/auctions/my-bids'),
   cancelAuction: (id) => api.delete(`/auctions/${id}`),

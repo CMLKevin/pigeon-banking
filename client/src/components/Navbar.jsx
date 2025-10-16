@@ -1,6 +1,7 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useState, useRef, useEffect } from 'react';
+import NotificationCenter from './NotificationCenter';
 
 const Navbar = () => {
   const { user, logout } = useAuth();
@@ -93,6 +94,14 @@ const Navbar = () => {
                   Auctions
                 </span>
               </Link>
+              <Link to="/escrow" className={navLinkClass('/escrow')}>
+                <span className="flex items-center gap-2">
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  </svg>
+                  Escrow
+                </span>
+              </Link>
               <Link to="/games" className={navLinkClass('/games')}>
                 <span className="flex items-center gap-2">
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -151,6 +160,7 @@ const Navbar = () => {
           </div>
 
           <div className="flex items-center space-x-4">
+            <NotificationCenter />
             <div className="hidden sm:flex items-center space-x-3 px-4 py-2.5 bg-phantom-bg-tertiary rounded-2xl border border-phantom-border">
               <div className="w-9 h-9 bg-gradient-phantom rounded-full flex items-center justify-center text-white font-bold text-sm shadow-md">
                 {user?.username?.charAt(0).toUpperCase()}

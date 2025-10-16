@@ -5,12 +5,14 @@ import Button from '../components/Button';
 import Input from '../components/Input';
 import { auctionAPI, walletAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { useNotifications } from '../context/NotificationContext';
 import { formatCurrency } from '../utils/formatters';
 
 const AuctionDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { addNotification } = useNotifications();
   const [auction, setAuction] = useState(null);
   const [bids, setBids] = useState([]);
   const [wallet, setWallet] = useState(null);
@@ -18,6 +20,10 @@ const AuctionDetail = () => {
   const [loading, setLoading] = useState(true);
   const [bidding, setBidding] = useState(false);
   const [confirming, setConfirming] = useState(false);
+  const [reportingIssue, setReportingIssue] = useState(false);
+  const [showIssueForm, setShowIssueForm] = useState(false);
+  const [issueType, setIssueType] = useState('');
+  const [issueDescription, setIssueDescription] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
@@ -76,6 +82,15 @@ const AuctionDetail = () => {
     try {
       await auctionAPI.placeBid(id, parseFloat(bidAmount));
       setSuccess('Bid placed successfully!');
+      
+      // Add notification
+      addNotification({
+        type: 'success',
+        title: 'Bid Placed Successfully',
+        message: `Your bid of Ⱥ ${formatCurrency(bidAmount)} has been placed on "${auction.item_name}"`,
+        category: 'bid'
+      });
+      
       await loadData();
       
       setTimeout(() => setSuccess(''), 3000);
@@ -96,6 +111,15 @@ const AuctionDetail = () => {
     try {
       await auctionAPI.confirmDelivery(id);
       setSuccess('Delivery confirmed! Payment has been released to the seller.');
+      
+      // Add notification
+      addNotification({
+        type: 'success',
+        title: 'Delivery Confirmed',
+        message: `Payment of Ⱥ ${formatCurrency(auction.current_bid)} has been released to ${auction.seller_username}`,
+        category: 'escrow'
+      });
+      
       await loadData();
       
       setTimeout(() => {
@@ -105,6 +129,43 @@ const AuctionDetail = () => {
       setError(err.response?.data?.error || 'Failed to confirm delivery. Please try again.');
     } finally {
       setConfirming(false);
+    }
+  };
+
+  const handleReportIssue = async (e) => {
+    e.preventDefault();
+    setError('');
+    setSuccess('');
+
+    if (!issueType || !issueDescription.trim()) {
+      setError('Please select an issue type and provide a description');
+      return;
+    }
+
+    setReportingIssue(true);
+
+    try {
+      await auctionAPI.reportDeliveryIssue(id, issueType, issueDescription);
+      setSuccess('Issue reported successfully. Admin will review your case.');
+      
+      // Add notification
+      addNotification({
+        type: 'warning',
+        title: 'Issue Reported',
+        message: `Delivery issue reported for "${auction.item_name}". Admin will review your case.`,
+        category: 'delivery'
+      });
+      
+      setShowIssueForm(false);
+      setIssueType('');
+      setIssueDescription('');
+      await loadData();
+      
+      setTimeout(() => setSuccess(''), 5000);
+    } catch (err) {
+      setError(err.response?.data?.error || 'Failed to report issue. Please try again.');
+    } finally {
+      setReportingIssue(false);
     }
   };
 
@@ -168,6 +229,7 @@ const AuctionDetail = () => {
 
   const isOwner = user?.id === auction.seller_id;
   const isWinner = auction.status === 'ended' && user?.id === auction.highest_bidder_id;
+  const isWinnerDisputed = auction.status === 'disputed' && user?.id === auction.highest_bidder_id;
   const isHighestBidder = user?.id === auction.highest_bidder_id && auction.status === 'active';
   const canBid = auction.status === 'active' && !isOwner;
 
@@ -206,6 +268,14 @@ const AuctionDetail = () => {
                     {auction.status === 'ended' && (
                       <span className="px-4 py-1.5 rounded-xl text-sm font-semibold bg-phantom-warning/10 border border-phantom-warning/30 text-phantom-warning">
                         Ended
+                      </span>
+                    )}
+                    {auction.status === 'disputed' && (
+                      <span className="px-4 py-1.5 rounded-xl text-sm font-semibold bg-phantom-error/10 border border-phantom-error/30 text-phantom-error flex items-center gap-2">
+                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                        </svg>
+                        Disputed
                       </span>
                     )}
                     {auction.status === 'completed' && (
@@ -428,15 +498,104 @@ const AuctionDetail = () => {
                       Contact the seller to arrange item delivery. Once received, confirm below to release payment.
                     </p>
                   </div>
-                  <Button
-                    variant="primary"
-                    fullWidth
-                    size="large"
-                    onClick={handleConfirmDelivery}
-                    disabled={confirming}
-                  >
-                    {confirming ? 'Confirming...' : 'Confirm Item Received'}
-                  </Button>
+                  
+                  <div className="grid grid-cols-2 gap-3">
+                    <Button
+                      variant="primary"
+                      fullWidth
+                      size="large"
+                      onClick={handleConfirmDelivery}
+                      disabled={confirming}
+                    >
+                      {confirming ? 'Confirming...' : 'Confirm Received'}
+                    </Button>
+                    
+                    <Button
+                      variant="secondary"
+                      fullWidth
+                      size="large"
+                      onClick={() => setShowIssueForm(!showIssueForm)}
+                    >
+                      Report Issue
+                    </Button>
+                  </div>
+
+                  {/* Issue Report Form */}
+                  {showIssueForm && (
+                    <div className="p-4 bg-phantom-bg-tertiary/50 rounded-xl border border-phantom-border">
+                      <h4 className="text-sm font-semibold text-phantom-text-primary mb-3">Report Delivery Issue</h4>
+                      <form onSubmit={handleReportIssue} className="space-y-3">
+                        <div>
+                          <label className="block text-xs text-phantom-text-tertiary mb-1">Issue Type</label>
+                          <select
+                            value={issueType}
+                            onChange={(e) => setIssueType(e.target.value)}
+                            className="w-full px-3 py-2 bg-phantom-bg-secondary border border-phantom-border rounded-lg text-phantom-text-primary text-sm focus:outline-none focus:ring-2 focus:ring-phantom-accent-primary"
+                            required
+                          >
+                            <option value="">Select issue type</option>
+                            <option value="item_not_received">Item not received</option>
+                            <option value="item_damaged">Item damaged</option>
+                            <option value="wrong_item">Wrong item received</option>
+                            <option value="seller_unresponsive">Seller unresponsive</option>
+                          </select>
+                        </div>
+                        
+                        <div>
+                          <label className="block text-xs text-phantom-text-tertiary mb-1">Description</label>
+                          <textarea
+                            value={issueDescription}
+                            onChange={(e) => setIssueDescription(e.target.value)}
+                            placeholder="Describe the issue in detail..."
+                            className="w-full px-3 py-2 bg-phantom-bg-secondary border border-phantom-border rounded-lg text-phantom-text-primary text-sm focus:outline-none focus:ring-2 focus:ring-phantom-accent-primary resize-none"
+                            rows={3}
+                            required
+                          />
+                        </div>
+                        
+                        <div className="flex gap-2">
+                          <Button
+                            type="submit"
+                            variant="primary"
+                            size="small"
+                            disabled={reportingIssue}
+                            className="flex-1"
+                          >
+                            {reportingIssue ? 'Reporting...' : 'Submit Report'}
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="secondary"
+                            size="small"
+                            onClick={() => {
+                              setShowIssueForm(false);
+                              setIssueType('');
+                              setIssueDescription('');
+                            }}
+                          >
+                            Cancel
+                          </Button>
+                        </div>
+                      </form>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Disputed Status */}
+              {isWinnerDisputed && (
+                <div className="space-y-4">
+                  <div className="p-4 bg-phantom-error/10 border border-phantom-error/30 rounded-xl">
+                    <p className="text-sm font-semibold text-phantom-error mb-2 flex items-center gap-2">
+                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                      </svg>
+                      Issue Reported
+                    </p>
+                    <p className="text-xs text-phantom-text-secondary">
+                      Your delivery issue has been reported. An admin will review your case and resolve the dispute.
+                    </p>
+                  </div>
                 </div>
               )}
             </div>
@@ -454,9 +613,11 @@ const AuctionDetail = () => {
                 {/* Step 1 */}
                 <div className="flex items-start gap-3">
                   <div className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
-                    auction.status === 'active' ? 'bg-phantom-success text-white' : 'bg-phantom-bg-tertiary text-phantom-text-tertiary'
+                    auction.status === 'active' || auction.status === 'ended' || auction.status === 'disputed' || auction.status === 'completed' 
+                      ? 'bg-phantom-success text-white' 
+                      : 'bg-phantom-bg-tertiary text-phantom-text-tertiary'
                   }`}>
-                    {auction.status === 'active' ? '✓' : '1'}
+                    {auction.status === 'active' || auction.status === 'ended' || auction.status === 'disputed' || auction.status === 'completed' ? '✓' : '1'}
                   </div>
                   <div className="flex-1">
                     <p className="text-sm font-semibold text-phantom-text-primary">Place Bid</p>
@@ -467,26 +628,56 @@ const AuctionDetail = () => {
                 {/* Step 2 */}
                 <div className="flex items-start gap-3">
                   <div className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
-                    auction.status === 'ended' || auction.status === 'completed' ? 'bg-phantom-success text-white' : 'bg-phantom-bg-tertiary text-phantom-text-tertiary'
+                    auction.status === 'ended' || auction.status === 'disputed' || auction.status === 'completed' 
+                      ? 'bg-phantom-success text-white' 
+                      : auction.status === 'active' 
+                        ? 'bg-phantom-warning text-white' 
+                        : 'bg-phantom-bg-tertiary text-phantom-text-tertiary'
                   }`}>
-                    {auction.status === 'ended' || auction.status === 'completed' ? '✓' : '2'}
+                    {auction.status === 'ended' || auction.status === 'disputed' || auction.status === 'completed' 
+                      ? '✓' 
+                      : auction.status === 'active' 
+                        ? '⏱' 
+                        : '2'}
                   </div>
                   <div className="flex-1">
                     <p className="text-sm font-semibold text-phantom-text-primary">Auction Ends</p>
-                    <p className="text-xs text-phantom-text-secondary">Winner receives item from seller</p>
+                    <p className="text-xs text-phantom-text-secondary">
+                      {auction.status === 'active' ? 'Waiting for auction to end' : 'Winner receives item from seller'}
+                    </p>
                   </div>
                 </div>
 
                 {/* Step 3 */}
                 <div className="flex items-start gap-3">
                   <div className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
-                    auction.status === 'completed' ? 'bg-phantom-success text-white' : 'bg-phantom-bg-tertiary text-phantom-text-tertiary'
+                    auction.status === 'completed' 
+                      ? 'bg-phantom-success text-white' 
+                      : auction.status === 'disputed' 
+                        ? 'bg-phantom-error text-white' 
+                        : auction.status === 'ended' 
+                          ? 'bg-phantom-warning text-white' 
+                          : 'bg-phantom-bg-tertiary text-phantom-text-tertiary'
                   }`}>
-                    {auction.status === 'completed' ? '✓' : '3'}
+                    {auction.status === 'completed' 
+                      ? '✓' 
+                      : auction.status === 'disputed' 
+                        ? '⚠' 
+                        : auction.status === 'ended' 
+                          ? '⏳' 
+                          : '3'}
                   </div>
                   <div className="flex-1">
                     <p className="text-sm font-semibold text-phantom-text-primary">Confirm Delivery</p>
-                    <p className="text-xs text-phantom-text-secondary">Payment released to seller</p>
+                    <p className="text-xs text-phantom-text-secondary">
+                      {auction.status === 'completed' 
+                        ? 'Payment released to seller' 
+                        : auction.status === 'disputed' 
+                          ? 'Issue reported - under review' 
+                          : auction.status === 'ended' 
+                            ? 'Awaiting delivery confirmation' 
+                            : 'Payment will be released to seller'}
+                    </p>
                   </div>
                 </div>
               </div>

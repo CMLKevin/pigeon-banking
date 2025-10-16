@@ -207,6 +207,22 @@ const initSchema = async () => {
     )
   `);
 
+  // Auction Disputes
+  await exec(`
+    CREATE TABLE IF NOT EXISTS auction_disputes (
+      id SERIAL PRIMARY KEY,
+      auction_id INTEGER NOT NULL REFERENCES auctions(id) ON DELETE CASCADE,
+      reporter_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      issue_type TEXT NOT NULL,
+      description TEXT NOT NULL,
+      status TEXT DEFAULT 'pending',
+      admin_notes TEXT,
+      resolved_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
+      created_at TIMESTAMPTZ DEFAULT NOW(),
+      resolved_at TIMESTAMPTZ
+    )
+  `);
+
   // Game history
   await exec(`
     CREATE TABLE IF NOT EXISTS game_history (

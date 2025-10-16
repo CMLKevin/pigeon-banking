@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
+import { NotificationProvider } from './context/NotificationContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
@@ -11,6 +12,7 @@ import AdminLogin from './pages/AdminLogin';
 import Auctions from './pages/Auctions';
 import CreateAuction from './pages/CreateAuction';
 import AuctionDetail from './pages/AuctionDetail';
+import EscrowDashboard from './pages/EscrowDashboard';
 import Games from './pages/Games';
 import CoinFlip from './pages/CoinFlip';
 import Blackjack from './pages/Blackjack';
@@ -21,7 +23,8 @@ function App() {
   return (
     <Router>
       <AuthProvider>
-        <Routes>
+        <NotificationProvider>
+          <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/admin/login" element={<AdminLogin />} />
@@ -86,6 +89,14 @@ function App() {
             }
           />
           <Route
+            path="/escrow"
+            element={
+              <ProtectedRoute>
+                <EscrowDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/games"
             element={
               <ProtectedRoute>
@@ -126,7 +137,8 @@ function App() {
             }
           />
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
-        </Routes>
+          </Routes>
+        </NotificationProvider>
       </AuthProvider>
     </Router>
   );
