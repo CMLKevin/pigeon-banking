@@ -107,11 +107,21 @@ export default function Trading() {
 
       if (walletRes.status === 'fulfilled') {
         const walletData = walletRes.value.data.wallet || walletRes.value.data;
-        console.log('Wallet data received:', walletData);
-        console.log('Agon balance:', walletData?.agon);
+        console.log('[Trading] Wallet data received:', walletData);
+        console.log('[Trading] Agon balance type:', typeof walletData?.agon, 'value:', walletData?.agon);
+        
+        // Backend now returns numbers, but add safety check
+        if (walletData && typeof walletData.agon === 'string') {
+          console.warn('[Trading] Wallet agon is string, converting to number');
+          walletData.agon = parseFloat(walletData.agon) || 0;
+        }
+        if (walletData && typeof walletData.stoneworks_dollar === 'string') {
+          walletData.stoneworks_dollar = parseFloat(walletData.stoneworks_dollar) || 0;
+        }
+        
         setWallet(walletData);
       } else {
-        console.error('Failed to load wallet:', walletRes.reason);
+        console.error('[Trading] Failed to load wallet:', walletRes.reason);
       }
 
       if (positionsRes.status === 'fulfilled') {

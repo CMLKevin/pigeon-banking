@@ -1,5 +1,16 @@
 import db from '../config/database.js';
 
+// Helper function to normalize wallet data (convert NUMERIC strings to numbers)
+const normalizeWallet = (wallet) => {
+  if (!wallet) return null;
+  return {
+    ...wallet,
+    agon: parseFloat(wallet.agon) || 0,
+    stoneworks_dollar: parseFloat(wallet.stoneworks_dollar) || 0,
+    agon_escrow: parseFloat(wallet.agon_escrow) || 0
+  };
+};
+
 export const getWallet = async (req, res) => {
   try {
     const wallet = await db.queryOne('SELECT * FROM wallets WHERE user_id = $1', [req.user.id]);
@@ -8,7 +19,7 @@ export const getWallet = async (req, res) => {
       return res.status(404).json({ error: 'Wallet not found' });
     }
 
-    res.json({ wallet });
+    res.json({ wallet: normalizeWallet(wallet) });
   } catch (error) {
     console.error('Get wallet error:', error);
     res.status(500).json({ error: 'Internal server error' });
@@ -78,7 +89,7 @@ export const swapCurrency = async (req, res) => {
 
     res.json({
       message: 'Swap successful',
-      wallet: updatedWallet
+      wallet: normalizeWallet(updatedWallet)
     });
   } catch (error) {
     console.error('Swap currency error:', error);

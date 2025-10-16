@@ -167,9 +167,15 @@ export const getProfile = async (req, res) => {
 
     const wallet = await db.queryOne('SELECT agon, stoneworks_dollar FROM wallets WHERE user_id = $1', [req.user.id]);
 
+    // Normalize wallet data (convert NUMERIC strings to numbers)
+    const normalizedWallet = wallet ? {
+      agon: parseFloat(wallet.agon) || 0,
+      stoneworks_dollar: parseFloat(wallet.stoneworks_dollar) || 0
+    } : null;
+
     res.json({
       user,
-      wallet
+      wallet: normalizedWallet
     });
   } catch (error) {
     console.error('Get profile error:', error);
