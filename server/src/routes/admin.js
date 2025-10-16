@@ -484,8 +484,8 @@ router.get('/metrics', async (req, res) => {
       ORDER BY count DESC
     `);
 
-    // Crypto Trading Analytics
-    const cryptoTotalsRow = await db.queryOne(`
+    // Trading Analytics (All Assets)
+    const tradingTotalsRow = await db.queryOne(`
       SELECT 
         COUNT(1) AS total_positions,
         COUNT(CASE WHEN status = 'open' THEN 1 END) AS open_positions,
@@ -498,31 +498,38 @@ router.get('/metrics', async (req, res) => {
         ABS(SUM(realized_pnl) FILTER (WHERE status = 'closed' AND realized_pnl < 0)) AS total_loss,
         COUNT(CASE WHEN status = 'closed' AND realized_pnl > 0 THEN 1 END) AS winning_positions,
         COUNT(CASE WHEN status = 'closed' AND realized_pnl < 0 THEN 1 END) AS losing_positions,
-        AVG(leverage) AS avg_leverage
+        AVG(leverage) AS avg_leverage,
+        SUM(commission_agon) AS total_commissions,
+        SUM(maintenance_fee_agon) AS total_maintenance_fees
       FROM crypto_positions
     `);
 
-    const cryptoTotals = cryptoTotalsRow ? {
-      total_positions: Number(cryptoTotalsRow.total_positions || 0),
-      open_positions: Number(cryptoTotalsRow.open_positions || 0),
-      closed_positions: Number(cryptoTotalsRow.closed_positions || 0),
-      unique_traders: Number(cryptoTotalsRow.unique_traders || 0),
-      locked_margin: Number(cryptoTotalsRow.locked_margin || 0),
-      total_volume: Number(cryptoTotalsRow.total_volume || 0),
-      total_pnl: Number(cryptoTotalsRow.total_pnl || 0),
-      total_profit: Number(cryptoTotalsRow.total_profit || 0),
-      total_loss: Number(cryptoTotalsRow.total_loss || 0),
-      winning_positions: Number(cryptoTotalsRow.winning_positions || 0),
-      losing_positions: Number(cryptoTotalsRow.losing_positions || 0),
-      avg_leverage: Number(Number(cryptoTotalsRow.avg_leverage || 0).toFixed(2)),
-      win_rate: cryptoTotalsRow.closed_positions > 0 
-        ? Number(((cryptoTotalsRow.winning_positions || 0) / cryptoTotalsRow.closed_positions * 100).toFixed(2))
+    const tradingTotals = tradingTotalsRow ? {
+      total_positions: Number(tradingTotalsRow.total_positions || 0),
+      open_positions: Number(tradingTotalsRow.open_positions || 0),
+      closed_positions: Number(tradingTotalsRow.closed_positions || 0),
+      unique_traders: Number(tradingTotalsRow.unique_traders || 0),
+      locked_margin: Number(tradingTotalsRow.locked_margin || 0),
+      total_volume: Number(tradingTotalsRow.total_volume || 0),
+      total_pnl: Number(tradingTotalsRow.total_pnl || 0),
+      total_profit: Number(tradingTotalsRow.total_profit || 0),
+      total_loss: Number(tradingTotalsRow.total_loss || 0),
+      winning_positions: Number(tradingTotalsRow.winning_positions || 0),
+      losing_positions: Number(tradingTotalsRow.losing_positions || 0),
+      avg_leverage: Number(Number(tradingTotalsRow.avg_leverage || 0).toFixed(2)),
+      win_rate: tradingTotalsRow.closed_positions > 0 
+        ? Number(((tradingTotalsRow.winning_positions || 0) / tradingTotalsRow.closed_positions * 100).toFixed(2))
         : 0,
-      house_pnl: Number(-(cryptoTotalsRow.total_pnl || 0)) // House profit is inverse of player P&L
+      total_commissions: Number(tradingTotalsRow.total_commissions || 0),
+      total_maintenance_fees: Number(tradingTotalsRow.total_maintenance_fees || 0),
+      total_fees: Number((tradingTotalsRow.total_commissions || 0)) + Number((tradingTotalsRow.total_maintenance_fees || 0)),
+      // House P&L = inverse of player P&L + all commissions and fees
+      house_pnl: Number(-(tradingTotalsRow.total_pnl || 0)) + Number((tradingTotalsRow.total_commissions || 0)) + Number((tradingTotalsRow.total_maintenance_fees || 0))
     } : {
       total_positions: 0, open_positions: 0, closed_positions: 0, unique_traders: 0,
       locked_margin: 0, total_volume: 0, total_pnl: 0, total_profit: 0, total_loss: 0,
-      winning_positions: 0, losing_positions: 0, avg_leverage: 0, win_rate: 0, house_pnl: 0
+      winning_positions: 0, losing_positions: 0, avg_leverage: 0, win_rate: 0, 
+      total_commissions: 0, total_maintenance_fees: 0, total_fees: 0, house_pnl: 0
     };
 
     // Crypto positions by coin
@@ -538,8 +545,8 @@ router.get('/metrics', async (req, res) => {
       ORDER BY positions DESC
     `);
 
-    // Crypto positions by day (last 14 days)
-    const cryptoByDay = await db.query(`
+    // Trading positions by day (last 14 days)
+    const tradingByDay = await db.query(`
       SELECT opened_at::date AS day,
         COUNT(1) AS positions_opened,
         SUM(margin_agon) AS volume,
@@ -552,8 +559,8 @@ router.get('/metrics', async (req, res) => {
       LIMIT 14
     `);
 
-    // Top crypto traders
-    const topCryptoTraders = await db.query(`
+    // Top traders
+    const topTraders = await db.query(`
       SELECT u.id, u.username,
         COUNT(cp.id) AS total_positions,
         COUNT(CASE WHEN cp.status = 'open' THEN 1 END) AS open_positions,
@@ -610,10 +617,10 @@ router.get('/metrics', async (req, res) => {
       plinkoByDay,
       topPlinkoPlayers,
       plinkoRiskDistribution,
-      cryptoTotals,
+      tradingTotals,
       cryptoByCoin,
-      cryptoByDay,
-      topCryptoTraders,
+      tradingByDay,
+      topTraders,
       leverageDistribution
     });
   } catch (e) {

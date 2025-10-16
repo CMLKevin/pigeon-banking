@@ -810,26 +810,26 @@ const Admin = () => {
               </div>
             </div>
 
-            {/* Crypto Trading Analytics */}
-            {metrics?.cryptoTotals && (
+            {/* Trading Analytics */}
+            {metrics?.tradingTotals && (
               <div className="mt-12">
                 <div className="flex items-center gap-3 mb-6">
                   <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-amber-500 to-yellow-600 flex items-center justify-center shadow-glow">
                     <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                     </svg>
                   </div>
                   <div>
-                    <h2 className="text-3xl font-bold bg-gradient-phantom bg-clip-text text-transparent">Crypto Trading Analytics</h2>
-                    <p className="text-phantom-text-secondary">Monitor leveraged crypto trading activity and performance</p>
+                    <h2 className="text-3xl font-bold bg-gradient-phantom bg-clip-text text-transparent">Trading Analytics</h2>
+                    <p className="text-phantom-text-secondary">Monitor leveraged trading activity across all assets (crypto, stocks, commodities)</p>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                   <StatCard 
                     title="Total Positions" 
-                    value={metrics.cryptoTotals.total_positions || 0} 
-                    sub={`${metrics.cryptoTotals.open_positions || 0} open • ${metrics.cryptoTotals.closed_positions || 0} closed`}
+                    value={metrics.tradingTotals.total_positions || 0} 
+                    sub={`${metrics.tradingTotals.open_positions || 0} open • ${metrics.tradingTotals.closed_positions || 0} closed`}
                     icon={
                       <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
@@ -838,8 +838,8 @@ const Admin = () => {
                   />
                   <StatCard 
                     title="Unique Traders" 
-                    value={metrics.cryptoTotals.unique_traders || 0} 
-                    sub={`Win rate: ${Number(metrics.cryptoTotals.win_rate || 0).toFixed(1)}%`}
+                    value={metrics.tradingTotals.unique_traders || 0} 
+                    sub={`Win rate: ${Number(metrics.tradingTotals.win_rate || 0).toFixed(1)}%`}
                     icon={
                       <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" />
@@ -848,8 +848,8 @@ const Admin = () => {
                   />
                   <StatCard 
                     title="Total Volume" 
-                    value={formatCurrency(metrics.cryptoTotals.total_volume || 0, 'Ⱥ')} 
-                    sub={`Locked: ${formatCurrency(metrics.cryptoTotals.locked_margin || 0, 'Ⱥ')}`}
+                    value={formatCurrency(metrics.tradingTotals.total_volume || 0, 'Ⱥ')} 
+                    sub={`Locked: ${formatCurrency(metrics.tradingTotals.locked_margin || 0, 'Ⱥ')}`}
                     icon={
                       <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z" />
@@ -859,8 +859,8 @@ const Admin = () => {
                   />
                   <StatCard 
                     title="House P&L" 
-                    value={`${Number(metrics.cryptoTotals.house_pnl || 0) >= 0 ? '+' : ''}${formatCurrency(metrics.cryptoTotals.house_pnl || 0, 'Ⱥ')}`}
-                    sub={`Avg Leverage: ${Number(metrics.cryptoTotals.avg_leverage || 0).toFixed(1)}x`}
+                    value={`${Number(metrics.tradingTotals.house_pnl || 0) >= 0 ? '+' : ''}${formatCurrency(metrics.tradingTotals.house_pnl || 0, 'Ⱥ')}`}
+                    sub={`Commissions + Fees: ${formatCurrency(metrics.tradingTotals.total_fees || 0, 'Ⱥ')}`}
                     icon={
                       <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
@@ -879,7 +879,7 @@ const Admin = () => {
                       </div>
                     </div>
                     <LineChart data={
-                      metrics.cryptoByDay?.slice().reverse().map(d => ({
+                      metrics.tradingByDay?.slice().reverse().map(d => ({
                         label: new Date(d.day).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
                         value: Number(d.positions_opened || 0)
                       })) || []
@@ -889,9 +889,9 @@ const Admin = () => {
                   {/* Top Traders */}
                   <div className="bg-phantom-bg-secondary/60 backdrop-blur-xl rounded-3xl shadow-card border border-phantom-border p-6">
                     <h3 className="text-xl font-bold text-phantom-text-primary mb-2">Top Traders</h3>
-                    <p className="text-sm text-phantom-text-tertiary mb-4">Most active crypto traders</p>
+                    <p className="text-sm text-phantom-text-tertiary mb-4">Most active traders across all assets</p>
                     <div className="space-y-3">
-                      {metrics.topCryptoTraders?.slice(0, 6).map((trader, idx) => (
+                      {metrics.topTraders?.slice(0, 6).map((trader, idx) => (
                         <div key={trader.id} className="flex items-center gap-3 p-3 rounded-2xl hover:bg-phantom-bg-tertiary transition-all group">
                           <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-500 to-yellow-600 flex items-center justify-center text-white font-bold text-sm shadow-glow-sm">
                             {idx + 1}
