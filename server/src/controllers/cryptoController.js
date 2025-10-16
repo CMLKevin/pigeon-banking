@@ -190,10 +190,10 @@ export const openPosition = async (req, res) => {
       const position = await t.queryOne(
         `INSERT INTO crypto_positions (
           user_id, coin_id, position_type, leverage, quantity, 
-          entry_price, liquidation_price, margin_agon, status, last_maintenance_fee_at, total_maintenance_fees
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'open', NOW(), 0)
+          entry_price, liquidation_price, margin_agon, commission_agon, status, last_maintenance_fee_at, total_maintenance_fees
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 'open', NOW(), 0)
         RETURNING *`,
-        [userId, coinId, positionType, leverageNum, quantity, entryPrice, liquidationPrice, netMargin]
+        [userId, coinId, positionType, leverageNum, quantity, entryPrice, liquidationPrice, netMargin, commissionAmount]
       );
       
       // Record transaction
