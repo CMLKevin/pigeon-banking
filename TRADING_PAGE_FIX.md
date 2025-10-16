@@ -1,5 +1,8 @@
 # Trading Page 500 Error Fix - Summary
 
+> **UPDATE (Oct 2025)**: This project has been migrated from Polygon.io to Yahoo Finance (yahoo-finance2 package). 
+> All references to Polygon.io in this document are historical. The current implementation uses Yahoo Finance for all price data.
+
 ## Issue
 The trading page failed to load when deployed to Replit with a 500 error. The browser console showed:
 ```

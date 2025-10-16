@@ -78,7 +78,7 @@ export const getHistoricalPrices = async (req, res) => {
     }
     
     // Historical prices not implemented yet - return empty array
-    // TODO: Implement historical price fetching from Polygon.io
+    // TODO: Implement historical price fetching from Yahoo Finance
     res.json({ success: true, prices: [] });
   } catch (error) {
     console.error('Error getting historical prices:', error);

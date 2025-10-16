@@ -66,7 +66,7 @@ app.use('/api/crypto', cryptoRoutes);
 app.use('/api/trading', tradingRoutes);
 app.use('/api/games', gameRoutes);
 
-// Price fetching now handled by Polygon.io API via tradingPriceService
+// Price fetching now handled by Yahoo Finance API via tradingPriceService
 
 // Start maintenance fee scheduler
 console.log('Starting maintenance fee scheduler...');

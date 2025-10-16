@@ -1,4 +1,4 @@
-import { getSupportedAssetPrices, SUPPORTED_STOCKS_AND_ASSETS, getPriceForSymbol, getSupportedCryptoPrices, SUPPORTED_CRYPTO, getCachedPriceForSymbol } from './polygonService.js';
+import { getSupportedAssetPrices, SUPPORTED_STOCKS_AND_ASSETS, getPriceForSymbol, getSupportedCryptoPrices, SUPPORTED_CRYPTO, getCachedPriceForSymbol } from './yfinanceService.js';
 
 let isWarming = false;
 let lastWarmAt = 0;
@@ -9,7 +9,7 @@ export const SUPPORTED_TRADING_ASSETS = {
   bitcoin: { type: 'crypto' },
   ethereum: { type: 'crypto' },
   dogecoin: { type: 'crypto' },
-  // Non-crypto via Polygon
+  // Non-crypto via Yahoo Finance
   gold: { type: 'equity' },
   tsla: { type: 'equity' },
   aapl: { type: 'equity' },
