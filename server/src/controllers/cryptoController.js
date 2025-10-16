@@ -5,7 +5,7 @@ import { getAssetPrice, isSupportedTradingAsset } from '../services/tradingPrice
  * Calculate commission fee based on leverage
  * 1x = 1%, 10x = 5%, scales linearly
  */
-function calculateCommission(leverage) {
+export function calculateCommission(leverage) {
   const minFee = 0.01; // 1%
   const maxFee = 0.05; // 5%
   const minLev = 1;
@@ -18,7 +18,7 @@ function calculateCommission(leverage) {
 /**
  * Calculate liquidation price
  */
-function calculateLiquidationPrice(entryPrice, leverage, positionType) {
+export function calculateLiquidationPrice(entryPrice, leverage, positionType) {
   // For long positions: liquidation when price drops by (1/leverage * 100)%
   // For short positions: liquidation when price rises by (1/leverage * 100)%
   const liquidationPercentage = 1 / leverage;
@@ -30,7 +30,7 @@ function calculateLiquidationPrice(entryPrice, leverage, positionType) {
   }
 }
 
-function calculateDailyMaintenanceRate(leverage) {
+export function calculateDailyMaintenanceRate(leverage) {
   const minRate = 0.001; // 0.1%
   const maxRate = 0.01; // 1%
   const minLev = 1;
@@ -129,7 +129,8 @@ export const getCoinInfo = async (req, res) => {
  * Open a new crypto position
  */
 export const openPosition = async (req, res) => {
-  const { coinId, positionType, leverage, marginAmon: marginAgon } = req.body;
+  const { coinId, positionType, leverage } = req.body;
+  const marginAgon = req.body.marginAgon ?? req.body.marginAmon; // accept both
   const userId = req.user.id;
   
   try {

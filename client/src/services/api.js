@@ -94,8 +94,8 @@ export const cryptoAPI = {
   getHistoricalPrices: (coinId, days = 7) => 
     api.get(`/crypto/prices/${coinId}/history`, { params: { days } }),
   getCoinInfo: (coinId) => api.get(`/crypto/coins/${coinId}`),
-  openPosition: (coinId, positionType, leverage, marginAmon) => 
-    api.post('/crypto/positions', { coinId, positionType, leverage, marginAmon }),
+  openPosition: (coinId, positionType, leverage, marginAgon) => 
+    api.post('/crypto/positions', { coinId, positionType, leverage, marginAgon }),
   getUserPositions: (status = 'open') => 
     api.get('/crypto/positions', { params: { status } }),
   getPositionDetails: (positionId) => api.get(`/crypto/positions/${positionId}`),

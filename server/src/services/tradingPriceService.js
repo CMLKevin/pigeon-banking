@@ -1,4 +1,4 @@
-import { getSupportedAssetPrices, SUPPORTED_STOCKS_AND_ASSETS, getPriceForSymbol, getSupportedCryptoPrices, SUPPORTED_CRYPTO } from './polygonService.js';
+import { getSupportedAssetPrices, SUPPORTED_STOCKS_AND_ASSETS, getPriceForSymbol, getSupportedCryptoPrices, SUPPORTED_CRYPTO, getCachedPriceForSymbol } from './polygonService.js';
 
 export const SUPPORTED_TRADING_ASSETS = {
   // Crypto (ids align with existing crypto UI/backend)
@@ -11,6 +11,41 @@ export const SUPPORTED_TRADING_ASSETS = {
   aapl: { type: 'equity' },
   nvda: { type: 'equity' }
 };
+
+export async function getCombinedCurrentPricesCached() {
+  const combined = {};
+  // crypto
+  for (const [id, meta] of Object.entries(SUPPORTED_CRYPTO)) {
+    const cached = getCachedPriceForSymbol(meta.symbol);
+    if (cached) {
+      combined[id] = {
+        id,
+        symbol: meta.symbol,
+        name: meta.name,
+        price: cached.price,
+        change_24h: cached.change_24h,
+        last_updated: cached.last_updated,
+        asset_type: 'crypto'
+      };
+    }
+  }
+  // equities & metals
+  for (const [id, meta] of Object.entries(SUPPORTED_STOCKS_AND_ASSETS)) {
+    const cached = getCachedPriceForSymbol(meta.symbol);
+    if (cached) {
+      combined[id] = {
+        id,
+        symbol: meta.symbol,
+        name: meta.name,
+        price: cached.price,
+        change_24h: cached.change_24h,
+        last_updated: cached.last_updated,
+        asset_type: 'equity'
+      };
+    }
+  }
+  return combined;
+}
 
 export async function getCombinedCurrentPrices() {
   const [crypto, equities] = await Promise.all([
@@ -37,8 +72,16 @@ export function isSupportedTradingAsset(id) {
 export async function getAssetPrice(assetId) {
   if (!isSupportedTradingAsset(assetId)) return null;
   if (SUPPORTED_CRYPTO[assetId]) {
-    const crypto = await getSupportedCryptoPrices();
-    return crypto[assetId] || null;
+    const sym = SUPPORTED_CRYPTO[assetId].symbol;
+    const data = await getPriceForSymbol(sym);
+    return {
+      id: assetId,
+      symbol: sym,
+      name: SUPPORTED_CRYPTO[assetId].name,
+      price: data.price,
+      change_24h: data.change_24h,
+      last_updated: data.last_updated
+    };
   }
   const asset = SUPPORTED_STOCKS_AND_ASSETS[assetId];
   if (!asset) return null;

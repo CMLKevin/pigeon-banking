@@ -5,9 +5,9 @@ const POLYGON_API_KEY = process.env.POLYGON_API_KEY || 'quOm95IrOskctPxm8Qa_luWT
 const POLYGON_BASE_URL = 'https://api.polygon.io';
 
 // Map supported non-crypto assets to Polygon symbols
-// Gold uses Forex-like metal pair XAUUSD on Polygon (prefixed with X:)
+// Gold uses currency-like metal pair XAUUSD on Polygon (prefixed with C:)
 export const SUPPORTED_STOCKS_AND_ASSETS = {
-  gold: { id: 'gold', symbol: 'X:XAUUSD', name: 'Gold' },
+  gold: { id: 'gold', symbol: 'C:XAUUSD', name: 'Gold' },
   tsla: { id: 'tsla', symbol: 'TSLA', name: 'Tesla, Inc.' },
   aapl: { id: 'aapl', symbol: 'AAPL', name: 'Apple Inc.' },
   nvda: { id: 'nvda', symbol: 'NVDA', name: 'NVIDIA Corporation' }
@@ -26,7 +26,7 @@ const MIN_REFRESH_MS = 15000; // 15 seconds
 
 // Global rate limiting to prevent hitting API limits
 let lastApiCallTime = 0;
-const API_CALL_DELAY_MS = 20000; // 20 seconds between API calls
+const API_CALL_DELAY_MS = 15000; // 15 seconds between API calls (free plan ~5 req/min)
 
 // Helper to delay execution
 function delay(ms) {
@@ -65,39 +65,74 @@ async function polygonJson(url) {
 // Fetch latest price for a Polygon symbol using aggregates (previous close + last trade)
 async function fetchLatestForSymbol(symbol) {
   // Try last trade endpoint first
-  const lastTradeUrl = `${POLYGON_BASE_URL}/v2/last/trade/${encodeURIComponent(symbol)}?apiKey=${POLYGON_API_KEY}`;
+  const isCurrency = symbol.startsWith('C:');
+  const isCrypto = symbol.startsWith('X:');
+  // Build endpoint per market
+  let lastUrl;
+  if (isCrypto) {
+    // X:BTCUSD -> /v2/last/trade/crypto/BTC/USD
+    const pair = symbol.slice(2);
+    const from = pair.slice(0, 3);
+    const to = pair.slice(3);
+    lastUrl = `${POLYGON_BASE_URL}/v2/last/trade/crypto/${encodeURIComponent(from)}/${encodeURIComponent(to)}?apiKey=${POLYGON_API_KEY}`;
+  } else if (isCurrency) {
+    // C:XAUUSD -> /v1/last_quote/currencies/XAU/USD
+    const pair = symbol.slice(2);
+    const from = pair.slice(0, 3);
+    const to = pair.slice(3);
+    lastUrl = `${POLYGON_BASE_URL}/v1/last_quote/currencies/${encodeURIComponent(from)}/${encodeURIComponent(to)}?apiKey=${POLYGON_API_KEY}`;
+  } else {
+    // Stocks
+    lastUrl = `${POLYGON_BASE_URL}/v2/last/trade/${encodeURIComponent(symbol)}?apiKey=${POLYGON_API_KEY}`;
+  }
   const prevCloseUrl = `${POLYGON_BASE_URL}/v2/aggs/ticker/${encodeURIComponent(symbol)}/prev?adjusted=true&apiKey=${POLYGON_API_KEY}`;
 
   let lastPrice = null;
   let changePct = 0;
+  let prevClosePrice = null;
 
   try {
     // Apply rate limiting before API calls
     await waitForRateLimit();
     
-    // Fetch last trade
-    const lastTrade = await polygonJson(lastTradeUrl).catch(err => {
-      console.warn(`Failed to fetch last trade for ${symbol}:`, err.message);
+    // Fetch last trade or last quote depending on asset class
+    const lastAny = await polygonJson(lastUrl).catch(err => {
+      console.warn(`Failed to fetch last ${isCurrency ? 'quote' : 'trade'} for ${symbol}:`, err.message);
       return null;
     });
     
     // Wait before next API call
     await waitForRateLimit();
     
-    // Fetch previous close
+    // Fetch previous close for 24h change
     const prevClose = await polygonJson(prevCloseUrl).catch(err => {
       console.warn(`Failed to fetch prev close for ${symbol}:`, err.message);
       return null;
     });
 
-    if (lastTrade && lastTrade.results && lastTrade.results.price) {
-      lastPrice = Number(lastTrade.results.price);
-    } else if (lastTrade && lastTrade.results && lastTrade.results.p) {
-      lastPrice = Number(lastTrade.results.p);
+    if (lastAny) {
+      // Trade responses often have results.price or results.p
+      const r = lastAny.last || lastAny.results || lastAny;
+      const tradePrice = r && (r.price ?? r.p);
+      if (tradePrice != null) {
+        lastPrice = Number(tradePrice);
+      }
+      // Quote responses may have bid/ask fields: bid, ask or bp/ap
+      if (lastPrice == null) {
+        const bid = r && (r.bid ?? r.bp ?? r.bid_price);
+        const ask = r && (r.ask ?? r.ap ?? r.ask_price);
+        if (bid != null && ask != null) {
+          lastPrice = (Number(bid) + Number(ask)) / 2;
+        } else if (ask != null) {
+          lastPrice = Number(ask);
+        } else if (bid != null) {
+          lastPrice = Number(bid);
+        }
+      }
     }
 
-    const prevClosePrice = (prevClose && prevClose.results && prevClose.results[0] && prevClose.results[0].c)
-      ? Number(prevClose.results[0].c)
+    prevClosePrice = (prevClose && prevClose.results && prevClose.results[0] && (prevClose.results[0].c ?? prevClose.results[0].close))
+      ? Number(prevClose.results[0].c ?? prevClose.results[0].close)
       : null;
 
     if (lastPrice != null && prevClosePrice != null && prevClosePrice > 0) {
@@ -106,6 +141,12 @@ async function fetchLatestForSymbol(symbol) {
   } catch (e) {
     console.error(`Error processing price data for ${symbol}:`, e.message);
     throw e;
+  }
+
+  // Fallback: if we couldn't get a last price but we have prev close, use it
+  if (lastPrice == null && prevClosePrice != null) {
+    lastPrice = prevClosePrice;
+    changePct = 0;
   }
 
   if (lastPrice == null) {
@@ -142,6 +183,11 @@ export async function getPriceForSymbol(symbol) {
     }
     throw error;
   }
+}
+
+// Return cached price entry if available; does not perform any network call
+export function getCachedPriceForSymbol(symbol) {
+  return symbolCache.get(symbol) || null;
 }
 
 export async function getSupportedAssetPrices() {

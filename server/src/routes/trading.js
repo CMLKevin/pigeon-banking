@@ -1,6 +1,6 @@
 import express from 'express';
 import { authenticateToken } from '../middleware/auth.js';
-import { getCombinedCurrentPrices } from '../services/tradingPriceService.js';
+import { getCombinedCurrentPrices, getCombinedCurrentPricesCached } from '../services/tradingPriceService.js';
 
 const router = express.Router();
 
@@ -8,16 +8,18 @@ router.use(authenticateToken);
 
 router.get('/prices', async (req, res) => {
   try {
-    const prices = await getCombinedCurrentPrices();
-    
-    // If we got at least some prices, return them
-    if (Object.keys(prices).length > 0) {
-      return res.json({ success: true, prices });
+    // Return cached immediately to avoid blocking on rate-limited API
+    const cached = await getCombinedCurrentPricesCached();
+    if (Object.keys(cached).length > 0) {
+      // Warm missing assets in background (do not await)
+      Promise.resolve(getCombinedCurrentPrices()).catch(() => {});
+      return res.json({ success: true, prices: cached });
     }
-    
-    // If no prices available, return empty object with success
-    console.warn('No prices available from API, returning empty object');
-    res.json({ success: true, prices: {} });
+
+    // No cache yet: trigger background warm and return empty
+    console.warn('No prices in cache yet. Triggering background warm.');
+    Promise.resolve(getCombinedCurrentPrices()).catch(() => {});
+    return res.json({ success: true, prices: {}, warning: 'Warming price cache' });
   } catch (e) {
     console.error('Error fetching trading prices:', e);
     // Return empty prices instead of error to prevent frontend crash
