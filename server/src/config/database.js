@@ -256,7 +256,7 @@ const initSchema = async () => {
       closed_price NUMERIC(18,8),
       realized_pnl NUMERIC(18,6),
       commission_agon NUMERIC(18,6) DEFAULT 0,
-      maintenance_fee_agon NUMERIC(18,6) DEFAULT 0,
+      total_maintenance_fees NUMERIC(18,6) DEFAULT 0,
       last_maintenance_fee_at TIMESTAMPTZ,
       current_price NUMERIC(18,8),
       pnl_percentage NUMERIC(8,4)
@@ -267,7 +267,7 @@ const initSchema = async () => {
   await exec(`
     ALTER TABLE crypto_positions 
     ADD COLUMN IF NOT EXISTS commission_agon NUMERIC(18,6) DEFAULT 0,
-    ADD COLUMN IF NOT EXISTS maintenance_fee_agon NUMERIC(18,6) DEFAULT 0,
+    ADD COLUMN IF NOT EXISTS total_maintenance_fees NUMERIC(18,6) DEFAULT 0,
     ADD COLUMN IF NOT EXISTS last_maintenance_fee_at TIMESTAMPTZ,
     ADD COLUMN IF NOT EXISTS current_price NUMERIC(18,8),
     ADD COLUMN IF NOT EXISTS pnl_percentage NUMERIC(8,4)

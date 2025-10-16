@@ -500,7 +500,7 @@ router.get('/metrics', async (req, res) => {
         COUNT(CASE WHEN status = 'closed' AND realized_pnl < 0 THEN 1 END) AS losing_positions,
         AVG(leverage) AS avg_leverage,
         SUM(commission_agon) AS total_commissions,
-        SUM(maintenance_fee_agon) AS total_maintenance_fees
+        SUM(total_maintenance_fees) AS total_maintenance_fees
       FROM crypto_positions
     `);
 
