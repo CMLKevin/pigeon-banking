@@ -420,7 +420,7 @@ export default function Trading() {
                 <Select label="Asset" value={selectedAsset} onChange={setSelectedAsset} options={ASSETS.map(a => ({ value: a.id, label: `${a.name} (${a.symbol})` }))} />
                 <Select label="Position" value={positionType} onChange={setPositionType} options={[{ value: 'long', label: 'Long' }, { value: 'short', label: 'Short' }]} />
                 <Select label="Leverage" value={leverage} onChange={(v) => setLeverage(Number(v))} options={Array.from({ length: 10 }, (_, i) => ({ value: i + 1, label: `${i + 1}x` }))} />
-                <Input label="Margin (Ⱥ)" type="number" value={marginAmount} onChange={setMarginAmount} min="0" step="0.01" placeholder="0.00" />
+                <Input label="Margin (Ⱥ)" type="number" value={marginAmount} onChange={(e) => setMarginAmount(e.target.value)} min="0" step="0.01" placeholder="0.00" />
               </div>
               <div className="flex gap-2 mt-2">
                 {[0.25, 0.5, 0.75, 1].map(pct => (
