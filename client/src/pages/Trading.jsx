@@ -351,10 +351,11 @@ export default function Trading() {
             <span>Live prices are loading. Data will appear as it is fetched.</span>
           </div>
         )}
+        {/* Main Grid: Chart Left, Controls Right */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          <div className="lg:col-span-8 space-y-6">
-            {/* TradingView Chart - Larger */}
-            <div className="bg-phantom-bg-secondary/50 border border-phantom-border rounded-2xl p-6 overflow-hidden shadow-lg">
+          <div className="lg:col-span-8">
+            {/* TradingView Chart - Matches Right Side Height */}
+            <div className="bg-phantom-bg-secondary/50 border border-phantom-border rounded-2xl p-6 overflow-hidden shadow-lg h-full">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
                   <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${selected.color} flex items-center justify-center text-white font-bold shadow-md`}>
@@ -378,44 +379,8 @@ export default function Trading() {
               <TradingViewChart 
                 symbol={ASSETS.find(a => a.id === selectedAsset)?.tvSymbol || 'BTCUSD'} 
                 theme="dark" 
-                height={1500}
+                height={1100}
               />
-            </div>
-
-            {/* Asset Selection - Below Chart */}
-            <div className="bg-phantom-bg-secondary/50 border border-phantom-border rounded-2xl p-6 shadow-lg" style={{minHeight: '200px'}}>
-              <div className="text-sm font-semibold text-phantom-text-primary mb-4 flex items-center gap-2">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
-                </svg>
-                Select Asset
-              </div>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-3">
-                {ASSETS.map(a => {
-                  const data = prices[a.id];
-                  const p = data?.price;
-                  const ch = Number(data?.change_24h ?? 0);
-                  const active = selectedAsset === a.id;
-                  return (
-                    <button
-                      key={a.id}
-                      type="button"
-                      onClick={() => setSelectedAsset(a.id)}
-                      className={`p-4 rounded-xl border-2 transition-all duration-200 ${
-                        active
-                          ? 'bg-gradient-phantom text-white shadow-glow border-transparent scale-105'
-                          : 'bg-phantom-bg-tertiary/30 border-phantom-border text-phantom-text-secondary hover:text-phantom-text-primary hover:bg-phantom-bg-tertiary hover:border-phantom-accent-primary/30'
-                      }`}
-                    >
-                      <div className="text-xs font-bold mb-1">{a.symbol}</div>
-                      <div className="text-sm font-semibold mb-1">{p != null ? `$${Number(p).toFixed(2)}` : '--'}</div>
-                      <div className={`text-[11px] font-medium ${active ? 'text-white/80' : ch >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                        {ch >= 0 ? '+' : ''}{(isFinite(ch) ? ch : 0).toFixed(2)}%
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
             </div>
           </div>
 
@@ -595,6 +560,44 @@ export default function Trading() {
                   <div className="mt-2 text-xs text-phantom-text-tertiary text-center">{disabledReason}</div>
                 )}
               </form>
+            </div>
+          </div>
+        </div>
+
+        {/* Asset Selection - Full Width Below */}
+        <div className="mt-8">
+          <div className="bg-phantom-bg-secondary/50 border border-phantom-border rounded-2xl p-6 shadow-lg" style={{minHeight: '200px'}}>
+            <div className="text-sm font-semibold text-phantom-text-primary mb-4 flex items-center gap-2">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
+              </svg>
+              Select Asset
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-3">
+              {ASSETS.map(a => {
+                const data = prices[a.id];
+                const p = data?.price;
+                const ch = Number(data?.change_24h ?? 0);
+                const active = selectedAsset === a.id;
+                return (
+                  <button
+                    key={a.id}
+                    type="button"
+                    onClick={() => setSelectedAsset(a.id)}
+                    className={`p-4 rounded-xl border-2 transition-all duration-200 ${
+                      active
+                        ? 'bg-gradient-phantom text-white shadow-glow border-transparent scale-105'
+                        : 'bg-phantom-bg-tertiary/30 border-phantom-border text-phantom-text-secondary hover:text-phantom-text-primary hover:bg-phantom-bg-tertiary hover:border-phantom-accent-primary/30'
+                    }`}
+                  >
+                    <div className="text-xs font-bold mb-1">{a.symbol}</div>
+                    <div className="text-sm font-semibold mb-1">{p != null ? `$${Number(p).toFixed(2)}` : '--'}</div>
+                    <div className={`text-[11px] font-medium ${active ? 'text-white/80' : ch >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                      {ch >= 0 ? '+' : ''}{(isFinite(ch) ? ch : 0).toFixed(2)}%
+                    </div>
+                  </button>
+                );
+              })}
             </div>
           </div>
         </div>
