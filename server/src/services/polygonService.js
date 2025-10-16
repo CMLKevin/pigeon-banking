@@ -24,6 +24,29 @@ export const SUPPORTED_CRYPTO = {
 const symbolCache = new Map(); // key: symbol, value: { price, change_24h, last_updated, last_fetch_ms }
 const MIN_REFRESH_MS = 15000; // 15 seconds
 
+// Global rate limiting to prevent hitting API limits
+let lastApiCallTime = 0;
+const API_CALL_DELAY_MS = 20000; // 20 seconds between API calls
+
+// Helper to delay execution
+function delay(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+// Ensure minimum delay between API calls globally
+async function waitForRateLimit() {
+  const now = Date.now();
+  const timeSinceLastCall = now - lastApiCallTime;
+  
+  if (timeSinceLastCall < API_CALL_DELAY_MS) {
+    const waitTime = API_CALL_DELAY_MS - timeSinceLastCall;
+    console.log(`Rate limiting: waiting ${Math.round(waitTime / 1000)}s before next API call`);
+    await delay(waitTime);
+  }
+  
+  lastApiCallTime = Date.now();
+}
+
 async function polygonJson(url) {
   const res = await fetch(url);
   if (!res.ok) {
@@ -49,16 +72,23 @@ async function fetchLatestForSymbol(symbol) {
   let changePct = 0;
 
   try {
-    const [lastTrade, prevClose] = await Promise.all([
-      polygonJson(lastTradeUrl).catch(err => {
-        console.warn(`Failed to fetch last trade for ${symbol}:`, err.message);
-        return null;
-      }),
-      polygonJson(prevCloseUrl).catch(err => {
-        console.warn(`Failed to fetch prev close for ${symbol}:`, err.message);
-        return null;
-      })
-    ]);
+    // Apply rate limiting before API calls
+    await waitForRateLimit();
+    
+    // Fetch last trade
+    const lastTrade = await polygonJson(lastTradeUrl).catch(err => {
+      console.warn(`Failed to fetch last trade for ${symbol}:`, err.message);
+      return null;
+    });
+    
+    // Wait before next API call
+    await waitForRateLimit();
+    
+    // Fetch previous close
+    const prevClose = await polygonJson(prevCloseUrl).catch(err => {
+      console.warn(`Failed to fetch prev close for ${symbol}:`, err.message);
+      return null;
+    });
 
     if (lastTrade && lastTrade.results && lastTrade.results.price) {
       lastPrice = Number(lastTrade.results.price);
@@ -115,54 +145,74 @@ export async function getPriceForSymbol(symbol) {
 }
 
 export async function getSupportedAssetPrices() {
-  const entries = await Promise.all(
-    Object.values(SUPPORTED_STOCKS_AND_ASSETS).map(async (asset) => {
-      try {
-        const data = await getPriceForSymbol(asset.symbol);
-        return [asset.id, { id: asset.id, symbol: asset.symbol, name: asset.name, price: data.price, change_24h: data.change_24h, last_updated: data.last_updated }];
-      } catch (e) {
-        console.warn(`Failed to get price for ${asset.id}:`, e.message);
-        const cache = symbolCache.get(asset.symbol);
-        if (cache) {
-          console.log(`Using cached data for ${asset.id}`);
-          return [asset.id, { id: asset.id, symbol: asset.symbol, name: asset.name, price: cache.price, change_24h: cache.change_24h, last_updated: cache.last_updated }];
-        }
-        // Return null to skip this asset if no cache available
-        return [asset.id, null];
-      }
-    })
-  );
-
   const result = {};
-  for (const [id, value] of entries) {
-    if (value) result[id] = value;
+  
+  // Fetch sequentially to avoid rate limits
+  for (const asset of Object.values(SUPPORTED_STOCKS_AND_ASSETS)) {
+    try {
+      const data = await getPriceForSymbol(asset.symbol);
+      result[asset.id] = { 
+        id: asset.id, 
+        symbol: asset.symbol, 
+        name: asset.name, 
+        price: data.price, 
+        change_24h: data.change_24h, 
+        last_updated: data.last_updated 
+      };
+    } catch (e) {
+      console.warn(`Failed to get price for ${asset.id}:`, e.message);
+      const cache = symbolCache.get(asset.symbol);
+      if (cache) {
+        console.log(`Using cached data for ${asset.id}`);
+        result[asset.id] = { 
+          id: asset.id, 
+          symbol: asset.symbol, 
+          name: asset.name, 
+          price: cache.price, 
+          change_24h: cache.change_24h, 
+          last_updated: cache.last_updated 
+        };
+      }
+      // Skip this asset if no cache available
+    }
   }
+  
   return result;
 }
 
 export async function getSupportedCryptoPrices() {
-  const entries = await Promise.all(
-    Object.values(SUPPORTED_CRYPTO).map(async (asset) => {
-      try {
-        const data = await getPriceForSymbol(asset.symbol);
-        return [asset.id, { id: asset.id, symbol: asset.symbol, name: asset.name, price: data.price, change_24h: data.change_24h, last_updated: data.last_updated }];
-      } catch (e) {
-        console.warn(`Failed to get price for ${asset.id}:`, e.message);
-        const cache = symbolCache.get(asset.symbol);
-        if (cache) {
-          console.log(`Using cached data for ${asset.id}`);
-          return [asset.id, { id: asset.id, symbol: asset.symbol, name: asset.name, price: cache.price, change_24h: cache.change_24h, last_updated: cache.last_updated }];
-        }
-        // Return null to skip this asset if no cache available
-        return [asset.id, null];
-      }
-    })
-  );
-
   const result = {};
-  for (const [id, value] of entries) {
-    if (value) result[id] = value;
+  
+  // Fetch sequentially to avoid rate limits
+  for (const asset of Object.values(SUPPORTED_CRYPTO)) {
+    try {
+      const data = await getPriceForSymbol(asset.symbol);
+      result[asset.id] = { 
+        id: asset.id, 
+        symbol: asset.symbol, 
+        name: asset.name, 
+        price: data.price, 
+        change_24h: data.change_24h, 
+        last_updated: data.last_updated 
+      };
+    } catch (e) {
+      console.warn(`Failed to get price for ${asset.id}:`, e.message);
+      const cache = symbolCache.get(asset.symbol);
+      if (cache) {
+        console.log(`Using cached data for ${asset.id}`);
+        result[asset.id] = { 
+          id: asset.id, 
+          symbol: asset.symbol, 
+          name: asset.name, 
+          price: cache.price, 
+          change_24h: cache.change_24h, 
+          last_updated: cache.last_updated 
+        };
+      }
+      // Skip this asset if no cache available
+    }
   }
+  
   return result;
 }
 
