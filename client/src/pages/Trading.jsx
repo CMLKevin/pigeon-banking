@@ -378,7 +378,7 @@ export default function Trading() {
               <TradingViewChart 
                 symbol={ASSETS.find(a => a.id === selectedAsset)?.tvSymbol || 'BTCUSD'} 
                 theme="dark" 
-                height={650}
+                height={1500}
               />
             </div>
 
