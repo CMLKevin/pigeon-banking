@@ -342,6 +342,164 @@ const Admin = () => {
               </div>
             </div>
 
+            {/* Trading Analytics */}
+            {metrics?.tradingTotals && (
+              <div className="mt-12">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-amber-500 to-yellow-600 flex items-center justify-center shadow-glow">
+                    <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h2 className="text-3xl font-bold bg-gradient-phantom bg-clip-text text-transparent">Trading Analytics</h2>
+                    <p className="text-phantom-text-secondary">Monitor leveraged trading activity across all assets (crypto, stocks, commodities)</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <StatCard 
+                    title="Total Positions" 
+                    value={metrics.tradingTotals.total_positions || 0} 
+                    sub={`${metrics.tradingTotals.open_positions || 0} open • ${metrics.tradingTotals.closed_positions || 0} closed`}
+                    icon={
+                      <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                      </svg>
+                    }
+                  />
+                  <StatCard 
+                    title="Unique Traders" 
+                    value={metrics.tradingTotals.unique_traders || 0} 
+                    sub={`Win rate: ${Number(metrics.tradingTotals.win_rate || 0).toFixed(1)}%`}
+                    icon={
+                      <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" />
+                      </svg>
+                    }
+                  />
+                  <StatCard 
+                    title="Total Volume" 
+                    value={formatCurrency(metrics.tradingTotals.total_volume || 0, 'Ⱥ')} 
+                    sub={`Locked: ${formatCurrency(metrics.tradingTotals.locked_margin || 0, 'Ⱥ')}`}
+                    icon={
+                      <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z" />
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clipRule="evenodd" />
+                      </svg>
+                    }
+                  />
+                  <StatCard 
+                    title="House P&L" 
+                    value={`${Number(metrics.tradingTotals.house_pnl || 0) >= 0 ? '+' : ''}${formatCurrency(metrics.tradingTotals.house_pnl || 0, 'Ⱥ')}`}
+                    sub={`Commissions + Fees: ${formatCurrency(metrics.tradingTotals.total_fees || 0, 'Ⱥ')}`}
+                    icon={
+                      <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                      </svg>
+                    }
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+                  {/* Positions by Day */}
+                  <div className="bg-phantom-bg-secondary/60 backdrop-blur-xl rounded-3xl shadow-card border border-phantom-border p-6 group">
+                    <div className="flex items-center justify-between mb-4">
+                      <div>
+                        <h3 className="text-xl font-bold text-phantom-text-primary">Positions by Day (14 days)</h3>
+                        <p className="text-sm text-phantom-text-tertiary">Daily trading activity</p>
+                      </div>
+                    </div>
+                    <LineChart data={
+                      metrics.tradingByDay?.slice().reverse().map(d => ({
+                        label: new Date(d.day).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+                        value: Number(d.positions_opened || 0)
+                      })) || []
+                    } />
+                  </div>
+
+                  {/* Top Traders */}
+                  <div className="bg-phantom-bg-secondary/60 backdrop-blur-xl rounded-3xl shadow-card border border-phantom-border p-6">
+                    <h3 className="text-xl font-bold text-phantom-text-primary mb-2">Top Traders</h3>
+                    <p className="text-sm text-phantom-text-tertiary mb-4">Most active traders across all assets</p>
+                    <div className="space-y-3">
+                      {metrics.topTraders?.slice(0, 6).map((trader, idx) => (
+                        <div key={trader.id} className="flex items-center gap-3 p-3 rounded-2xl hover:bg-phantom-bg-tertiary transition-all group">
+                          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-500 to-yellow-600 flex items-center justify-center text-white font-bold text-sm shadow-glow-sm">
+                            {idx + 1}
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-sm font-semibold text-phantom-text-primary">{trader.username}</p>
+                            <p className="text-xs text-phantom-text-tertiary">{trader.total_positions} positions • {trader.wins} wins</p>
+                          </div>
+                          <div className="text-right">
+                            <p className={`text-sm font-semibold ${Number(trader.net_pnl || 0) >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                              {Number(trader.net_pnl || 0) >= 0 ? '+' : ''}{Number(trader.net_pnl || 0).toFixed(2)} ⱺ
+                            </p>
+                            <p className="text-xs text-phantom-text-tertiary">{formatCurrency(trader.total_volume || 0, 'Ⱥ')} volume</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Positions by Coin & Leverage Distribution */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+                  {/* Positions by Coin */}
+                  <div className="bg-phantom-bg-secondary/60 backdrop-blur-xl rounded-3xl shadow-card border border-phantom-border p-6">
+                    <h3 className="text-xl font-bold text-phantom-text-primary mb-2">Positions by Cryptocurrency</h3>
+                    <p className="text-sm text-phantom-text-tertiary mb-4">Trading activity per coin</p>
+                    <div className="space-y-4">
+                      {metrics.cryptoByCoin?.map((coin) => {
+                        const coinNames = { bitcoin: 'Bitcoin (BTC)', ethereum: 'Ethereum (ETH)', dogecoin: 'Dogecoin (DOGE)' };
+                        const coinColors = { bitcoin: 'from-orange-500 to-yellow-600', ethereum: 'from-blue-500 to-purple-600', dogecoin: 'from-yellow-400 to-orange-500' };
+                        return (
+                          <div key={coin.coin_id} className="p-4 bg-phantom-bg-tertiary rounded-2xl border border-phantom-border">
+                            <div className="flex items-center justify-between mb-2">
+                              <div className="flex items-center gap-2">
+                                <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${coinColors[coin.coin_id]} flex items-center justify-center shadow-glow-sm`}>
+                                  <span className="text-white font-bold text-xs">{coin.coin_id.substring(0,3).toUpperCase()}</span>
+                                </div>
+                                <span className="text-sm font-semibold text-phantom-text-primary">{coinNames[coin.coin_id]}</span>
+                              </div>
+                              <span className="text-sm font-bold text-phantom-text-primary">{coin.positions} positions</span>
+                            </div>
+                            <div className="flex justify-between text-xs">
+                              <span className="text-phantom-text-tertiary">Volume: {formatCurrency(coin.volume || 0, 'Ⱥ')}</span>
+                              <span className={`font-semibold ${Number(coin.net_pnl || 0) >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                                P&L: {Number(coin.net_pnl || 0) >= 0 ? '+' : ''}{Number(coin.net_pnl || 0).toFixed(2)} Ⱥ
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Leverage Distribution */}
+                  <div className="bg-phantom-bg-secondary/60 backdrop-blur-xl rounded-3xl shadow-card border border-phantom-border p-6">
+                    <h3 className="text-xl font-bold text-phantom-text-primary mb-2">Leverage Distribution</h3>
+                    <p className="text-sm text-phantom-text-tertiary mb-4">Position count by leverage range</p>
+                    <div className="space-y-3">
+                      {metrics.leverageDistribution?.map((range, idx) => (
+                        <div key={idx} className="p-4 bg-phantom-bg-tertiary rounded-2xl border border-phantom-border">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-sm font-bold text-phantom-accent-primary">{range.leverage_range}</span>
+                            <span className="text-sm font-semibold text-phantom-text-primary">{range.positions} positions</span>
+                          </div>
+                          <div className="flex justify-between text-xs text-phantom-text-tertiary">
+                            <span>Avg: {Number(range.avg_leverage || 0).toFixed(2)}x</span>
+                            <span>Volume: {formatCurrency(range.volume || 0, 'Ⱥ')}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Coin Flip Analytics */}
             <div className="mt-12">
               <div className="flex items-center gap-3 mb-6">
@@ -490,109 +648,6 @@ const Admin = () => {
                   </div>
                 </div>
               </div>
-            </div>
-
-            {/* Plinko Analytics */}
-            <div className="bg-phantom-bg-secondary/60 backdrop-blur-xl rounded-3xl shadow-card border border-phantom-border p-6">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center shadow-glow">
-                  <svg className="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-                    <circle cx="12" cy="12" r="2" fill="currentColor" />
-                  </svg>
-                </div>
-                <div>
-                  <h2 className="text-2xl font-bold text-phantom-text-primary">Plinko Analytics</h2>
-                  <p className="text-sm text-phantom-text-tertiary">Multiplier-based physics game stats</p>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <StatCard 
-                  title="Total Games" 
-                  value={metrics.plinkoTotals?.total_games || 0} 
-                  sub={`${metrics.plinkoTotals?.wins || 0} wins • ${metrics.plinkoTotals?.losses || 0} losses`}
-                />
-                <StatCard 
-                  title="Unique Players" 
-                  value={metrics.plinkoTotals?.unique_players || 0} 
-                  sub={`Win Rate: ${metrics.plinkoTotals?.win_rate || 0}%`}
-                />
-                <StatCard 
-                  title="Avg Multiplier" 
-                  value={`${metrics.plinkoTotals?.avg_multiplier || 0}x`} 
-                  sub={`Max: ${metrics.plinkoTotals?.max_multiplier || 0}x • Min: ${metrics.plinkoTotals?.min_multiplier || 0}x`}
-                />
-                <StatCard 
-                  title="House Profit (◉)" 
-                  value={`${Number(metrics.plinkoTotals?.house_profit || 0).toFixed(0)}`} 
-                  sub={`Total Bet: ${Number(metrics.plinkoTotals?.total_bet || 0).toFixed(0)}`}
-                />
-              </div>
-
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-                <div className="bg-phantom-bg-secondary/60 backdrop-blur-xl rounded-3xl shadow-card border border-phantom-border p-6 group">
-                  <div className="flex items-center justify-between mb-4">
-                    <div>
-                      <h3 className="text-xl font-bold text-phantom-text-primary">Games by Day (14 days)</h3>
-                      <p className="text-sm text-phantom-text-tertiary">Plinko games per day</p>
-                    </div>
-                  </div>
-                  <LineChart data={
-                    metrics.plinkoByDay?.slice().reverse().map(d => ({
-                      label: new Date(d.day).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-                      value: Number(d.games || 0)
-                    })) || []
-                  } />
-                </div>
-                <div className="bg-phantom-bg-secondary/60 backdrop-blur-xl rounded-3xl shadow-card border border-phantom-border p-6">
-                  <h3 className="text-xl font-bold text-phantom-text-primary mb-2">Top Players</h3>
-                  <p className="text-sm text-phantom-text-tertiary mb-4">Most plinko games played</p>
-                  <div className="space-y-3">
-                    {metrics.topPlinkoPlayers?.slice(0, 6).map((g, idx) => (
-                      <div key={g.id} className="flex items-center gap-3 p-3 rounded-2xl hover:bg-phantom-bg-tertiary transition-all group">
-                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center text-white font-bold text-sm shadow-glow-sm">
-                          {idx + 1}
-                        </div>
-                        <div className="flex-1">
-                          <p className="text-sm font-semibold text-phantom-text-primary">{g.username}</p>
-                          <p className="text-xs text-phantom-text-tertiary">{g.games_played} games • {Number(g.avg_multiplier || 0).toFixed(2)}x avg</p>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-sm font-semibold text-purple-400">{Number(g.max_multiplier || 0).toFixed(1)}x max</p>
-                          <p className="text-xs text-phantom-text-tertiary">{Number(g.total_bet || 0).toFixed(0)} ◉ bet</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              {/* Risk Distribution */}
-              {metrics.plinkoRiskDistribution && metrics.plinkoRiskDistribution.length > 0 && (
-                <div className="bg-phantom-bg-secondary/60 backdrop-blur-xl rounded-3xl shadow-card border border-phantom-border p-6 mt-6">
-                  <h3 className="text-xl font-bold text-phantom-text-primary mb-2">Risk & Row Distribution</h3>
-                  <p className="text-sm text-phantom-text-tertiary mb-4">Game configuration preferences</p>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                    {metrics.plinkoRiskDistribution.slice(0, 9).map((dist, idx) => (
-                      <div key={idx} className="p-4 bg-phantom-bg-tertiary rounded-2xl border border-phantom-border">
-                        <div className="flex items-center justify-between mb-2">
-                          <span className={`px-2 py-1 rounded-lg text-xs font-bold ${
-                            dist.risk_level === 'high' ? 'bg-red-500/20 text-red-400' :
-                            dist.risk_level === 'medium' ? 'bg-yellow-500/20 text-yellow-400' :
-                            'bg-green-500/20 text-green-400'
-                          }`}>
-                            {(dist.risk_level || 'N/A').toUpperCase()}
-                          </span>
-                          <span className="text-xs text-phantom-text-tertiary">{dist.rows || 'N/A'} rows</span>
-                        </div>
-                        <p className="text-2xl font-bold text-phantom-text-primary">{dist.games}</p>
-                        <p className="text-xs text-phantom-text-tertiary">games • {Number(dist.avg_multiplier || 0).toFixed(2)}x avg</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
             </div>
 
             {/* Crash Analytics */}
@@ -809,164 +864,6 @@ const Admin = () => {
                 </table>
               </div>
             </div>
-
-            {/* Trading Analytics */}
-            {metrics?.tradingTotals && (
-              <div className="mt-12">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-amber-500 to-yellow-600 flex items-center justify-center shadow-glow">
-                    <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h2 className="text-3xl font-bold bg-gradient-phantom bg-clip-text text-transparent">Trading Analytics</h2>
-                    <p className="text-phantom-text-secondary">Monitor leveraged trading activity across all assets (crypto, stocks, commodities)</p>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                  <StatCard 
-                    title="Total Positions" 
-                    value={metrics.tradingTotals.total_positions || 0} 
-                    sub={`${metrics.tradingTotals.open_positions || 0} open • ${metrics.tradingTotals.closed_positions || 0} closed`}
-                    icon={
-                      <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                      </svg>
-                    }
-                  />
-                  <StatCard 
-                    title="Unique Traders" 
-                    value={metrics.tradingTotals.unique_traders || 0} 
-                    sub={`Win rate: ${Number(metrics.tradingTotals.win_rate || 0).toFixed(1)}%`}
-                    icon={
-                      <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" />
-                      </svg>
-                    }
-                  />
-                  <StatCard 
-                    title="Total Volume" 
-                    value={formatCurrency(metrics.tradingTotals.total_volume || 0, 'Ⱥ')} 
-                    sub={`Locked: ${formatCurrency(metrics.tradingTotals.locked_margin || 0, 'Ⱥ')}`}
-                    icon={
-                      <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z" />
-                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clipRule="evenodd" />
-                      </svg>
-                    }
-                  />
-                  <StatCard 
-                    title="House P&L" 
-                    value={`${Number(metrics.tradingTotals.house_pnl || 0) >= 0 ? '+' : ''}${formatCurrency(metrics.tradingTotals.house_pnl || 0, 'Ⱥ')}`}
-                    sub={`Commissions + Fees: ${formatCurrency(metrics.tradingTotals.total_fees || 0, 'Ⱥ')}`}
-                    icon={
-                      <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
-                      </svg>
-                    }
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-                  {/* Positions by Day */}
-                  <div className="bg-phantom-bg-secondary/60 backdrop-blur-xl rounded-3xl shadow-card border border-phantom-border p-6 group">
-                    <div className="flex items-center justify-between mb-4">
-                      <div>
-                        <h3 className="text-xl font-bold text-phantom-text-primary">Positions by Day (14 days)</h3>
-                        <p className="text-sm text-phantom-text-tertiary">Daily trading activity</p>
-                      </div>
-                    </div>
-                    <LineChart data={
-                      metrics.tradingByDay?.slice().reverse().map(d => ({
-                        label: new Date(d.day).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-                        value: Number(d.positions_opened || 0)
-                      })) || []
-                    } />
-                  </div>
-
-                  {/* Top Traders */}
-                  <div className="bg-phantom-bg-secondary/60 backdrop-blur-xl rounded-3xl shadow-card border border-phantom-border p-6">
-                    <h3 className="text-xl font-bold text-phantom-text-primary mb-2">Top Traders</h3>
-                    <p className="text-sm text-phantom-text-tertiary mb-4">Most active traders across all assets</p>
-                    <div className="space-y-3">
-                      {metrics.topTraders?.slice(0, 6).map((trader, idx) => (
-                        <div key={trader.id} className="flex items-center gap-3 p-3 rounded-2xl hover:bg-phantom-bg-tertiary transition-all group">
-                          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-500 to-yellow-600 flex items-center justify-center text-white font-bold text-sm shadow-glow-sm">
-                            {idx + 1}
-                          </div>
-                          <div className="flex-1">
-                            <p className="text-sm font-semibold text-phantom-text-primary">{trader.username}</p>
-                            <p className="text-xs text-phantom-text-tertiary">{trader.total_positions} positions • {trader.wins} wins</p>
-                          </div>
-                          <div className="text-right">
-                            <p className={`text-sm font-semibold ${Number(trader.net_pnl || 0) >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                              {Number(trader.net_pnl || 0) >= 0 ? '+' : ''}{Number(trader.net_pnl || 0).toFixed(2)} Ⱥ
-                            </p>
-                            <p className="text-xs text-phantom-text-tertiary">{formatCurrency(trader.total_volume || 0, 'Ⱥ')} volume</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Positions by Coin & Leverage Distribution */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-                  {/* Positions by Coin */}
-                  <div className="bg-phantom-bg-secondary/60 backdrop-blur-xl rounded-3xl shadow-card border border-phantom-border p-6">
-                    <h3 className="text-xl font-bold text-phantom-text-primary mb-2">Positions by Cryptocurrency</h3>
-                    <p className="text-sm text-phantom-text-tertiary mb-4">Trading activity per coin</p>
-                    <div className="space-y-4">
-                      {metrics.cryptoByCoin?.map((coin) => {
-                        const coinNames = { bitcoin: 'Bitcoin (BTC)', ethereum: 'Ethereum (ETH)', dogecoin: 'Dogecoin (DOGE)' };
-                        const coinColors = { bitcoin: 'from-orange-500 to-yellow-600', ethereum: 'from-blue-500 to-purple-600', dogecoin: 'from-yellow-400 to-orange-500' };
-                        return (
-                          <div key={coin.coin_id} className="p-4 bg-phantom-bg-tertiary rounded-2xl border border-phantom-border">
-                            <div className="flex items-center justify-between mb-2">
-                              <div className="flex items-center gap-2">
-                                <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${coinColors[coin.coin_id]} flex items-center justify-center shadow-glow-sm`}>
-                                  <span className="text-white font-bold text-xs">{coin.coin_id.substring(0,3).toUpperCase()}</span>
-                                </div>
-                                <span className="text-sm font-semibold text-phantom-text-primary">{coinNames[coin.coin_id]}</span>
-                              </div>
-                              <span className="text-sm font-bold text-phantom-text-primary">{coin.positions} positions</span>
-                            </div>
-                            <div className="flex justify-between text-xs">
-                              <span className="text-phantom-text-tertiary">Volume: {formatCurrency(coin.volume || 0, 'Ⱥ')}</span>
-                              <span className={`font-semibold ${Number(coin.net_pnl || 0) >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                                P&L: {Number(coin.net_pnl || 0) >= 0 ? '+' : ''}{Number(coin.net_pnl || 0).toFixed(2)} Ⱥ
-                              </span>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  {/* Leverage Distribution */}
-                  <div className="bg-phantom-bg-secondary/60 backdrop-blur-xl rounded-3xl shadow-card border border-phantom-border p-6">
-                    <h3 className="text-xl font-bold text-phantom-text-primary mb-2">Leverage Distribution</h3>
-                    <p className="text-sm text-phantom-text-tertiary mb-4">Position count by leverage range</p>
-                    <div className="space-y-3">
-                      {metrics.leverageDistribution?.map((range, idx) => (
-                        <div key={idx} className="p-4 bg-phantom-bg-tertiary rounded-2xl border border-phantom-border">
-                          <div className="flex items-center justify-between mb-2">
-                            <span className="text-sm font-bold text-phantom-accent-primary">{range.leverage_range}</span>
-                            <span className="text-sm font-semibold text-phantom-text-primary">{range.positions} positions</span>
-                          </div>
-                          <div className="flex justify-between text-xs text-phantom-text-tertiary">
-                            <span>Avg: {Number(range.avg_leverage || 0).toFixed(2)}x</span>
-                            <span>Volume: {formatCurrency(range.volume || 0, 'Ⱥ')}</span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
 
             {/* Auction Analytics Section */}
             {metrics?.auctionTotals && (
