@@ -181,7 +181,10 @@ export default function Trading() {
     try {
       const margin = parseFloat(marginAmount);
       if (margin <= 0) throw new Error('Margin must be positive');
-      if (margin > parseFloat(wallet.agon)) throw new Error('Insufficient Agon balance');
+      // Round to 2 decimal places to handle floating point precision
+      const marginRounded = Math.round(margin * 100) / 100;
+      const balanceRounded = Math.round(parseFloat(wallet.agon) * 100) / 100;
+      if (marginRounded > balanceRounded) throw new Error('Insufficient Agon balance');
 
       // Reuse existing open position backend for crypto; restrict non-crypto for now via same endpoint name by mapping ids
       await cryptoAPI.openPosition(selectedAsset, positionType, leverage, margin);
@@ -203,7 +206,10 @@ export default function Trading() {
   const lastUpdatedAgeSec = lastUpdated ? Math.max(0, Math.floor((Date.now() - lastUpdated.getTime()) / 1000)) : null;
   const marginNum = parseFloat(marginAmount) || 0;
   const walletAgon = wallet && wallet.agon != null ? parseFloat(wallet.agon) : 0;
-  const canSubmit = !!wallet && marginNum > 0 && isFinite(marginNum) && leverage >= 1 && leverage <= 10 && ['long','short'].includes(positionType) && marginNum <= walletAgon && !!selectedPrice;
+  // Round values for comparison to handle floating point precision
+  const marginNumRounded = Math.round(marginNum * 100) / 100;
+  const walletAgonRounded = Math.round(walletAgon * 100) / 100;
+  const canSubmit = !!wallet && marginNum > 0 && isFinite(marginNum) && leverage >= 1 && leverage <= 10 && ['long','short'].includes(positionType) && marginNumRounded <= walletAgonRounded && !!selectedPrice;
 
   const commission = useMemo(() => marginNum * commissionRate, [marginNum, commissionRate]);
   const netMargin = useMemo(() => Math.max(0, marginNum - commission), [marginNum, commission]);
@@ -216,16 +222,21 @@ export default function Trading() {
     const pct = (1 / leverage) * 0.9;
     return positionType === 'long' ? selectedPrice * (1 - pct) : selectedPrice * (1 + pct);
   }, [selectedPrice, leverage, positionType]);
-  const disabledReason = useMemo(() => {
-    if (isSubmitting) return '';
+  
+  const getSubmitButtonText = useMemo(() => {
     if (!wallet) return 'Loading wallet...';
     if (!selectedPrice) return 'Price unavailable; please wait.';
     if (!marginNum || marginNum <= 0) return 'Enter a positive margin.';
-    if (marginNum > walletAgon) return 'Insufficient Agon balance.';
+    // Round values for comparison to handle floating point precision
+    const marginNumRounded = Math.round(marginNum * 100) / 100;
+    const walletAgonRounded = Math.round(walletAgon * 100) / 100;
+    if (marginNumRounded > walletAgonRounded) return 'Insufficient Agon balance.';
     if (leverage < 1 || leverage > 10) return 'Leverage must be between 1x and 10x.';
     if (!['long','short'].includes(positionType)) return 'Select a valid position type.';
     return '';
   }, [wallet, selectedPrice, marginNum, walletAgon, leverage, positionType, isSubmitting]);
+  
+  const disabledReason = getSubmitButtonText;
 
   // Client-side enrich positions with latest prices for live PnL updates
   const enhancedPositions = useMemo(() => {

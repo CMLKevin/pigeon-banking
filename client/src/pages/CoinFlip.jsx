@@ -109,7 +109,11 @@ const CoinFlip = () => {
       return;
     }
 
-    if (parseFloat(betAmount) > wallet?.stoneworks_dollar) {
+    // Round to 2 decimal places to handle floating point precision issues
+    const betAmountRounded = Math.round(parseFloat(betAmount) * 100) / 100;
+    const balanceRounded = Math.round((wallet?.stoneworks_dollar || 0) * 100) / 100;
+    
+    if (betAmountRounded > balanceRounded) {
       alert('Insufficient Game Chips balance');
       return;
     }

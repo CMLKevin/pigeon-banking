@@ -201,14 +201,13 @@ export const playBlackjack = async (req, res) => {
   }
 
   try {
-    const wallet = await db.queryOne('SELECT stoneworks_dollar FROM wallets WHERE user_id = $1', [userId]);
-    
-    if (!wallet || parseFloat(wallet.stoneworks_dollar) < betAmount) {
-      return res.status(400).json({ message: 'Insufficient Game Chips balance' });
-    }
-
     // Initialize new game
     if (!action || action === 'deal') {
+      const wallet = await db.queryOne('SELECT stoneworks_dollar FROM wallets WHERE user_id = $1', [userId]);
+      
+      if (!wallet || parseFloat(wallet.stoneworks_dollar) < betAmount) {
+        return res.status(400).json({ message: 'Insufficient Game Chips balance' });
+      }
       const deck = shuffleDeck(createDeck());
       const playerHand = [deck[0], deck[2]];
       const dealerHand = [deck[1], deck[3]];
@@ -284,6 +283,7 @@ export const playBlackjack = async (req, res) => {
 
     // Handle hit/stand actions
     if (action === 'hit' || action === 'stand') {
+      const wallet = await db.queryOne('SELECT stoneworks_dollar FROM wallets WHERE user_id = $1', [userId]);
       let { playerHand, dealerHand, remainingDeck } = gameState;
 
       if (action === 'hit') {

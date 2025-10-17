@@ -161,7 +161,10 @@ export const openPosition = async (req, res) => {
     await db.tx(async (t) => {
       // Check user balance
       const wallet = await t.queryOne('SELECT agon FROM wallets WHERE user_id = $1', [userId]);
-      if (!wallet || parseFloat(wallet.agon) < marginAgonNum) {
+      // Round to 2 decimal places to handle floating point precision
+      const walletBalance = Math.round(parseFloat(wallet?.agon || 0) * 100) / 100;
+      const requiredMargin = Math.round(marginAgonNum * 100) / 100;
+      if (!wallet || walletBalance < requiredMargin) {
         throw new Error('Insufficient Agon balance');
       }
       
