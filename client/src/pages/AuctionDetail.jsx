@@ -189,8 +189,8 @@ const AuctionDetail = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="bg-phantom-bg-secondary/60 backdrop-blur-xl rounded-3xl shadow-card border border-phantom-border p-12 text-center">
             <p className="text-phantom-text-secondary text-lg">Auction not found</p>
-            <Link to="/auctions">
-              <Button className="mt-6">Back to Auction House</Button>
+            <Link to="/marketplace">
+              <Button className="mt-6">Back to Marketplace</Button>
             </Link>
           </div>
         </div>
@@ -210,11 +210,11 @@ const AuctionDetail = () => {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-fade-in">
         {/* Back Button */}
-        <Link to="/auctions" className="inline-flex items-center text-phantom-text-secondary hover:text-phantom-accent-primary transition-colors mb-6">
+        <Link to="/marketplace" className="inline-flex items-center text-phantom-text-secondary hover:text-phantom-accent-primary transition-colors mb-6">
           <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
           </svg>
-          Back to Auction House
+          Back to Marketplace
         </Link>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

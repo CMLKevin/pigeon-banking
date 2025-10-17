@@ -8,10 +8,9 @@ import Swap from './pages/Swap';
 import UsersAndPayments from './pages/UsersAndPayments';
 import Admin from './pages/Admin';
 import AdminLogin from './pages/AdminLogin';
-import Auctions from './pages/Auctions';
+import Marketplace from './pages/Marketplace';
 import CreateAuction from './pages/CreateAuction';
 import AuctionDetail from './pages/AuctionDetail';
-import EscrowDashboard from './pages/EscrowDashboard';
 import Games from './pages/Games';
 import CoinFlip from './pages/CoinFlip';
 import Blackjack from './pages/Blackjack';
@@ -63,12 +62,20 @@ function App() {
             }
           />
           <Route
-            path="/auctions"
+            path="/marketplace"
             element={
               <ProtectedRoute>
-                <Auctions />
+                <Marketplace />
               </ProtectedRoute>
             }
+          />
+          <Route
+            path="/auctions"
+            element={<Navigate to="/marketplace" replace />}
+          />
+          <Route
+            path="/escrow"
+            element={<Navigate to="/marketplace" replace />}
           />
           <Route
             path="/auctions/create"
@@ -83,14 +90,6 @@ function App() {
             element={
               <ProtectedRoute>
                 <AuctionDetail />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/escrow"
-            element={
-              <ProtectedRoute>
-                <EscrowDashboard />
               </ProtectedRoute>
             }
           />

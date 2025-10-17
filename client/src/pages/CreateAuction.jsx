@@ -221,7 +221,7 @@ const CreateAuction = () => {
                 type="button"
                 variant="secondary"
                 fullWidth
-                onClick={() => navigate('/auctions')}
+                onClick={() => navigate('/marketplace')}
               >
                 Cancel
               </Button>
