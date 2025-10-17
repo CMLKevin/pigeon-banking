@@ -13,9 +13,6 @@ node migrations/run-migration.js 001_add_user_sessions.sql
 ## Available Migrations
 
 - **001_add_user_sessions.sql** - Adds user session tracking table (REQUIRED)
-- **002_add_maintenance_fee.sql** - Adds maintenance fee tracking columns to the `crypto_positions` table
-- **003_add_crypto_position_columns.sql** - Adds additional tracking columns to `crypto_positions` for commission and real-time PnL
-- **004_add_auction_disputes.sql** - Creates the `auction_disputes` table for handling auction issues and refunds
 - **cleanup-expired-sessions.sql** - Removes old/expired sessions (maintenance)
 - **rollback_001_add_user_sessions.sql** - Reverts session table changes
 
