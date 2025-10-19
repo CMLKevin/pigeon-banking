@@ -1,7 +1,4 @@
 import { Pool } from 'pg';
-import dotenv from 'dotenv';
-
-dotenv.config();
 
 // Replit provides DATABASE_URL automatically when PostgreSQL is provisioned
 // Also supports individual credentials: PGHOST, PGUSER, PGPASSWORD, PGDATABASE

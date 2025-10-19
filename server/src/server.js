@@ -1,7 +1,6 @@
 import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
-import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import authRoutes from './routes/auth.js';
@@ -15,8 +14,6 @@ import cryptoRoutes from './routes/crypto.js';
 import tradingRoutes from './routes/trading.js';
 import db from './config/database.js';
 import { startMaintenanceFeeScheduler } from './jobs/maintenanceFees.js';
-
-dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
