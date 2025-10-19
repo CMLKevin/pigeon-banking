@@ -51,7 +51,7 @@ const AdminLogin = () => {
             <span className="text-phantom-text-primary font-semibold">Admin Portal</span>
           </div>
           <h1 className="text-4xl font-bold mb-2">
-            <span className="bg-gradient-phantom bg-clip-text text-transparent">Agon</span>
+            <span className="bg-gradient-phantom bg-clip-text text-transparent">Pigeon Banking</span>
           </h1>
           <p className="text-phantom-text-secondary">Administrative Access</p>
         </div>

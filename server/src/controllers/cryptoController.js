@@ -165,7 +165,7 @@ export const openPosition = async (req, res) => {
       const walletBalance = Math.round(parseFloat(wallet?.agon || 0) * 100) / 100;
       const requiredMargin = Math.round(marginAgonNum * 100) / 100;
       if (!wallet || walletBalance < requiredMargin) {
-        throw new Error('Insufficient Agon balance');
+        throw new Error('Insufficient Stoneworks Dollars balance');
       }
       
       // Get current price

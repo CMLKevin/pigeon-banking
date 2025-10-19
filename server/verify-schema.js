@@ -90,8 +90,8 @@ async function verifySchema() {
     
     if (sampleWallet) {
       console.log('✅ Sample wallet query successful');
-      console.log('   Agon balance:', sampleWallet.agon);
-      console.log('   Agon escrow:', sampleWallet.agon_escrow);
+      console.log('   Stoneworks Dollars balance:', sampleWallet.agon);
+      console.log('   Stoneworks Dollars escrow:', sampleWallet.agon_escrow);
     } else {
       console.log('ℹ️  No wallets in database yet');
     }

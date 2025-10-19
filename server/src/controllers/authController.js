@@ -81,9 +81,9 @@ export const signup = async (req, res) => {
     }
 
     // Create wallet with initial balance only if invite code was provided
-    const initialAgon = hasBonus ? 100.0 : 0.0;
-    const initialStoneWorksDollar = hasBonus ? 100.0 : 0.0;
-    await db.exec('INSERT INTO wallets (user_id, agon, stoneworks_dollar) VALUES ($1, $2, $3)', [userId, initialAgon, initialStoneWorksDollar]);
+    const initialStoneWorksDollars = hasBonus ? 100.0 : 0.0;
+    const initialGameChips = hasBonus ? 100.0 : 0.0;
+    await db.exec('INSERT INTO wallets (user_id, agon, stoneworks_dollar) VALUES ($1, $2, $3)', [userId, initialStoneWorksDollars, initialGameChips]);
 
     // Create session and token
     const fresh = await db.queryOne('SELECT id, username, is_admin FROM users WHERE id = $1', [userId]);

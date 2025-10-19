@@ -1,6 +1,6 @@
-# PhantomPay - Replit Deployment Guide
+# Pigeon Banking - Replit Deployment Guide
 
-This guide will help you deploy PhantomPay on Replit with PostgreSQL database support.
+This guide will help you deploy Pigeon Banking on Replit with PostgreSQL database support.
 
 ## Prerequisites
 
@@ -55,7 +55,7 @@ You may also want to add:
 
 ### Automatic Schema Initialization
 
-PhantomPay automatically creates all necessary tables and indexes when the application starts. No manual SQL setup required!
+Pigeon Banking automatically creates all necessary tables and indexes when the application starts. No manual SQL setup required!
 
 ### Database Management Tools
 

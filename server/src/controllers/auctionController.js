@@ -198,10 +198,10 @@ export const placeBid = async (req, res) => {
       // Check minimum bid
       const currentBid = parseFloat(auction.current_bid) || 0;
       const startingPrice = parseFloat(auction.starting_price) || 0;
-      const minBid = currentBid > 0 ? currentBid + 1 : startingPrice;  // Minimum increment of 1 Agon
+      const minBid = currentBid > 0 ? currentBid + 1 : startingPrice;  // Minimum increment of 1 Stoneworks Dollar
 
       if (bidAmount < minBid) {
-        throw new Error(`Bid must be at least ${minBid.toFixed(2)} Agon`);
+        throw new Error(`Bid must be at least ${minBid.toFixed(2)} Stoneworks Dollars`);
       }
 
       // Get bidder's wallet

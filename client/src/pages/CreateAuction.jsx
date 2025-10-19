@@ -196,7 +196,7 @@ const CreateAuction = () => {
                 <div className="text-sm text-phantom-text-secondary">
                   <p className="font-semibold text-phantom-text-primary mb-2">How Auctions Work</p>
                   <ul className="space-y-1">
-                    <li>• Bids are placed in Agon (Ⱥ) and held in escrow</li>
+                    <li>• Bids are placed in Stoneworks Dollars (₷) and held in escrow</li>
                     <li>• When outbid, funds are automatically refunded</li>
                     <li>• After auction ends, the winner must confirm delivery</li>
                     <li>• Once confirmed, payment is released to the seller</li>

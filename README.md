@@ -1,4 +1,4 @@
-# Agon
+# Pigeon Banking
 
 A modern, minimalistic payment system for the Stoneworks Minecraft server, built with React and Node.js.
 
@@ -15,7 +15,7 @@ See the [LICENSE](LICENSE) file for complete terms and conditions.
 ## Features
 
 - 🔐 **Secure Authentication** - JWT-based authentication with bcrypt password hashing
-- 💰 **Dual Currency System** - Agon and Game Chips
+- 💰 **Dual Currency System** - Stoneworks Dollars (₷) and Game Chips
 - 🔄 **Currency Swap** - Exchange currencies at 1:1 ratio
 - 💸 **Peer-to-Peer Payments** - Send payments to other users
 - 📊 **Transaction History** - Track all your transactions
@@ -57,7 +57,7 @@ See the [LICENSE](LICENSE) file for complete terms and conditions.
 
 1. **Clone the repository**
    ```bash
-   cd Agon
+   cd pigeon-banking
    ```
 
 2. **Install all dependencies**
@@ -122,7 +122,7 @@ For deployment guides to other platforms, see:
 ## Project Structure
 
 ```
-Agon/
+pigeon-banking/
 ├── client/                 # React frontend
 │   ├── src/
 │   │   ├── components/    # Reusable UI components
@@ -196,13 +196,13 @@ Agon/
 1. Navigate to the signup page
 2. Enter your Minecraft username and a valid invite code
 3. Create a password
-4. You'll receive 100 Agon and 100 Game Chips as a welcome bonus
+4. You'll receive 100 Stoneworks Dollars (₷) and 100 Game Chips as a welcome bonus
 
 ### Sending Payments
 
 1. Go to the "Send" page
 2. Select a recipient from the dropdown
-3. Choose the currency (Agon or Game Chips)
+3. Choose the currency (Stoneworks Dollars or Game Chips)
 4. Enter the amount and an optional description
 5. Click "Send Payment"
 
@@ -237,7 +237,7 @@ Currency swaps occur at a 1:1 ratio.
 1. Navigate to the Auction House
 2. Click "Create Auction"
 3. Enter item details (name, description, rarity, durability)
-4. Set a starting price in Agon
+4. Set a starting price in Stoneworks Dollars (₷)
 5. Choose auction duration (in days)
 6. Submit the auction
 
@@ -245,7 +245,7 @@ Currency swaps occur at a 1:1 ratio.
 1. Browse active auctions
 2. Click on an item to view details
 3. Enter your bid amount (must be higher than current bid)
-4. Your Agon will be held in secure escrow
+4. Your Stoneworks Dollars (₷) will be held in secure escrow
 5. If outbid, your funds are automatically refunded
 
 **Completing a Sale:**
@@ -265,9 +265,9 @@ Currency swaps occur at a 1:1 ratio.
 ### Wallets Table
 - `id` - Primary key
 - `user_id` - Foreign key to users table
-- `agon` - Agon balance
+- `agon` - Stoneworks Dollars (₷) balance
 - `stoneworks_dollar` - Game Chips balance
-- `agon_escrow` - Agon held in escrow for active bids
+- `agon_escrow` - Stoneworks Dollars (₷) held in escrow for active bids
 
 ### Transactions Table
 - `id` - Primary key
@@ -302,7 +302,7 @@ Currency swaps occur at a 1:1 ratio.
 - `item_description` - Detailed description
 - `rarity` - Item rarity tier
 - `durability` - Item durability percentage
-- `starting_price` - Initial bid price in Agon
+- `starting_price` - Initial bid price in Stoneworks Dollars (₷)
 - `current_bid` - Current highest bid
 - `highest_bidder_id` - Foreign key to users table
 - `end_date` - Auction end timestamp
@@ -314,15 +314,15 @@ Currency swaps occur at a 1:1 ratio.
 - `id` - Primary key
 - `auction_id` - Foreign key to auctions table
 - `bidder_id` - Foreign key to users table
-- `amount` - Bid amount in Agon
+- `amount` - Bid amount in Stoneworks Dollars (₷)
 - `is_active` - Whether this bid is still active
 - `created_at` - Bid timestamp
 
 ## Future Enhancements
 
-Agon is designed with modularity in mind. Planned future features include:
+Pigeon Banking is designed with modularity in mind. Planned future features include:
 
-- 📈 **Stock Market** - Trade virtual stocks with Agon
+- 📈 **Stock Market** - Trade virtual stocks with Stoneworks Dollars (₷)
 - 💵 **Bonds** - Purchase and trade bonds
 - 🏦 **Loans** - Borrow and lend between users
 - 📱 **Mobile App** - Native mobile application

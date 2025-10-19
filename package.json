@@ -1,7 +1,7 @@
 {
-  "name": "phantompay",
+  "name": "pigeon-banking",
   "version": "1.0.0",
-  "description": "Payment system for Stoneworks Minecraft server",
+  "description": "Pigeon Banking - Payment system for Stoneworks Minecraft server",
   "type": "module",
   "scripts": {
     "install:all": "npm install && cd client && npm install && cd ../server && npm install",

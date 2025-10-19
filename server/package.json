@@ -1,7 +1,7 @@
 {
-  "name": "agon-server",
+  "name": "pigeon-banking-server",
   "version": "1.0.0",
-  "description": "Agon backend server",
+  "description": "Pigeon Banking backend server",
   "main": "src/server.js",
   "type": "module",
   "scripts": {

@@ -115,7 +115,7 @@ const UsersAndPayments = () => {
   };
 
   const currencyOptions = [
-    { value: 'agon', label: 'Agon (Ⱥ)' },
+    { value: 'agon', label: 'Stoneworks Dollars (₷)' },
     { value: 'stoneworks_dollar', label: 'Game Chips' }
   ];
 
@@ -245,9 +245,9 @@ const UsersAndPayments = () => {
                 {/* Balances */}
                 <div className="bg-phantom-bg-tertiary/50 rounded-2xl p-4 mb-4 space-y-2">
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-phantom-text-tertiary">Agon</span>
+                    <span className="text-sm text-phantom-text-tertiary">Stoneworks Dollars</span>
                     <span className="text-sm font-bold text-phantom-text-primary">
-                      Ⱥ {formatCurrency(user.agon || 0)}
+                      ₷ {formatCurrency(user.agon || 0)}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
@@ -282,7 +282,7 @@ const UsersAndPayments = () => {
                       User
                     </th>
                     <th className="px-6 py-4 text-right text-xs font-semibold text-phantom-text-tertiary uppercase tracking-wider">
-                      Agon Balance
+                      Stoneworks Dollars
                     </th>
                     <th className="px-6 py-4 text-right text-xs font-semibold text-phantom-text-tertiary uppercase tracking-wider">
                       Game Chips

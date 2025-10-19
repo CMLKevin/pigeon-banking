@@ -286,8 +286,8 @@ const Admin = () => {
               />
               <StatCard 
                 title="Payment Volume" 
-                value={formatCurrency(metrics.totals.total_payment_volume || 0, 'Ⱥ')}
-                sub={`Avg: ${formatCurrency(metrics.totals.avg_payment || 0, 'Ⱥ')}`}
+                value={formatCurrency(metrics.totals.total_payment_volume || 0, '₷')}
+                sub={`Avg: ${formatCurrency(metrics.totals.avg_payment || 0, '₷')}`}
                 icon={
                   <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z" />
@@ -297,7 +297,7 @@ const Admin = () => {
               />
               <StatCard 
                 title="Currency Supply" 
-                value={`Ⱥ ${Number(metrics.totals.sum_agon || 0).toFixed(2)}`}
+                value={`₷ ${Number(metrics.totals.sum_agon || 0).toFixed(2)}`}
                 sub={`SW$ ${Number(metrics.totals.sum_sw || 0).toFixed(0)}`}
                 icon={
                   <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
@@ -380,8 +380,8 @@ const Admin = () => {
                   />
                   <StatCard 
                     title="Total Volume" 
-                    value={formatCurrency(metrics.tradingTotals.total_volume || 0, 'Ⱥ')} 
-                    sub={`Locked: ${formatCurrency(metrics.tradingTotals.locked_margin || 0, 'Ⱥ')}`}
+                    value={formatCurrency(metrics.tradingTotals.total_volume || 0, '₷')} 
+                    sub={`Locked: ${formatCurrency(metrics.tradingTotals.locked_margin || 0, '₷')}`}
                     icon={
                       <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z" />
@@ -391,8 +391,8 @@ const Admin = () => {
                   />
                   <StatCard 
                     title="House P&L" 
-                    value={`${Number(metrics.tradingTotals.house_pnl || 0) >= 0 ? '+' : ''}${formatCurrency(metrics.tradingTotals.house_pnl || 0, 'Ⱥ')}`}
-                    sub={`Commissions + Fees: ${formatCurrency(metrics.tradingTotals.total_fees || 0, 'Ⱥ')}`}
+                    value={`${Number(metrics.tradingTotals.house_pnl || 0) >= 0 ? '+' : ''}${formatCurrency(metrics.tradingTotals.house_pnl || 0, '₷')}`}
+                    sub={`Commissions + Fees: ${formatCurrency(metrics.tradingTotals.total_fees || 0, '₷')}`}
                     icon={
                       <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
@@ -436,7 +436,7 @@ const Admin = () => {
                             <p className={`text-sm font-semibold ${Number(trader.net_pnl || 0) >= 0 ? 'text-green-500' : 'text-red-500'}`}>
                               {Number(trader.net_pnl || 0) >= 0 ? '+' : ''}{Number(trader.net_pnl || 0).toFixed(2)} ⱺ
                             </p>
-                            <p className="text-xs text-phantom-text-tertiary">{formatCurrency(trader.total_volume || 0, 'Ⱥ')} volume</p>
+                            <p className="text-xs text-phantom-text-tertiary">{formatCurrency(trader.total_volume || 0, '₷')} volume</p>
                           </div>
                         </div>
                       ))}
@@ -466,9 +466,9 @@ const Admin = () => {
                               <span className="text-sm font-bold text-phantom-text-primary">{coin.positions} positions</span>
                             </div>
                             <div className="flex justify-between text-xs">
-                              <span className="text-phantom-text-tertiary">Volume: {formatCurrency(coin.volume || 0, 'Ⱥ')}</span>
+                              <span className="text-phantom-text-tertiary">Volume: {formatCurrency(coin.volume || 0, '₷')}</span>
                               <span className={`font-semibold ${Number(coin.net_pnl || 0) >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                                P&L: {Number(coin.net_pnl || 0) >= 0 ? '+' : ''}{Number(coin.net_pnl || 0).toFixed(2)} Ⱥ
+                                P&L: {Number(coin.net_pnl || 0) >= 0 ? '+' : ''}{Number(coin.net_pnl || 0).toFixed(2)} ₷
                               </span>
                             </div>
                           </div>
@@ -490,7 +490,7 @@ const Admin = () => {
                           </div>
                           <div className="flex justify-between text-xs text-phantom-text-tertiary">
                             <span>Avg: {Number(range.avg_leverage || 0).toFixed(2)}x</span>
-                            <span>Volume: {formatCurrency(range.volume || 0, 'Ⱥ')}</span>
+                            <span>Volume: {formatCurrency(range.volume || 0, '₷')}</span>
                           </div>
                         </div>
                       ))}
@@ -792,7 +792,7 @@ const Admin = () => {
                         <p className="text-xs text-phantom-text-tertiary">{user.sent_count + user.received_count} transactions</p>
                       </div>
                       <div className="text-right">
-                        <p className="text-sm font-semibold text-phantom-accent-primary">{formatCurrency(user.agon || 0, 'Ⱥ')}</p>
+                        <p className="text-sm font-semibold text-phantom-accent-primary">{formatCurrency(user.agon || 0, '₷')}</p>
                         <p className="text-xs text-phantom-text-tertiary">◉ {Number(user.stoneworks_dollar || 0).toFixed(0)}</p>
                       </div>
                     </div>
@@ -847,7 +847,7 @@ const Admin = () => {
                             )}
                           </td>
                           <td className="py-3 text-phantom-accent-primary font-semibold">
-                            {formatCurrency(tx.amount, tx.currency === 'agon' ? 'Ⱥ' : 'SW$')}
+                            {formatCurrency(tx.amount, tx.currency === 'agon' ? '₷' : 'SW$')}
                           </td>
                           <td className="py-3 text-phantom-text-secondary text-sm">
                             {new Date(tx.created_at).toLocaleString('en-US', { 
@@ -907,8 +907,8 @@ const Admin = () => {
                   />
                   <StatCard 
                     title="Auction Revenue" 
-                    value={formatCurrency(metrics.auctionTotals.total_auction_revenue || 0, 'Ⱥ')}
-                    sub={`Avg: ${formatCurrency(metrics.auctionTotals.avg_final_bid || 0, 'Ⱥ')} • ${formatCurrency(metrics.totals.total_commission_collected || 0, 'Ⱥ')} commission`}
+                    value={formatCurrency(metrics.auctionTotals.total_auction_revenue || 0, '₷')}
+                    sub={`Avg: ${formatCurrency(metrics.auctionTotals.avg_final_bid || 0, '₷')} • ${formatCurrency(metrics.totals.total_commission_collected || 0, '₷')} commission`}
                     icon={
                       <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z" />
@@ -918,7 +918,7 @@ const Admin = () => {
                   />
                   <StatCard 
                     title="Platform Commission (5%)" 
-                    value={formatCurrency(metrics.totals.total_commission_collected || 0, 'Ⱥ')}
+                    value={formatCurrency(metrics.totals.total_commission_collected || 0, '₷')}
                     sub={`From ${metrics.totals.commission_count || 0} completed auctions`}
                     icon={
                       <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
@@ -1002,11 +1002,11 @@ const Admin = () => {
                               </div>
                               <div className="flex items-center justify-between text-sm">
                                 <span className="text-phantom-text-tertiary">Avg Price:</span>
-                                <span className="font-semibold text-phantom-accent-primary">{formatCurrency(rarity.avg_price || 0, 'Ⱥ')}</span>
+                                <span className="font-semibold text-phantom-accent-primary">{formatCurrency(rarity.avg_price || 0, '₷')}</span>
                               </div>
                               <div className="flex items-center justify-between text-sm">
                                 <span className="text-phantom-text-tertiary">Total Revenue:</span>
-                                <span className="font-semibold text-phantom-success">{formatCurrency(rarity.total_revenue || 0, 'Ⱥ')}</span>
+                                <span className="font-semibold text-phantom-success">{formatCurrency(rarity.total_revenue || 0, '₷')}</span>
                               </div>
                             </div>
                           );
@@ -1035,7 +1035,7 @@ const Admin = () => {
                           </div>
                           <div className="text-right">
                             <p className="text-sm font-semibold text-phantom-accent-primary">
-                              {formatCurrency(bidder.total_bid_amount || 0, 'Ⱥ')}
+                              {formatCurrency(bidder.total_bid_amount || 0, '₷')}
                             </p>
                             <p className="text-xs text-phantom-text-tertiary">{bidder.auctions_participated} auctions</p>
                           </div>
@@ -1095,9 +1095,9 @@ const Admin = () => {
                                 </span>
                               </td>
                               <td className="py-3 text-phantom-text-primary font-medium">{auction.seller_username}</td>
-                              <td className="py-3 text-phantom-text-secondary">{formatCurrency(auction.starting_price, 'Ⱥ')}</td>
+                              <td className="py-3 text-phantom-text-secondary">{formatCurrency(auction.starting_price, '₷')}</td>
                               <td className="py-3 text-phantom-accent-primary font-semibold">
-                                {formatCurrency(auction.current_bid, 'Ⱥ')}
+                                {formatCurrency(auction.current_bid, '₷')}
                               </td>
                               <td className="py-3 text-phantom-text-secondary">{auction.bid_count}</td>
                               <td className="py-3">
@@ -1130,7 +1130,7 @@ const Admin = () => {
               <thead className="text-phantom-text-tertiary text-sm border-b border-phantom-border">
                 <tr>
                   <th className="py-3 font-semibold">Username</th>
-                  <th className="py-3 font-semibold">Agon</th>
+                  <th className="py-3 font-semibold">Stoneworks Dollars</th>
                   <th className="py-3 font-semibold">SW Dollar</th>
                   <th className="py-3 font-semibold">Transactions</th>
                   <th className="py-3 font-semibold">Role</th>
@@ -1188,7 +1188,7 @@ const Admin = () => {
                           defaultValue="agon"
                           onChange={(e) => (u._adjCurrency = e.target.value)}
                         >
-                          <option value="agon">Agon</option>
+                          <option value="agon">Stoneworks Dollars</option>
                           <option value="stoneworks_dollar">Game Chips</option>
                         </select>
                         <button

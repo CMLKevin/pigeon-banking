@@ -52,7 +52,7 @@ app.use(cookieParser());
 
 // Health check
 app.get('/health', (req, res) => {
-  res.json({ status: 'ok', message: 'Agon server is running', environment: process.env.NODE_ENV || 'development' });
+  res.json({ status: 'ok', message: 'Pigeon Banking server is running', environment: process.env.NODE_ENV || 'development' });
 });
 
 // API Routes
@@ -123,6 +123,6 @@ app.use((err, req, res, next) => {
 });
 
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Agon server is running on port ${PORT}`);
+  console.log(`Pigeon Banking server is running on port ${PORT}`);
 });
 
