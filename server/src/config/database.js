@@ -104,18 +104,7 @@ const tx = async (fn) => {
 };
 
 const initSchema = async () => {
-  // Sessions
-  await exec(`
-    CREATE TABLE IF NOT EXISTS user_sessions (
-      jti TEXT PRIMARY KEY,
-      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-      expires_at TIMESTAMPTZ,
-      revoked BOOLEAN NOT NULL DEFAULT FALSE
-    )
-  `);
-
-  // Users
+  // Users (must be created first since other tables reference it)
   await exec(`
     CREATE TABLE IF NOT EXISTS users (
       id SERIAL PRIMARY KEY,
@@ -124,6 +113,17 @@ const initSchema = async () => {
       is_admin BOOLEAN DEFAULT FALSE,
       disabled BOOLEAN DEFAULT FALSE,
       created_at TIMESTAMPTZ DEFAULT NOW()
+    )
+  `);
+
+  // Sessions
+  await exec(`
+    CREATE TABLE IF NOT EXISTS user_sessions (
+      jti TEXT PRIMARY KEY,
+      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      expires_at TIMESTAMPTZ,
+      revoked BOOLEAN NOT NULL DEFAULT FALSE
     )
   `);
 

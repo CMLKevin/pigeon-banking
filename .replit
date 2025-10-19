@@ -23,6 +23,10 @@ externalPort = 80
 localPort = 5000
 externalPort = 5000
 
+[[ports]]
+localPort = 33863
+externalPort = 3000
+
 [deployment.env]
 NODE_ENV = "production"
 PGCONNECT_TIMEOUT = "30"
