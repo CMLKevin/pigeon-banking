@@ -26,11 +26,6 @@ All schema changes have been formalized as numbered migration files (001, 002, 0
 - Ensures all analytics columns exist (idempotent with migration 002)
 - Safe to run even if columns already exist
 
-### 004_add_auction_disputes.sql
-- Creates `auction_disputes` table
-- Allows users to report auction issues
-- Creates necessary indexes
-
 ## How to Deploy on Replit
 
 ### Option 1: Accept Migration (Recommended)
@@ -45,7 +40,6 @@ Run migrations manually before deploying:
 ```bash
 cd server
 node migrations/run-migration.js 003_add_crypto_position_columns.sql
-node migrations/run-migration.js 004_add_auction_disputes.sql
 ```
 
 Then deploy normally.
@@ -58,7 +52,6 @@ If Replit still shows incorrect DROP commands:
 
 ## Important Notes
 - ✅ All migrations use `IF NOT EXISTS` / `ADD COLUMN IF NOT EXISTS` - they're safe to run multiple times
-- ⚠️ **NEVER** accept a migration that drops `auction_disputes` table
 - ⚠️ **NEVER** accept a migration that drops columns from `crypto_positions`
 - 🔍 Always review migration previews before accepting
 

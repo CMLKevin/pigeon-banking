@@ -209,12 +209,12 @@ SSL is enabled by default for secure connections to Neon PostgreSQL.
 The application automatically creates these tables:
 
 1. **users** - User accounts and authentication
-2. **wallets** - User balances (Agon, Game Chips)
+2. **wallets** - User balances (Stoneworks Dollars, Game Chips)
 3. **transactions** - Payment and transfer history
 4. **activity_logs** - User activity tracking
 5. **invite_codes** - Invite code management
-6. **auctions** - Auction listings
-7. **bids** - Auction bids
+6. **crypto_positions** - Leveraged trading positions
+7. **crypto_price_history** - Historical price data
 8. **game_history** - Gaming activity records
 
 Plus optimized indexes for performance.

@@ -20,14 +20,11 @@ See the [LICENSE](LICENSE) file for complete terms and conditions.
 - 💸 **Peer-to-Peer Payments** - Send payments to other users
 - 📊 **Transaction History** - Track all your transactions
 - 👥 **User Directory** - Browse and search all registered users
-- 🏪 **Auction House** - Buy and sell Minecraft items with secure escrow system
-- 👑 **Admin Panel** - Comprehensive user management, analytics, and auction monitoring
+- 📈 **Crypto Trading** - Leveraged trading with real-time market prices
+- 🎮 **Games** - Coin Flip, Blackjack, and Plinko with house edge
+- 👑 **Admin Panel** - Comprehensive user management and analytics
 - 🎟️ **Invite System** - One-time use invite codes for controlled user registration
-- 🎨 **Modern UI** - Professional, minimalistic design inspired by Phantom wallet
-
-### Auction Fees
-
-- A 5% commission fee is applied to completed auctions. Upon buyer confirmation, the fee is automatically deducted from the final price and transferred to an admin account; the remaining 95% is released to the seller. Both net payout and commission are recorded as separate transactions for transparency.
+- 🎨 **Modern UI** - Professional, minimalistic design
 
 ## Tech Stack
 
@@ -172,22 +169,26 @@ pigeon-banking/
 - `GET /api/admin/users` - Get all users with detailed stats
 - `POST /api/admin/users/:id/toggle-disabled` - Enable/disable user account
 - `POST /api/admin/users/:id/toggle-admin` - Promote/demote admin status
-- `GET /api/admin/metrics` - Get system-wide metrics, analytics, and auction stats
+- `GET /api/admin/metrics` - Get system-wide metrics and analytics
 - `GET /api/admin/activity` - Get activity logs
 - `GET /api/admin/invite-codes` - Get all invite codes
 - `POST /api/admin/invite-codes` - Create custom invite code
 - `POST /api/admin/invite-codes/generate` - Generate random invite code
 - `DELETE /api/admin/invite-codes/:id` - Delete unused invite code
 
-### Auction House
-- `GET /api/auctions` - Get all auctions (with filters for status: active/ended/completed)
-- `GET /api/auctions/:id` - Get detailed auction information with bid history
-- `POST /api/auctions` - Create a new auction listing
-- `POST /api/auctions/:id/bid` - Place a bid on an auction (with automatic escrow)
-- `POST /api/auctions/:id/confirm-delivery` - Confirm item delivery and release payment
-- `GET /api/auctions/my-auctions` - Get your auction listings
-- `GET /api/auctions/my-bids` - Get auctions you've bid on
-- `DELETE /api/auctions/:id` - Cancel an auction (only if no bids)
+### Crypto Trading
+- `GET /api/crypto/prices` - Get current prices for all tradeable assets
+- `GET /api/crypto/prices/:coinId/history` - Get historical price data
+- `POST /api/crypto/positions` - Open a new leveraged position
+- `GET /api/crypto/positions` - Get user's open positions
+- `POST /api/crypto/positions/:id/close` - Close an open position
+
+### Games
+- `POST /api/games/coinflip` - Play coin flip game
+- `POST /api/games/blackjack/start` - Start a blackjack game
+- `POST /api/games/blackjack/:gameId/hit` - Hit in blackjack
+- `POST /api/games/blackjack/:gameId/stand` - Stand in blackjack
+- `POST /api/games/plinko` - Play plinko game
 
 ## Usage
 
@@ -231,28 +232,39 @@ Currency swaps occur at a 1:1 ratio.
 3. Use the search bar to find specific users
 4. Click "Send Payment" next to any user to quickly send them funds
 
-### Using the Auction House
+### Crypto Trading
 
-**Creating an Auction:**
-1. Navigate to the Auction House
-2. Click "Create Auction"
-3. Enter item details (name, description, rarity, durability)
-4. Set a starting price in Stoneworks Dollars ($)
-5. Choose auction duration (in days)
-6. Submit the auction
+**Opening a Position:**
+1. Navigate to the Trading page
+2. Select an asset (BTC, ETH, SOL, etc.)
+3. Choose Long or Short position
+4. Set leverage (1x-10x)
+5. Enter investment amount in Stoneworks Dollars ($)
+6. Confirm to open position
 
-**Bidding on Items:**
-1. Browse active auctions
-2. Click on an item to view details
-3. Enter your bid amount (must be higher than current bid)
-4. Your Stoneworks Dollars ($) will be held in secure escrow
-5. If outbid, your funds are automatically refunded
+**Managing Positions:**
+1. View all open positions on the Trading page
+2. Monitor real-time P&L and position value
+3. Close positions at any time to realize profits/losses
+4. Daily maintenance fees apply to open positions
 
-**Completing a Sale:**
-1. When the auction ends, the highest bidder wins
-2. Deliver the item to the winner in-game
-3. Winner confirms receipt by clicking "Confirm Delivery"
-4. Escrowed funds are released to the seller
+### Playing Games
+
+**Coin Flip:**
+1. Go to Games → Coin Flip
+2. Choose bet amount and pick Heads or Tails
+3. 45% win chance with 2x payout
+
+**Blackjack:**
+1. Go to Games → Blackjack
+2. Place bet and receive cards
+3. Hit or Stand to beat the dealer
+4. Standard blackjack rules apply
+
+**Plinko:**
+1. Go to Games → Plinko
+2. Choose bet amount and risk level
+3. Watch the ball drop for multiplier rewards
 
 ## Database Schema
 
@@ -295,28 +307,29 @@ Currency swaps occur at a 1:1 ratio.
 - `created_at` - Creation timestamp
 - `used_at` - Usage timestamp
 
-### Auctions Table
+### Crypto Positions Table
 - `id` - Primary key
-- `seller_id` - Foreign key to users table
-- `item_name` - Name of the item being sold
-- `item_description` - Detailed description
-- `rarity` - Item rarity tier
-- `durability` - Item durability percentage
-- `starting_price` - Initial bid price in Stoneworks Dollars ($)
-- `current_bid` - Current highest bid
-- `highest_bidder_id` - Foreign key to users table
-- `end_date` - Auction end timestamp
-- `status` - Auction status (active/ended/completed/cancelled)
-- `created_at` - Creation timestamp
-- `completed_at` - Completion timestamp
+- `user_id` - Foreign key to users table
+- `coin_id` - Cryptocurrency identifier
+- `position_type` - Long or Short
+- `leverage` - Leverage multiplier (1-10x)
+- `quantity` - Amount of crypto
+- `entry_price` - Price when position opened
+- `liquidation_price` - Auto-liquidation price
+- `margin_agon` - Stoneworks Dollars margin
+- `status` - open or closed
+- `opened_at` - Creation timestamp
+- `closed_at` - Close timestamp
+- `realized_pnl` - Profit/loss when closed
 
-### Bids Table
+### Game History Table
 - `id` - Primary key
-- `auction_id` - Foreign key to auctions table
-- `bidder_id` - Foreign key to users table
-- `amount` - Bid amount in Stoneworks Dollars ($)
-- `is_active` - Whether this bid is still active
-- `created_at` - Bid timestamp
+- `user_id` - Foreign key to users table
+- `game_type` - coinflip, blackjack, or plinko
+- `bet_amount` - Bet amount
+- `result` - Game outcome
+- `won` - Win/loss boolean
+- `created_at` - Timestamp
 
 ## Future Enhancements
 
