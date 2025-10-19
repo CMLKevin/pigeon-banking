@@ -130,8 +130,7 @@ const initSchema = async () => {
       id SERIAL PRIMARY KEY,
       user_id INTEGER UNIQUE NOT NULL REFERENCES users(id) ON DELETE CASCADE,
       agon NUMERIC DEFAULT 0.0,
-      stoneworks_dollar NUMERIC DEFAULT 0.0,
-      agon_escrow NUMERIC DEFAULT 0.0
+      stoneworks_dollar NUMERIC DEFAULT 0.0
     )
   `);
 
@@ -173,52 +172,6 @@ const initSchema = async () => {
     )
   `);
 
-  // Auctions
-  await exec(`
-    CREATE TABLE IF NOT EXISTS auctions (
-      id SERIAL PRIMARY KEY,
-      seller_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-      item_name TEXT NOT NULL,
-      item_description TEXT,
-      rarity TEXT NOT NULL,
-      durability INTEGER,
-      starting_price NUMERIC NOT NULL,
-      current_bid NUMERIC,
-      highest_bidder_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
-      end_date TIMESTAMPTZ NOT NULL,
-      status TEXT DEFAULT 'active',
-      created_at TIMESTAMPTZ DEFAULT NOW(),
-      completed_at TIMESTAMPTZ
-    )
-  `);
-
-  // Bids
-  await exec(`
-    CREATE TABLE IF NOT EXISTS bids (
-      id SERIAL PRIMARY KEY,
-      auction_id INTEGER NOT NULL REFERENCES auctions(id) ON DELETE CASCADE,
-      bidder_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-      amount NUMERIC NOT NULL,
-      is_active BOOLEAN DEFAULT TRUE,
-      created_at TIMESTAMPTZ DEFAULT NOW()
-    )
-  `);
-
-  // Auction Disputes
-  await exec(`
-    CREATE TABLE IF NOT EXISTS auction_disputes (
-      id SERIAL PRIMARY KEY,
-      auction_id INTEGER NOT NULL REFERENCES auctions(id) ON DELETE CASCADE,
-      reporter_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-      issue_type TEXT NOT NULL,
-      description TEXT NOT NULL,
-      status TEXT DEFAULT 'pending',
-      admin_notes TEXT,
-      resolved_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
-      created_at TIMESTAMPTZ DEFAULT NOW(),
-      resolved_at TIMESTAMPTZ
-    )
-  `);
 
   // Game history
   await exec(`
@@ -291,11 +244,6 @@ const initSchema = async () => {
   await exec('CREATE INDEX IF NOT EXISTS idx_activity_created_at ON activity_logs(created_at)');
   await exec('CREATE INDEX IF NOT EXISTS idx_invite_codes_code ON invite_codes(code)');
   await exec('CREATE INDEX IF NOT EXISTS idx_invite_codes_used ON invite_codes(is_used)');
-  await exec('CREATE INDEX IF NOT EXISTS idx_auctions_seller ON auctions(seller_id)');
-  await exec('CREATE INDEX IF NOT EXISTS idx_auctions_status ON auctions(status)');
-  await exec('CREATE INDEX IF NOT EXISTS idx_auctions_end_date ON auctions(end_date)');
-  await exec('CREATE INDEX IF NOT EXISTS idx_bids_auction ON bids(auction_id)');
-  await exec('CREATE INDEX IF NOT EXISTS idx_bids_bidder ON bids(bidder_id)');
   await exec('CREATE INDEX IF NOT EXISTS idx_game_history_user ON game_history(user_id)');
   await exec('CREATE INDEX IF NOT EXISTS idx_game_history_created_at ON game_history(created_at)');
   await exec('CREATE INDEX IF NOT EXISTS idx_crypto_positions_user ON crypto_positions(user_id)');

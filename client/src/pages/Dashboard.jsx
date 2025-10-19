@@ -103,18 +103,6 @@ const Dashboard = () => {
                 <p className="text-sm text-phantom-text-secondary">Browse all members</p>
               </div>
             </Link>
-            <Link to="/marketplace">
-              <div className="group p-6 bg-phantom-bg-tertiary/50 border-2 border-phantom-border rounded-2xl hover:border-phantom-accent-primary hover:shadow-glow-sm transition-all duration-300 cursor-pointer transform hover:scale-105">
-                <div className="w-14 h-14 bg-gradient-to-br from-orange-500 to-amber-500 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-md">
-                  <svg className="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                  </svg>
-                </div>
-                <h3 className="font-bold text-phantom-text-primary text-lg mb-1">Marketplace</h3>
-                <p className="text-sm text-phantom-text-secondary">Auctions, bids & escrow</p>
-              </div>
-            </Link>
-            
             {/* Game Quick Actions */}
             <Link to="/games/coinflip">
               <div className="group p-6 bg-phantom-bg-tertiary/50 border-2 border-phantom-border rounded-2xl hover:border-phantom-accent-primary hover:shadow-glow-sm transition-all duration-300 cursor-pointer transform hover:scale-105">
