@@ -182,7 +182,7 @@ const MyAuctions = () => {
                               {auction.current_bid ? 'Current Bid' : 'Starting Price'}
                             </p>
                             <p className="text-lg font-bold bg-gradient-phantom bg-clip-text text-transparent">
-                              ₷ {formatCurrency(auction.current_bid || auction.starting_price)}
+                              $ {formatCurrency(auction.current_bid || auction.starting_price)}
                             </p>
                           </div>
                           <div>
@@ -271,13 +271,13 @@ const MyAuctions = () => {
                           <div>
                             <p className="text-xs text-phantom-text-tertiary mb-1">Your Bid</p>
                             <p className="text-lg font-bold text-phantom-accent-primary">
-                              ₷ {formatCurrency(bid.amount)}
+                              $ {formatCurrency(bid.amount)}
                             </p>
                           </div>
                           <div>
                             <p className="text-xs text-phantom-text-tertiary mb-1">Current Bid</p>
                             <p className="text-lg font-semibold text-phantom-text-primary">
-                              ₷ {formatCurrency(bid.current_bid)}
+                              $ {formatCurrency(bid.current_bid)}
                             </p>
                           </div>
                           <div>

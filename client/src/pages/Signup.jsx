@@ -140,7 +140,7 @@ const Signup = () => {
                 <div>
                   <p className="text-phantom-text-primary font-semibold mb-1">Invite Code Bonus!</p>
                   <p className="text-sm text-phantom-text-secondary">
-                    Sign up with an invite code to receive <span className="text-phantom-accent-primary font-semibold">100 Stoneworks Dollars (₷)</span> and{' '}
+                    Sign up with an invite code to receive <span className="text-phantom-accent-primary font-semibold">100 Stoneworks Dollars ($)</span> and{' '}
                     <span className="text-phantom-accent-secondary font-semibold">100 Game Chips</span> as a welcome bonus.
                   </p>
                 </div>

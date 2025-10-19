@@ -316,25 +316,25 @@ export default function Trading() {
             <div className="bg-phantom-bg-tertiary/50 rounded-lg p-3">
               <div className="text-[10px] text-phantom-text-tertiary uppercase tracking-wide mb-1">Wallet Balance</div>
               <div className="text-lg font-bold text-phantom-accent-primary">
-                {wallet && wallet.agon != null ? `₷ ${Number(wallet.agon).toFixed(2)}` : '--'}
+                {wallet && wallet.agon != null ? `$ ${Number(wallet.agon).toFixed(2)}` : '--'}
               </div>
             </div>
             <div className="bg-phantom-bg-tertiary/50 rounded-lg p-3">
               <div className="text-[10px] text-phantom-text-tertiary uppercase tracking-wide mb-1">Total Margin</div>
               <div className="text-lg font-bold text-phantom-text-primary">
-                ₷ {portfolioStats.totalMargin.toFixed(2)}
+                $ {portfolioStats.totalMargin.toFixed(2)}
               </div>
             </div>
             <div className="bg-phantom-bg-tertiary/50 rounded-lg p-3">
               <div className="text-[10px] text-phantom-text-tertiary uppercase tracking-wide mb-1">Unrealized P&L</div>
               <div className={`text-lg font-bold ${portfolioStats.totalUnrealizedPnl >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                {portfolioStats.totalUnrealizedPnl >= 0 ? '+' : ''}₷ {portfolioStats.totalUnrealizedPnl.toFixed(2)}
+                {portfolioStats.totalUnrealizedPnl >= 0 ? '+' : ''}$ {portfolioStats.totalUnrealizedPnl.toFixed(2)}
               </div>
             </div>
             <div className="bg-phantom-bg-tertiary/50 rounded-lg p-3">
               <div className="text-[10px] text-phantom-text-tertiary uppercase tracking-wide mb-1">Total Value</div>
               <div className="text-lg font-bold text-phantom-accent-primary">
-                ₷ {portfolioStats.totalValue.toFixed(2)}
+                $ {portfolioStats.totalValue.toFixed(2)}
               </div>
             </div>
             <div className="bg-phantom-bg-tertiary/50 rounded-lg p-3">
@@ -406,7 +406,7 @@ export default function Trading() {
                 Available Balance
               </div>
               <div className="text-4xl font-bold text-phantom-accent-primary mb-1">
-                {wallet && wallet.agon != null ? `₷ ${Number(wallet.agon).toFixed(2)}` : '--'}
+                {wallet && wallet.agon != null ? `$ ${Number(wallet.agon).toFixed(2)}` : '--'}
               </div>
               <div className="text-xs text-phantom-text-tertiary">Ready to trade</div>
             </div>
@@ -491,7 +491,7 @@ export default function Trading() {
                 {/* Investment Amount */}
                 <div>
                   <Input 
-                    label="Investment Amount (₷)" 
+                    label="Investment Amount ($)" 
                     type="number" 
                     value={marginAmount} 
                     onChange={(e) => setMarginAmount(e.target.value)} 
@@ -518,19 +518,19 @@ export default function Trading() {
                 <div className="mt-4 bg-phantom-bg-tertiary/50 rounded-xl p-4 space-y-2">
                   <div className="flex justify-between text-sm">
                     <span className="text-phantom-text-tertiary">Commission ({(commissionRate * 100).toFixed(2)}%):</span>
-                    <span className="text-phantom-text-primary font-semibold">₷ {(parseFloat(marginAmount) * commissionRate).toFixed(2)}</span>
+                    <span className="text-phantom-text-primary font-semibold">$ {(parseFloat(marginAmount) * commissionRate).toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-phantom-text-tertiary">Daily Maintenance Fee ({(maintenanceRate * 100).toFixed(2)}%):</span>
-                    <span className="text-phantom-text-primary font-semibold">₷ {(parseFloat(marginAmount) * maintenanceRate).toFixed(2)} / day</span>
+                    <span className="text-phantom-text-primary font-semibold">$ {(parseFloat(marginAmount) * maintenanceRate).toFixed(2)} / day</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-phantom-text-tertiary">Net Margin:</span>
-                    <span className="text-phantom-text-primary font-semibold">₷ {(parseFloat(marginAmount) * (1 - commissionRate)).toFixed(2)}</span>
+                    <span className="text-phantom-text-primary font-semibold">$ {(parseFloat(marginAmount) * (1 - commissionRate)).toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between text-sm pt-2 border-t border-phantom-border">
                     <span className="text-phantom-text-primary font-medium">Position Value:</span>
-                    <span className="text-phantom-accent-primary font-bold">₷ {positionValue.toFixed(2)}</span>
+                    <span className="text-phantom-accent-primary font-bold">$ {positionValue.toFixed(2)}</span>
                   </div>
                   {(marginNum > 0 && selectedPrice) && (
                     <>
@@ -674,23 +674,23 @@ export default function Trading() {
                       </div>
                       <div>
                         <div className="text-phantom-text-tertiary mb-1">Margin</div>
-                        <div className="text-phantom-text-primary font-semibold">₷ {Number(p.margin_agon).toFixed(2)}</div>
+                        <div className="text-phantom-text-primary font-semibold">$ {Number(p.margin_agon).toFixed(2)}</div>
                       </div>
                       <div>
                         <div className="text-phantom-text-tertiary mb-1">P&L</div>
                         <div className={`font-semibold ${pnlAmount == null ? 'text-phantom-text-tertiary' : pnlAmount >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                          {pnlAmount == null ? '--' : `${pnlAmount >= 0 ? '+' : ''}₷ ${pnlAmount.toFixed(2)}`}
+                          {pnlAmount == null ? '--' : `${pnlAmount >= 0 ? '+' : ''}$ ${pnlAmount.toFixed(2)}`}
                         </div>
                       </div>
                       <div>
                         <div className="text-phantom-text-tertiary mb-1">Daily Fee</div>
                         <div className="text-yellow-500 font-semibold">
-                          {p.daily_fee != null ? `₷ ${Number(p.daily_fee).toFixed(4)}` : '--'}
+                          {p.daily_fee != null ? `$ ${Number(p.daily_fee).toFixed(4)}` : '--'}
                         </div>
                       </div>
                       <div>
                         <div className="text-phantom-text-tertiary mb-1">Total Value</div>
-                        <div className="text-phantom-accent-primary font-bold">₷ {val.toFixed(2)}</div>
+                        <div className="text-phantom-accent-primary font-bold">$ {val.toFixed(2)}</div>
                       </div>
                     </div>
                     <div className="flex items-center justify-end pt-4 border-t border-phantom-border">

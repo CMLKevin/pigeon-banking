@@ -71,7 +71,7 @@ const AuctionDetail = () => {
       : parseFloat(auction.starting_price);
 
     if (parseFloat(bidAmount) < minBid) {
-      setError(`Bid must be at least ₷ ${minBid}`);
+      setError(`Bid must be at least $ ${minBid}`);
       return;
     }
 
@@ -331,7 +331,7 @@ const AuctionDetail = () => {
                       </div>
                       <div className="text-right">
                         <p className="text-lg font-bold bg-gradient-phantom bg-clip-text text-transparent">
-                          ₷ {formatCurrency(bid.amount)}
+                          $ {formatCurrency(bid.amount)}
                         </p>
                         {index === 0 && bid.is_active && (
                           <p className="text-xs text-phantom-accent-primary font-medium">Highest Bid</p>
@@ -352,7 +352,7 @@ const AuctionDetail = () => {
                 {auction.current_bid ? 'Current Bid' : 'Starting Price'}
               </p>
               <p className="text-4xl font-bold bg-gradient-phantom bg-clip-text text-transparent mb-4">
-                ₷ {formatCurrency(auction.current_bid || auction.starting_price)}
+                $ {formatCurrency(auction.current_bid || auction.starting_price)}
               </p>
 
               {auction.status === 'active' && (
@@ -374,7 +374,7 @@ const AuctionDetail = () => {
                 <div className="mb-6 p-4 bg-gradient-card rounded-xl">
                   <p className="text-xs text-phantom-text-tertiary mb-1">Your Balance</p>
                   <p className="text-lg font-bold text-phantom-text-primary">
-                    ₷ {formatCurrency(wallet.agon)}
+                    $ {formatCurrency(wallet.agon)}
                   </p>
                 </div>
               )}
@@ -422,7 +422,7 @@ const AuctionDetail = () => {
               {canBid && (
                 <form onSubmit={handlePlaceBid} className="space-y-4">
                   <Input
-                    label="Your Bid (₷)"
+                    label="Your Bid ($)"
                     type="number"
                     value={bidAmount}
                     onChange={(e) => setBidAmount(e.target.value)}

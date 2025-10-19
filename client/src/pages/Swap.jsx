@@ -31,7 +31,7 @@ const Swap = () => {
   };
 
   const currencyOptions = [
-    { value: 'agon', label: 'Stoneworks Dollars (₷)' },
+    { value: 'agon', label: 'Stoneworks Dollars ($)' },
     { value: 'stoneworks_dollar', label: 'Game Chips' }
   ];
 

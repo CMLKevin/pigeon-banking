@@ -33,7 +33,7 @@ The admin dashboard displays comprehensive system metrics:
 - **Total Users**: Shows total users, disabled count, and admin count
 - **Total Transactions**: Displays total transactions, broken down by payments and swaps
 - **Payment Volume**: Total payment volume with average transaction amount
-- **Currency Supply**: Total Stoneworks Dollars (₷) and Game Chips in circulation
+- **Currency Supply**: Total Stoneworks Dollars ($) and Game Chips in circulation
 
 #### Charts & Visualizations
 - **Payment Volume (14 days)**: Line chart showing daily transaction volume trends
@@ -52,7 +52,7 @@ The User Management table provides full control over user accounts:
 #### User Information Displayed
 - Avatar with first letter of username
 - Username
-- Stoneworks Dollars (₷) balance
+- Stoneworks Dollars ($) balance
 - Game Chips balance
 - Transaction count
 - Role (Admin/User)

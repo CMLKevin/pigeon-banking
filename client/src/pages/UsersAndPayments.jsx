@@ -115,7 +115,7 @@ const UsersAndPayments = () => {
   };
 
   const currencyOptions = [
-    { value: 'agon', label: 'Stoneworks Dollars (₷)' },
+    { value: 'agon', label: 'Stoneworks Dollars ($)' },
     { value: 'stoneworks_dollar', label: 'Game Chips' }
   ];
 
@@ -247,7 +247,7 @@ const UsersAndPayments = () => {
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-phantom-text-tertiary">Stoneworks Dollars</span>
                     <span className="text-sm font-bold text-phantom-text-primary">
-                      ₷ {formatCurrency(user.agon || 0)}
+                      $ {formatCurrency(user.agon || 0)}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">

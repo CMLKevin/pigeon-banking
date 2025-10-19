@@ -6,7 +6,7 @@ export const formatCurrency = (amount, currency = 'agon') => {
 export const getCurrencySymbol = (currency) => {
   switch (currency) {
     case 'agon':
-      return '₷';
+      return '$';
     case 'stoneworks_dollar':
       return '◉';
     default:
@@ -17,7 +17,7 @@ export const getCurrencySymbol = (currency) => {
 export const getCurrencyName = (currency) => {
   switch (currency) {
     case 'agon':
-      return 'Stoneworks Dollars (₷)';
+      return 'Stoneworks Dollars ($)';
     case 'stoneworks_dollar':
       return 'Game Chips';
     default:
