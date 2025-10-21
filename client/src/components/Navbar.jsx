@@ -10,27 +10,39 @@ const Navbar = () => {
   };
 
   const navLinkClass = (path) => {
-    return `px-4 py-2.5 rounded-2xl font-medium transition-all duration-200 ${
+    return `px-4 py-2.5 font-medium transition-all duration-300 relative ${
       isActive(path)
-        ? 'bg-gradient-phantom text-white shadow-glow'
-        : 'text-phantom-text-secondary hover:text-phantom-text-primary hover:bg-phantom-bg-secondary'
+        ? 'text-gold shadow-gold-glow before:absolute before:bottom-0 before:left-0 before:right-0 before:h-0.5 before:bg-gradient-gold'
+        : 'text-deco-silver hover:text-gold-light'
     }`;
   };
 
   return (
-    <nav className="bg-phantom-bg-secondary/50 backdrop-blur-xl border-b border-phantom-border sticky top-0 z-50">
+    <nav className="bg-noir-dark/95 backdrop-blur-xl border-b-2 border-gold/30 sticky top-0 z-50 shadow-xl">
+      {/* Art Deco top accent */}
+      <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-gold"></div>
+      <div className="absolute bottom-0 left-0 right-0 h-px bg-deco-silver/20"></div>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-20">
           <div className="flex items-center space-x-8">
             <Link to="/dashboard" className="flex items-center space-x-3 group">
-              <div className="w-11 h-11 bg-gradient-phantom rounded-2xl flex items-center justify-center transform transition-all group-hover:scale-110 group-hover:shadow-glow shadow-md">
-                <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                </svg>
+              {/* Art Deco geometric logo */}
+              <div className="relative w-12 h-12">
+                <div className="absolute inset-0 bg-gradient-gold opacity-20 transform rotate-45"></div>
+                <div className="relative w-full h-full border-2 border-gold flex items-center justify-center bg-noir-darker transform transition-all group-hover:scale-110 group-hover:shadow-gold-glow">
+                  <svg className="w-7 h-7 text-gold" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z" />
+                  </svg>
+                </div>
               </div>
-              <span className="text-xl font-bold bg-gradient-phantom bg-clip-text text-transparent">
-                Pigeon Banking
-              </span>
+              <div className="flex flex-col">
+                <span className="text-xl font-bold text-gold tracking-wider">
+                  PIGEON
+                </span>
+                <span className="text-xs text-deco-silver tracking-widest -mt-1">
+                  BANKING
+                </span>
+              </div>
             </Link>
             
             <div className="hidden md:flex space-x-1">
@@ -89,23 +101,28 @@ const Navbar = () => {
           </div>
 
           <div className="flex items-center space-x-4">
-            <div className="hidden sm:flex items-center space-x-3 px-4 py-2.5 bg-phantom-bg-tertiary rounded-2xl border border-phantom-border">
-              <div className="w-9 h-9 bg-gradient-phantom rounded-full flex items-center justify-center text-white font-bold text-sm shadow-md">
+            <div className="hidden sm:flex items-center space-x-3 px-4 py-2.5 bg-noir-charcoal border-2 border-gold/30 relative overflow-hidden">
+              {/* Art deco corner accents */}
+              <div className="absolute top-0 left-0 w-2 h-2 border-t-2 border-l-2 border-gold"></div>
+              <div className="absolute bottom-0 right-0 w-2 h-2 border-b-2 border-r-2 border-gold"></div>
+              
+              <div className="w-9 h-9 bg-gradient-gold flex items-center justify-center text-noir-black font-bold text-sm shadow-gold-glow border border-gold-dark">
                 {user?.username?.charAt(0).toUpperCase()}
               </div>
               <div className="text-right">
-                <p className="text-xs text-phantom-text-tertiary">Logged in as</p>
-                <p className="text-sm font-semibold text-phantom-text-primary">{user?.username}</p>
+                <p className="text-xs text-deco-silver/60 uppercase tracking-wider">Logged in as</p>
+                <p className="text-sm font-semibold text-gold">{user?.username}</p>
               </div>
             </div>
             <button
               onClick={logout}
-              className="px-4 py-2.5 text-sm font-medium text-phantom-text-secondary hover:text-phantom-error hover:bg-phantom-bg-tertiary rounded-2xl transition-all duration-200 flex items-center gap-2 group"
+              className="px-4 py-2.5 text-sm font-medium text-deco-silver hover:text-deco-burgundy border border-deco-silver/30 hover:border-deco-burgundy/50 bg-noir-charcoal hover:bg-noir-slate transition-all duration-300 flex items-center gap-2 group relative overflow-hidden"
             >
-              <svg className="w-5 h-5 transition-transform group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <div className="absolute inset-0 bg-gradient-gold opacity-0 group-hover:opacity-10 transition-opacity"></div>
+              <svg className="w-5 h-5 transition-transform group-hover:translate-x-0.5 relative z-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
               </svg>
-              Logout
+              <span className="relative z-10">Logout</span>
             </button>
           </div>
         </div>

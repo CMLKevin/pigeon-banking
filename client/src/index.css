@@ -12,44 +12,60 @@ body {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background: linear-gradient(180deg, #1A1B23 0%, #0F1015 100%);
+  background: linear-gradient(180deg, #0A0A0A 0%, #121212 100%);
   background-attachment: fixed;
-  color: #FFFFFF;
+  color: #F5F5DC;
+  position: relative;
+}
+
+/* Art deco grain texture overlay */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='3' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  opacity: 0.03;
+  pointer-events: none;
+  z-index: 1;
 }
 
 #root {
   min-height: 100vh;
 }
 
-/* Custom scrollbar - Dark theme */
+/* Art Deco Scrollbar - Gold & Noir */
 ::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
+  width: 12px;
+  height: 12px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #1A1B23;
-  border-radius: 8px;
+  background: #0A0A0A;
+  border-left: 1px solid #D4AF37;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, #AB9FF2 0%, #8B7FD8 100%);
-  border-radius: 8px;
-  transition: background 0.2s ease;
+  background: linear-gradient(180deg, #FFD700 0%, #D4AF37 50%, #B8941E 100%);
+  border: 2px solid #0A0A0A;
+  transition: background 0.3s ease;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(180deg, #C4B5FD 0%, #AB9FF2 100%);
+  background: linear-gradient(180deg, #FFD700 0%, #FFD700 100%);
+  box-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
 }
 
-/* Input autofill styling - Dark theme */
+/* Input autofill styling - Noir theme */
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
 input:-webkit-autofill:focus {
-  -webkit-box-shadow: 0 0 0px 1000px #27283A inset;
-  -webkit-text-fill-color: #FFFFFF;
+  -webkit-box-shadow: 0 0 0px 1000px #2D2D2D inset;
+  -webkit-text-fill-color: #F5F5DC;
   transition: background-color 5000s ease-in-out 0s;
-  border: 2px solid #3D3F54 !important;
+  border: 2px solid #D4AF37 !important;
 }
 
 /* Smooth transitions for all interactive elements */
@@ -57,23 +73,23 @@ button, a, input, select {
   transition: all 0.2s ease;
 }
 
-/* Focus ring improvements - Dark theme */
+/* Focus ring improvements - Gold theme */
 *:focus-visible {
-  outline: 2px solid #AB9FF2;
+  outline: 2px solid #D4AF37;
   outline-offset: 2px;
-  box-shadow: 0 0 0 3px rgba(171, 159, 242, 0.2);
+  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.3), 0 0 20px rgba(255, 215, 0, 0.2);
 }
 
-/* Selection styling */
+/* Selection styling - Gold */
 ::selection {
-  background: rgba(171, 159, 242, 0.3);
-  color: #FFFFFF;
+  background: rgba(212, 175, 55, 0.4);
+  color: #0A0A0A;
 }
 
-/* Placeholder styling */
+/* Placeholder styling - Silver */
 ::placeholder {
-  color: #75768B;
-  opacity: 1;
+  color: #C0C0C0;
+  opacity: 0.5;
 }
 
 /* Coin flip 3D animation */
