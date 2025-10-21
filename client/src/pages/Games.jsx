@@ -102,33 +102,52 @@ const Games = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-dark">
+    <div className="min-h-screen bg-gradient-dark relative">
+      {/* Art deco background */}
+      <div className="absolute inset-0 opacity-5">
+        <div className="absolute top-0 left-1/4 w-px h-full bg-gradient-to-b from-gold via-gold/50 to-transparent"></div>
+        <div className="absolute top-0 right-1/4 w-px h-full bg-gradient-to-b from-gold via-gold/50 to-transparent"></div>
+      </div>
+      
       <Navbar />
       
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 animate-fade-in">
-        {/* Header */}
-        <div className="mb-10">
-          <h1 className="text-5xl font-bold bg-gradient-phantom bg-clip-text text-transparent mb-3">
-            Game Center
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 animate-fade-in relative z-10">
+        {/* Art Deco Header */}
+        <div className="mb-10 text-center">
+          <div className="flex items-center justify-center gap-4 mb-4">
+            <div className="h-px w-16 bg-gradient-to-r from-transparent to-gold"></div>
+            <div className="w-12 h-12 border-2 border-gold bg-noir-darker flex items-center justify-center transform rotate-45">
+              <svg className="w-6 h-6 text-gold -rotate-45" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+              </svg>
+            </div>
+            <div className="h-px w-16 bg-gradient-to-l from-transparent to-gold"></div>
+          </div>
+          <h1 className="text-5xl font-bold text-gold tracking-widest mb-3">
+            GAME CENTER
           </h1>
-          <p className="text-phantom-text-secondary text-xl">
-            Play games with Game Chips and test your luck!
+          <p className="text-deco-silver text-sm tracking-wider">
+            TEST YOUR LUCK • WIN BIG
           </p>
         </div>
 
-        {/* Balance & Stats Row */}
+        {/* Art Deco Balance & Stats Row */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {/* Game Chips Balance */}
-          <div className="bg-gradient-to-br from-cyan-500 via-blue-500 to-indigo-600 rounded-3xl p-6 text-white shadow-card lg:col-span-2">
+          {/* Game Chips Balance - Art Deco */}
+          <div className="bg-gradient-gold p-6 shadow-gold-glow lg:col-span-2 border-2 border-gold-dark relative">
+            <div className="absolute top-0 left-0 w-3 h-3 border-t-2 border-l-2 border-noir-black"></div>
+            <div className="absolute top-0 right-0 w-3 h-3 border-t-2 border-r-2 border-noir-black"></div>
+            <div className="absolute bottom-0 left-0 w-3 h-3 border-b-2 border-l-2 border-noir-black"></div>
+            <div className="absolute bottom-0 right-0 w-3 h-3 border-b-2 border-r-2 border-noir-black"></div>
             <div className="flex justify-between items-center">
               <div>
-                <p className="text-white/80 text-sm font-medium mb-1">Available Game Chips</p>
-                <h2 className="text-4xl font-bold tracking-tight">
+                <p className="text-noir-black/70 text-xs font-bold uppercase tracking-widest mb-2">Game Chips</p>
+                <h2 className="text-5xl font-bold tracking-tight text-noir-black">
                   {getCurrencySymbol('stoneworks_dollar')} {formatCurrency(wallet?.stoneworks_dollar || 0)}
                 </h2>
               </div>
-              <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center">
-                <svg className="w-10 h-10 text-white/90" fill="currentColor" viewBox="0 0 24 24">
+              <div className="w-16 h-16 bg-noir-black/20 backdrop-blur-sm border-2 border-noir-black flex items-center justify-center">
+                <svg className="w-10 h-10 text-noir-black" fill="currentColor" viewBox="0 0 24 24">
                   <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2" fill="none"/>
                   <circle cx="12" cy="12" r="2" fill="currentColor"/>
                   <circle cx="12" cy="7" r="1" fill="currentColor"/>
@@ -141,25 +160,29 @@ const Games = () => {
           </div>
 
           {/* Total Games */}
-          <div className="bg-phantom-bg-secondary/60 backdrop-blur-xl rounded-3xl shadow-card border border-phantom-border p-6">
-            <p className="text-phantom-text-secondary text-sm mb-1">Total Games</p>
-            <p className="text-3xl font-bold text-phantom-text-primary">{stats?.total_games || 0}</p>
+          <div className="bg-noir-dark/90 backdrop-blur-xl shadow-card border-2 border-gold/30 p-6 relative">
+            <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-gold"></div>
+            <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-gold"></div>
+            <p className="text-deco-silver/60 text-xs uppercase tracking-widest mb-2">Total Games</p>
+            <p className="text-3xl font-bold text-gold">{stats?.total_games || 0}</p>
           </div>
 
           {/* Net Profit */}
-          <div className="bg-phantom-bg-secondary/60 backdrop-blur-xl rounded-3xl shadow-card border border-phantom-border p-6">
-            <p className="text-phantom-text-secondary text-sm mb-1">Net Profit</p>
+          <div className="bg-noir-dark/90 backdrop-blur-xl shadow-card border-2 border-gold/30 p-6 relative">
+            <div className="absolute bottom-0 left-0 w-2 h-2 border-b border-l border-gold"></div>
+            <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-gold"></div>
+            <p className="text-deco-silver/60 text-xs uppercase tracking-widest mb-2">Net Profit</p>
             <p className={`text-3xl font-bold ${
-              (stats?.total_profit || 0) >= 0 ? 'text-green-500' : 'text-red-500'
+              (stats?.total_profit || 0) >= 0 ? 'text-deco-emerald' : 'text-deco-burgundy'
             }`}>
               {(stats?.total_profit || 0) >= 0 ? '+' : ''}{getCurrencySymbol('stoneworks_dollar')} {formatCurrency(Math.abs(stats?.total_profit || 0))}
             </p>
           </div>
         </div>
 
-        {/* Games Grid */}
+        {/* Art Deco Games Grid */}
         <div>
-          <h2 className="text-3xl font-bold text-phantom-text-primary mb-6">Available Games</h2>
+          <h2 className="text-3xl font-bold text-gold mb-6 uppercase tracking-wider text-center">Available Games</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {games.map((game) => (
               <Link
@@ -167,17 +190,23 @@ const Games = () => {
                 to={game.path}
                 className="group block"
               >
-                <div className="bg-phantom-bg-secondary/60 backdrop-blur-xl rounded-3xl shadow-card border-2 border-phantom-border hover:border-phantom-accent-primary transition-all duration-300 p-8 hover:shadow-glow transform hover:scale-105">
+                <div className="bg-noir-dark/90 backdrop-blur-xl shadow-card border-2 border-gold/30 hover:border-gold transition-all duration-300 p-8 hover:shadow-gold-glow transform hover:scale-105 relative">
+                  {/* Corner decorations */}
+                  <div className="absolute top-0 left-0 w-3 h-3 border-t-2 border-l-2 border-gold"></div>
+                  <div className="absolute top-0 right-0 w-3 h-3 border-t-2 border-r-2 border-gold"></div>
+                  <div className="absolute bottom-0 left-0 w-3 h-3 border-b-2 border-l-2 border-gold"></div>
+                  <div className="absolute bottom-0 right-0 w-3 h-3 border-b-2 border-r-2 border-gold"></div>
+                  
                   {/* Game Icon & Title */}
                   <div className="flex items-center gap-4 mb-4">
-                    <div className={`w-16 h-16 bg-gradient-to-br ${game.gradient} rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform`}>
+                    <div className={`w-16 h-16 bg-gradient-to-br ${game.gradient} border-2 border-gold-dark flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform`}>
                       {game.icon}
                     </div>
                     <div>
-                      <h3 className="text-2xl font-bold text-phantom-text-primary group-hover:text-phantom-accent-primary transition-colors">
+                      <h3 className="text-2xl font-bold text-gold group-hover:text-gold-light transition-colors uppercase tracking-wide">
                         {game.title}
                       </h3>
-                      <p className="text-sm text-phantom-text-secondary">
+                      <p className="text-xs text-deco-silver/70 uppercase tracking-wider">
                         {game.description}
                       </p>
                     </div>
@@ -185,23 +214,23 @@ const Games = () => {
 
                   {/* Game Stats */}
                   <div className="mt-6 grid grid-cols-3 gap-4">
-                    <div className="text-center p-3 bg-phantom-bg-tertiary/50 rounded-xl border border-phantom-border">
-                      <p className="text-xs text-phantom-text-tertiary mb-1">House Edge</p>
-                      <p className="text-sm font-bold text-phantom-text-primary">{game.stats.houseEdge}</p>
+                    <div className="text-center p-3 bg-noir-charcoal/50 border border-gold/20">
+                      <p className="text-xs text-deco-silver/60 mb-1 uppercase tracking-wider">House Edge</p>
+                      <p className="text-sm font-bold text-gold">{game.stats.houseEdge}</p>
                     </div>
-                    <div className="text-center p-3 bg-phantom-bg-tertiary/50 rounded-xl border border-phantom-border">
-                      <p className="text-xs text-phantom-text-tertiary mb-1">Win Rate</p>
-                      <p className="text-sm font-bold text-phantom-text-primary">{game.stats.winRate}</p>
+                    <div className="text-center p-3 bg-noir-charcoal/50 border border-gold/20">
+                      <p className="text-xs text-deco-silver/60 mb-1 uppercase tracking-wider">Win Rate</p>
+                      <p className="text-sm font-bold text-gold">{game.stats.winRate}</p>
                     </div>
-                    <div className="text-center p-3 bg-phantom-bg-tertiary/50 rounded-xl border border-phantom-border">
-                      <p className="text-xs text-phantom-text-tertiary mb-1">Payout</p>
-                      <p className="text-sm font-bold text-phantom-text-primary">{game.stats.payout}</p>
+                    <div className="text-center p-3 bg-noir-charcoal/50 border border-gold/20">
+                      <p className="text-xs text-deco-silver/60 mb-1 uppercase tracking-wider">Payout</p>
+                      <p className="text-sm font-bold text-gold">{game.stats.payout}</p>
                     </div>
                   </div>
 
                   {/* Play Button */}
                   <div className="mt-6">
-                    <div className={`w-full py-3 rounded-xl bg-gradient-to-r ${game.gradient} text-white font-bold text-center group-hover:shadow-glow transition-all`}>
+                    <div className="w-full py-3 bg-gradient-gold border-2 border-gold text-noir-black font-bold text-center group-hover:shadow-gold-glow transition-all uppercase tracking-wider">
                       Play Now →
                     </div>
                   </div>
@@ -211,10 +240,16 @@ const Games = () => {
           </div>
         </div>
 
-        {/* Recent Games */}
-        <div className="bg-phantom-bg-secondary/60 backdrop-blur-xl rounded-3xl shadow-card border border-phantom-border p-8">
-          <h2 className="text-2xl font-bold text-phantom-text-primary mb-6 flex items-center gap-3">
-            <svg className="w-7 h-7 text-phantom-accent-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        {/* Art Deco Recent Games */}
+        <div className="bg-noir-dark/90 backdrop-blur-xl shadow-card border-2 border-gold/30 p-8 relative">
+          {/* Corner decorations */}
+          <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-gold"></div>
+          <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-gold"></div>
+          <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-gold"></div>
+          <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-gold"></div>
+          
+          <h2 className="text-2xl font-bold text-gold mb-6 flex items-center gap-3 uppercase tracking-wider">
+            <svg className="w-7 h-7 text-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
             Recent Games
@@ -222,8 +257,8 @@ const Games = () => {
           
           {recentGames.length === 0 ? (
             <div className="text-center py-12">
-              <p className="text-phantom-text-secondary">No games played yet</p>
-              <p className="text-sm text-phantom-text-tertiary mt-2">Choose a game above to get started!</p>
+              <p className="text-deco-silver uppercase tracking-wider">No games played yet</p>
+              <p className="text-sm text-deco-silver/60 mt-2">Choose a game above to get started!</p>
             </div>
           ) : (
             <div className="space-y-3">
@@ -246,30 +281,32 @@ const Games = () => {
                 return (
                   <div
                     key={index}
-                    className="flex items-center justify-between p-4 bg-phantom-bg-tertiary/50 rounded-2xl border border-phantom-border"
+                    className="flex items-center justify-between p-4 bg-noir-charcoal/50 border border-gold/20 relative"
                   >
+                    <div className="absolute top-0 left-0 w-1 h-1 bg-gold"></div>
+                    <div className="absolute bottom-0 right-0 w-1 h-1 bg-gold"></div>
                     <div className="flex items-center gap-4">
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${
-                        game.won ? 'bg-green-500/20 text-green-500' : 'bg-red-500/20 text-red-500'
+                      <div className={`w-10 h-10 border-2 flex items-center justify-center font-bold ${
+                        game.won ? 'border-deco-emerald bg-deco-emerald/20 text-deco-emerald' : 'border-deco-burgundy bg-deco-burgundy/20 text-deco-burgundy'
                       }`}>
                         {game.won ? '✓' : '✗'}
                       </div>
                       <div>
-                        <p className="text-sm font-semibold text-phantom-text-primary">
+                        <p className="text-sm font-bold text-gold uppercase tracking-wide">
                           {gameType} • {game.game_type === 'plinko' ? `${game.result}x` : game.result}
                         </p>
-                        <p className="text-xs text-phantom-text-tertiary">
+                        <p className="text-xs text-deco-silver/60">
                           {new Date(game.created_at).toLocaleString()}
                         </p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className={`font-semibold ${
-                        game.won ? 'text-green-500' : 'text-red-500'
+                      <p className={`font-bold ${
+                        game.won ? 'text-deco-emerald' : 'text-deco-burgundy'
                       }`}>
                         {game.won ? '+' : '-'}{getCurrencySymbol('stoneworks_dollar')} {formatCurrency(payout)}
                       </p>
-                      <p className="text-xs text-phantom-text-tertiary">
+                      <p className="text-xs text-deco-silver/60">
                         Bet: {getCurrencySymbol('stoneworks_dollar')} {formatCurrency(game.bet_amount)}
                       </p>
                     </div>
