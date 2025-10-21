@@ -79,16 +79,37 @@ const Swap = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-dark">
+    <div className="min-h-screen bg-gradient-dark relative">
+      {/* Art deco background pattern */}
+      <div className="absolute inset-0 opacity-5">
+        <div className="absolute top-0 left-1/4 w-px h-full bg-gradient-to-b from-gold via-gold/50 to-transparent"></div>
+        <div className="absolute top-0 right-1/4 w-px h-full bg-gradient-to-b from-gold via-gold/50 to-transparent"></div>
+      </div>
+      
       <Navbar />
       
-      <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12 animate-fade-in">
-        <div className="mb-10">
-          <h1 className="text-4xl font-bold bg-gradient-phantom bg-clip-text text-transparent mb-3">Swap Currency</h1>
-          <p className="text-phantom-text-secondary text-lg">Exchange between Stoneworks Dollars and Game Chips at 1:1 ratio</p>
+      <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12 animate-fade-in relative z-10">
+        {/* Art deco header */}
+        <div className="mb-10 text-center">
+          <div className="flex items-center justify-center gap-4 mb-4">
+            <div className="h-px w-12 bg-gradient-to-r from-transparent to-gold"></div>
+            <div className="w-12 h-12 border-2 border-gold bg-noir-darker flex items-center justify-center transform rotate-45">
+              <svg className="w-6 h-6 text-gold -rotate-45" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+              </svg>
+            </div>
+            <div className="h-px w-12 bg-gradient-to-l from-transparent to-gold"></div>
+          </div>
+          <h1 className="text-4xl font-bold text-gold tracking-widest mb-3">CURRENCY EXCHANGE</h1>
+          <p className="text-deco-silver text-sm tracking-wider">INSTANT 1:1 CONVERSION RATE</p>
         </div>
 
-        <div className="bg-phantom-bg-secondary/60 backdrop-blur-xl rounded-3xl shadow-card border border-phantom-border p-8">
+        <div className="bg-noir-dark/90 backdrop-blur-xl shadow-card border-2 border-gold/30 p-8 relative">
+          {/* Corner decorations */}
+          <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-gold"></div>
+          <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-gold"></div>
+          <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-gold"></div>
+          <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-gold"></div>
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* From Currency */}
             <div>
@@ -99,21 +120,25 @@ const Swap = () => {
                 options={currencyOptions}
               />
               <div className="flex justify-between text-sm mt-2 px-1">
-                <span className="text-phantom-text-tertiary">Available balance:</span>
-                <span className="font-semibold text-phantom-text-primary">
+                <span className="text-deco-silver/60 uppercase tracking-wider text-xs">Available:</span>
+                <span className="font-bold text-gold">
                   {formatCurrency(getBalance(fromCurrency))} {getCurrencyName(fromCurrency)}
                 </span>
               </div>
             </div>
 
-            {/* Swap Button */}
+            {/* Art deco swap button */}
             <div className="flex justify-center -my-2">
               <button
                 type="button"
                 onClick={handleSwap}
-                className="w-14 h-14 bg-phantom-bg-tertiary border-2 border-phantom-border hover:border-phantom-accent-primary rounded-2xl flex items-center justify-center hover:shadow-glow-sm transition-all duration-200 group"
+                className="w-16 h-16 bg-noir-charcoal border-2 border-gold hover:border-gold-light hover:shadow-gold-glow flex items-center justify-center transition-all duration-300 group relative"
               >
-                <svg className="w-6 h-6 text-phantom-accent-primary group-hover:rotate-180 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <div className="absolute top-0 left-0 w-2 h-2 bg-gold"></div>
+                <div className="absolute top-0 right-0 w-2 h-2 bg-gold"></div>
+                <div className="absolute bottom-0 left-0 w-2 h-2 bg-gold"></div>
+                <div className="absolute bottom-0 right-0 w-2 h-2 bg-gold"></div>
+                <svg className="w-7 h-7 text-gold group-hover:rotate-180 transition-transform duration-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
                 </svg>
               </button>
@@ -128,8 +153,8 @@ const Swap = () => {
                 options={currencyOptions}
               />
               <div className="flex justify-between text-sm mt-2 px-1">
-                <span className="text-phantom-text-tertiary">Available balance:</span>
-                <span className="font-semibold text-phantom-text-primary">
+                <span className="text-deco-silver/60 uppercase tracking-wider text-xs">Available:</span>
+                <span className="font-bold text-gold">
                   {formatCurrency(getBalance(toCurrency))} {getCurrencyName(toCurrency)}
                 </span>
               </div>
@@ -147,37 +172,46 @@ const Swap = () => {
               required
             />
 
-            {/* Exchange Info */}
+            {/* Art deco exchange info */}
             {amount && (
-              <div className="bg-gradient-card border border-phantom-border-light rounded-2xl p-4">
+              <div className="bg-noir-charcoal/50 border-2 border-gold/20 p-5 relative">
+                <div className="absolute top-0 left-3 w-px h-full bg-gold/10"></div>
+                <div className="absolute top-0 right-3 w-px h-full bg-gold/10"></div>
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-phantom-text-secondary text-sm mb-1">You will receive</p>
-                    <p className="text-phantom-text-primary text-2xl font-bold">{amount} {getCurrencyName(toCurrency)}</p>
+                    <p className="text-deco-silver/60 text-xs uppercase tracking-widest mb-2">You Receive</p>
+                    <p className="text-gold text-3xl font-bold tracking-wide">{amount}</p>
+                    <p className="text-deco-silver text-sm mt-1">{getCurrencyName(toCurrency)}</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-phantom-text-tertiary text-xs">Exchange rate</p>
-                    <p className="text-phantom-accent-primary font-bold">1:1</p>
+                    <div className="border border-gold/30 px-3 py-2 bg-noir-darker">
+                      <p className="text-deco-silver/60 text-xs uppercase tracking-widest mb-1">Rate</p>
+                      <p className="text-gold font-bold text-lg">1:1</p>
+                    </div>
                   </div>
                 </div>
               </div>
             )}
 
             {error && (
-              <div className="bg-phantom-error/10 border-2 border-phantom-error/30 text-phantom-error px-4 py-3.5 rounded-2xl flex items-center gap-3 animate-scale-in">
+              <div className="bg-deco-burgundy/10 border-2 border-deco-burgundy/50 text-deco-burgundy px-4 py-3.5 flex items-center gap-3 animate-scale-in relative">
+                <div className="absolute top-0 left-0 w-2 h-2 bg-deco-burgundy"></div>
+                <div className="absolute top-0 right-0 w-2 h-2 bg-deco-burgundy"></div>
                 <svg className="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
                 </svg>
-                <span className="text-sm font-medium">{error}</span>
+                <span className="text-sm font-medium tracking-wide">{error}</span>
               </div>
             )}
 
             {success && (
-              <div className="bg-phantom-success/10 border-2 border-phantom-success/30 text-phantom-success px-4 py-3.5 rounded-2xl flex items-center gap-3 animate-scale-in">
+              <div className="bg-deco-emerald/10 border-2 border-deco-emerald/50 text-deco-emerald px-4 py-3.5 flex items-center gap-3 animate-scale-in relative">
+                <div className="absolute top-0 left-0 w-2 h-2 bg-deco-emerald"></div>
+                <div className="absolute top-0 right-0 w-2 h-2 bg-deco-emerald"></div>
                 <svg className="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                 </svg>
-                <span className="text-sm font-medium">{success}</span>
+                <span className="text-sm font-medium tracking-wide">{success}</span>
               </div>
             )}
 
