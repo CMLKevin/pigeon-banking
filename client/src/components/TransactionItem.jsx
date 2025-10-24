@@ -9,8 +9,8 @@ const TransactionItem = ({ transaction }) => {
   const getIcon = () => {
     if (isSwap) {
       return (
-        <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-2xl flex items-center justify-center shadow-md">
-          <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <div className="w-12 h-12 bg-gradient-gold border-2 border-gold-dark flex items-center justify-center shadow-gold-glow">
+          <svg className="w-6 h-6 text-noir-black" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
           </svg>
         </div>
@@ -19,8 +19,8 @@ const TransactionItem = ({ transaction }) => {
     
     if (isSent) {
       return (
-        <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center shadow-md">
-          <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <div className="w-12 h-12 bg-deco-burgundy/20 border-2 border-deco-burgundy flex items-center justify-center">
+          <svg className="w-6 h-6 text-deco-burgundy" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
           </svg>
         </div>
@@ -28,8 +28,8 @@ const TransactionItem = ({ transaction }) => {
     }
     
     return (
-      <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-500 rounded-2xl flex items-center justify-center shadow-md">
-        <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <div className="w-12 h-12 bg-deco-emerald/20 border-2 border-deco-emerald flex items-center justify-center">
+        <svg className="w-6 h-6 text-deco-emerald" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M7 16l-4-4m0 0l4-4m-4 4h18" />
         </svg>
       </div>
@@ -42,8 +42,8 @@ const TransactionItem = ({ transaction }) => {
   };
 
   const getAmountClass = () => {
-    if (isSwap) return 'text-cyan-400';
-    return isSent ? 'text-phantom-error' : 'text-phantom-success';
+    if (isSwap) return 'text-gold';
+    return isSent ? 'text-deco-burgundy' : 'text-deco-emerald';
   };
 
   const getAmountPrefix = () => {
@@ -52,14 +52,16 @@ const TransactionItem = ({ transaction }) => {
   };
 
   return (
-    <div className="flex items-center justify-between p-4 hover:bg-phantom-bg-tertiary rounded-2xl transition-all duration-200 border border-transparent hover:border-phantom-border group">
+    <div className="flex items-center justify-between p-4 hover:bg-noir-charcoal/30 transition-all duration-200 border border-gold/10 hover:border-gold/30 group relative">
+      <div className="absolute top-0 left-0 w-1 h-1 bg-gold opacity-0 group-hover:opacity-100 transition-opacity"></div>
+      <div className="absolute bottom-0 right-0 w-1 h-1 bg-gold opacity-0 group-hover:opacity-100 transition-opacity"></div>
       <div className="flex items-center space-x-4">
         <div className="transform transition-transform group-hover:scale-110">
           {getIcon()}
         </div>
         <div>
-          <p className="font-semibold text-phantom-text-primary">{getTitle()}</p>
-          <p className="text-sm text-phantom-text-tertiary">{formatDate(transaction.created_at)}</p>
+          <p className="font-bold text-gold uppercase tracking-wide text-sm">{getTitle()}</p>
+          <p className="text-xs text-deco-silver/60">{formatDate(transaction.created_at)}</p>
         </div>
       </div>
       <div className="text-right">
@@ -67,7 +69,7 @@ const TransactionItem = ({ transaction }) => {
           {getAmountPrefix()}{getCurrencySymbol(transaction.currency)} {formatCurrency(transaction.amount)}
         </p>
         {transaction.description && (
-          <p className="text-sm text-phantom-text-secondary mt-0.5">{transaction.description}</p>
+          <p className="text-xs text-deco-silver/70 mt-0.5">{transaction.description}</p>
         )}
       </div>
     </div>
