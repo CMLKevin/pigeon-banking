@@ -182,19 +182,23 @@ const Blackjack = () => {
 
   const Card = ({ card, hidden = false }) => {
     const getCardColor = (suit) => {
-      return ['♥', '♦'].includes(suit) ? 'text-red-500' : 'text-gray-900';
+      return ['♥', '♦'].includes(suit) ? 'text-deco-burgundy' : 'text-noir-black';
     };
 
     if (hidden) {
       return (
-        <div className="w-20 h-28 bg-gradient-to-br from-blue-600 to-blue-800 rounded-lg border-2 border-blue-900 flex items-center justify-center shadow-lg">
-          <div className="text-4xl text-blue-200">🂠</div>
+        <div className="w-20 h-28 bg-gradient-to-br from-gold-dark to-gold-bronze border-2 border-gold flex items-center justify-center shadow-gold-glow relative">
+          <div className="absolute top-0 left-0 w-1 h-1 bg-noir-black"></div>
+          <div className="absolute bottom-0 right-0 w-1 h-1 bg-noir-black"></div>
+          <div className="text-4xl text-noir-black/50">🈠</div>
         </div>
       );
     }
 
     return (
-      <div className="w-20 h-28 bg-white rounded-lg border-2 border-gray-300 flex flex-col items-center justify-between p-2 shadow-lg transform hover:scale-105 transition-transform">
+      <div className="w-20 h-28 bg-deco-cream border-2 border-gold/50 flex flex-col items-center justify-between p-2 shadow-lg transform hover:scale-105 transition-transform relative">
+        <div className="absolute top-0 left-0 w-1 h-1 border-t border-l border-gold"></div>
+        <div className="absolute bottom-0 right-0 w-1 h-1 border-b border-r border-gold"></div>
         <div className={`text-2xl font-bold ${getCardColor(card.suit)}`}>
           {card.value}
         </div>
@@ -210,10 +214,10 @@ const Blackjack = () => {
 
   const HandDisplay = ({ title, cards, value, hideFirstCard = false }) => (
     <div className="mb-8">
-      <h3 className="text-xl font-bold text-phantom-text-primary mb-4 flex items-center gap-2">
+      <h3 className="text-xl font-bold text-gold mb-4 flex items-center gap-2 uppercase tracking-wider">
         {title}
         {value !== undefined && (
-          <span className="px-3 py-1 bg-phantom-bg-tertiary rounded-full text-sm">
+          <span className="px-3 py-1 bg-noir-charcoal border border-gold/30 text-sm text-gold font-bold">
             Value: {value}
           </span>
         )}
@@ -227,36 +231,55 @@ const Blackjack = () => {
   );
 
   return (
-    <div className="min-h-screen bg-phantom-bg-primary">
+    <div className="min-h-screen bg-gradient-dark relative">
+      {/* Art deco background */}
+      <div className="absolute inset-0 opacity-5">
+        <div className="absolute top-0 left-1/4 w-px h-full bg-gradient-to-b from-gold via-gold/50 to-transparent"></div>
+        <div className="absolute top-0 right-1/4 w-px h-full bg-gradient-to-b from-gold via-gold/50 to-transparent"></div>
+      </div>
+      
       <Navbar />
       
-      <div className="container mx-auto px-4 py-8 max-w-6xl">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-phantom-text-primary mb-2 bg-gradient-to-r from-green-400 to-emerald-500 bg-clip-text text-transparent">
-            Blackjack
+      <div className="container mx-auto px-4 py-8 max-w-6xl relative z-10">
+        {/* Art Deco Header */}
+        <div className="mb-8 text-center">
+          <div className="flex items-center justify-center gap-4 mb-4">
+            <div className="h-px w-16 bg-gradient-to-r from-transparent to-gold"></div>
+            <div className="w-12 h-12 border-2 border-gold bg-noir-darker flex items-center justify-center">
+              <svg className="w-6 h-6 text-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+              </svg>
+            </div>
+            <div className="h-px w-16 bg-gradient-to-l from-transparent to-gold"></div>
+          </div>
+          <h1 className="text-5xl font-bold text-gold tracking-widest mb-3">
+            BLACKJACK
           </h1>
-          <p className="text-phantom-text-secondary">
-            Beat the dealer to 21! Blackjack pays 3:2
+          <p className="text-deco-silver text-sm tracking-wider">
+            BEAT THE DEALER TO 21 • BLACKJACK PAYS 3:2
           </p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Game Area */}
           <div className="lg:col-span-2">
-            <div className="bg-phantom-bg-secondary border-2 border-phantom-border rounded-2xl p-8 shadow-glow">
+            <div className="bg-noir-dark/90 border-2 border-gold/30 p-8 shadow-card relative">
+              <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-gold"></div>
+              <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-gold"></div>
+              <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-gold"></div>
+              <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-gold"></div>
               {/* Balance Display */}
               <div className="mb-6 flex items-center justify-between">
-                <div className="px-4 py-2 bg-phantom-bg-tertiary rounded-xl border border-phantom-border">
-                  <p className="text-sm text-phantom-text-secondary">Your Balance</p>
-                  <p className="text-2xl font-bold text-phantom-text-primary">
+                <div className="px-4 py-2 bg-noir-charcoal border border-gold/30">
+                  <p className="text-xs text-deco-silver/60 uppercase tracking-wider">Your Balance</p>
+                  <p className="text-2xl font-bold text-gold">
                     {getCurrencySymbol('stoneworks_dollar')} {Number(wallet?.stoneworks_dollar || 0).toFixed(0)}
                   </p>
                 </div>
                 {gameState?.betAmount && (
-                  <div className="px-4 py-2 bg-amber-500/20 rounded-xl border border-amber-500/50">
-                    <p className="text-sm text-amber-300">Current Bet</p>
-                    <p className="text-2xl font-bold text-amber-400">
+                  <div className="px-4 py-2 bg-gold-bronze/20 border border-gold">
+                    <p className="text-xs text-noir-black uppercase tracking-wider font-bold">Current Bet</p>
+                    <p className="text-2xl font-bold text-gold-dark">
                       {getCurrencySymbol('stoneworks_dollar')} {Number(gameState.betAmount).toFixed(0)}
                     </p>
                   </div>
@@ -273,7 +296,7 @@ const Blackjack = () => {
                   </div>
                   
                   <div className="max-w-md mx-auto">
-                    <label className="block text-phantom-text-primary font-medium mb-2">
+                    <label className="block text-gold font-bold mb-3 uppercase tracking-wider text-sm">
                       Bet Amount ({getCurrencySymbol('stoneworks_dollar')})
                     </label>
                     <input
@@ -282,7 +305,7 @@ const Blackjack = () => {
                       min="1"
                       value={betAmount}
                       onChange={(e) => setBetAmount(e.target.value)}
-                      className="w-full px-4 py-3 rounded-xl bg-phantom-bg-tertiary border-2 border-phantom-border text-phantom-text-primary placeholder:text-phantom-text-tertiary focus:border-phantom-accent-primary focus:shadow-input focus:outline-none text-center text-xl font-bold mb-4"
+                      className="w-full px-4 py-3 bg-noir-charcoal border-2 border-gold/30 text-deco-cream placeholder:text-deco-silver/50 focus:border-gold focus:shadow-gold-glow focus:outline-none text-center text-xl font-bold mb-4"
                       placeholder="Enter bet amount"
                     />
                     
@@ -291,7 +314,7 @@ const Blackjack = () => {
                         <button
                           key={amount}
                           onClick={() => setBetAmount(amount.toString())}
-                          className="flex-1 px-3 py-2 rounded-lg bg-phantom-bg-tertiary hover:bg-phantom-accent-primary/20 border border-phantom-border hover:border-phantom-accent-primary text-phantom-text-secondary hover:text-phantom-accent-primary transition-all text-sm"
+                          className="flex-1 px-3 py-2 bg-noir-charcoal hover:bg-gold/20 border border-gold/30 hover:border-gold text-deco-silver hover:text-gold transition-all text-sm font-bold uppercase tracking-wider"
                         >
                           {amount}
                         </button>
@@ -300,7 +323,7 @@ const Blackjack = () => {
 
                     <button
                       onClick={startGame}
-                      className="w-full px-8 py-4 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold text-lg shadow-glow-sm hover:shadow-glow transition-all transform hover:scale-105"
+                      className="w-full px-8 py-4 bg-gradient-gold border-2 border-gold text-noir-black font-bold text-lg hover:shadow-gold-glow transition-all transform hover:scale-105 uppercase tracking-wider"
                     >
                       Deal Cards
                     </button>
@@ -323,36 +346,44 @@ const Blackjack = () => {
                     value={gameState.playerValue}
                   />
 
-                  {/* Game Result Message */}
+                  {/* Art Deco Game Result Message */}
                   {message && (
-                    <div className={`mb-6 p-4 rounded-xl border-2 text-center ${
+                    <div className={`mb-6 p-4 border-2 text-center relative ${
                       gameState.won 
-                        ? 'bg-green-500/20 border-green-500 text-green-300' 
+                        ? 'bg-deco-emerald/10 border-deco-emerald/50' 
                         : gameState.result === 'push'
-                        ? 'bg-blue-500/20 border-blue-500 text-blue-300'
-                        : 'bg-red-500/20 border-red-500 text-red-300'
+                        ? 'bg-gold/10 border-gold/50'
+                        : 'bg-deco-burgundy/10 border-deco-burgundy/50'
                     }`}>
-                      <p className="text-2xl font-bold">{message}</p>
+                      <div className={`absolute top-0 left-0 w-2 h-2 ${
+                        gameState.won ? 'bg-deco-emerald' : gameState.result === 'push' ? 'bg-gold' : 'bg-deco-burgundy'
+                      }`}></div>
+                      <div className={`absolute top-0 right-0 w-2 h-2 ${
+                        gameState.won ? 'bg-deco-emerald' : gameState.result === 'push' ? 'bg-gold' : 'bg-deco-burgundy'
+                      }`}></div>
+                      <p className={`text-2xl font-bold uppercase tracking-wider ${
+                        gameState.won ? 'text-deco-emerald' : gameState.result === 'push' ? 'text-gold' : 'text-deco-burgundy'
+                      }`}>{message}</p>
                       {gameState.amountChange !== 0 && (
-                        <p className="text-lg mt-2">
+                        <p className="text-lg mt-2 text-gold font-bold">
                           {gameState.amountChange > 0 ? '+' : ''}{getCurrencySymbol('stoneworks_dollar')} {Number(gameState.amountChange).toFixed(0)}
                         </p>
                       )}
                     </div>
                   )}
 
-                  {/* Action Buttons */}
+                  {/* Art Deco Action Buttons */}
                   {!gameState.gameOver ? (
                     <div className="flex gap-4">
                       <button
                         onClick={handleHit}
-                        className="flex-1 px-6 py-4 rounded-xl bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white font-bold text-lg shadow-glow-sm hover:shadow-glow transition-all transform hover:scale-105"
+                        className="flex-1 px-6 py-4 bg-gradient-to-r from-blue-500 to-cyan-600 border-2 border-gold-dark text-white font-bold text-lg hover:shadow-gold-glow transition-all transform hover:scale-105 uppercase tracking-wider"
                       >
                         Hit
                       </button>
                       <button
                         onClick={handleStand}
-                        className="flex-1 px-6 py-4 rounded-xl bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white font-bold text-lg shadow-glow-sm hover:shadow-glow transition-all transform hover:scale-105"
+                        className="flex-1 px-6 py-4 bg-gradient-to-r from-purple-500 to-pink-600 border-2 border-gold-dark text-white font-bold text-lg hover:shadow-gold-glow transition-all transform hover:scale-105 uppercase tracking-wider"
                       >
                         Stand
                       </button>
@@ -360,7 +391,7 @@ const Blackjack = () => {
                   ) : (
                     <button
                       onClick={resetGame}
-                      className="w-full px-6 py-4 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold text-lg shadow-glow-sm hover:shadow-glow transition-all transform hover:scale-105"
+                      className="w-full px-6 py-4 bg-gradient-gold border-2 border-gold text-noir-black font-bold text-lg hover:shadow-gold-glow transition-all transform hover:scale-105 uppercase tracking-wider"
                     >
                       New Game
                     </button>
@@ -368,19 +399,23 @@ const Blackjack = () => {
                 </div>
               ) : (
                 <div className="text-center py-12">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-phantom-accent-primary mx-auto mb-4"></div>
-                  <p className="text-phantom-text-secondary">Loading game...</p>
+                  <div className="animate-spin h-12 w-12 border-4 border-gold/20 border-t-gold mx-auto mb-4"></div>
+                  <p className="text-deco-silver uppercase tracking-wider">Loading game...</p>
                 </div>
               )}
             </div>
           </div>
 
-          {/* Sidebar - Stats & Recent Games */}
+          {/* Art Deco Sidebar - Stats & Recent Games */}
           <div className="space-y-6">
             {/* Rules Card */}
-            <div className="bg-phantom-bg-secondary border-2 border-phantom-border rounded-2xl p-6">
-              <h3 className="text-xl font-bold text-phantom-text-primary mb-4">📋 Rules</h3>
-              <ul className="space-y-2 text-sm text-phantom-text-secondary">
+            <div className="bg-noir-dark/90 border-2 border-gold/30 p-6 relative">
+              <div className="absolute top-0 left-0 w-3 h-3 border-t-2 border-l-2 border-gold"></div>
+              <div className="absolute top-0 right-0 w-3 h-3 border-t-2 border-r-2 border-gold"></div>
+              <div className="absolute bottom-0 left-0 w-3 h-3 border-b-2 border-l-2 border-gold"></div>
+              <div className="absolute bottom-0 right-0 w-3 h-3 border-b-2 border-r-2 border-gold"></div>
+              <h3 className="text-xl font-bold text-gold mb-4 uppercase tracking-wider">📋 Rules</h3>
+              <ul className="space-y-2 text-sm text-deco-silver">
                 <li>• Get closer to 21 than dealer</li>
                 <li>• Aces count as 1 or 11</li>
                 <li>• Face cards count as 10</li>
@@ -390,29 +425,35 @@ const Blackjack = () => {
               </ul>
             </div>
 
-            {/* Recent Games */}
-            <div className="bg-phantom-bg-secondary border-2 border-phantom-border rounded-2xl p-6">
-              <h3 className="text-xl font-bold text-phantom-text-primary mb-4">🎲 Recent Games</h3>
+            {/* Art Deco Recent Games */}
+            <div className="bg-noir-dark/90 border-2 border-gold/30 p-6 relative">
+              <div className="absolute top-0 left-0 w-3 h-3 border-t-2 border-l-2 border-gold"></div>
+              <div className="absolute top-0 right-0 w-3 h-3 border-t-2 border-r-2 border-gold"></div>
+              <div className="absolute bottom-0 left-0 w-3 h-3 border-b-2 border-l-2 border-gold"></div>
+              <div className="absolute bottom-0 right-0 w-3 h-3 border-b-2 border-r-2 border-gold"></div>
+              <h3 className="text-xl font-bold text-gold mb-4 uppercase tracking-wider">🎲 Recent Games</h3>
               <div className="space-y-3">
                 {recentGames.length === 0 ? (
-                  <p className="text-phantom-text-tertiary text-sm">No games played yet</p>
+                  <p className="text-deco-silver/60 text-sm uppercase tracking-wider">No games played yet</p>
                 ) : (
                   recentGames.map((game) => (
                     <div
                       key={game.id}
-                      className="p-3 bg-phantom-bg-tertiary rounded-xl border border-phantom-border"
+                      className="p-3 bg-noir-charcoal/50 border border-gold/20 relative"
                     >
+                      <div className="absolute top-0 left-0 w-1 h-1 bg-gold"></div>
+                      <div className="absolute bottom-0 right-0 w-1 h-1 bg-gold"></div>
                       <div className="flex items-center justify-between mb-1">
-                        <span className={`text-sm font-bold ${game.won ? 'text-green-400' : 'text-red-400'}`}>
+                        <span className={`text-sm font-bold uppercase tracking-wide ${game.won ? 'text-deco-emerald' : 'text-deco-burgundy'}`}>
                           {game.won ? '✓ Won' : '✗ Lost'}
                         </span>
-                        <span className="text-xs text-phantom-text-tertiary">
+                        <span className="text-xs text-deco-silver/60">
                           {new Date(game.created_at).toLocaleDateString()}
                         </span>
                       </div>
                       <div className="flex items-center justify-between text-sm">
-                        <span className="text-phantom-text-secondary">{game.result}</span>
-                        <span className="text-phantom-text-primary font-medium">
+                        <span className="text-deco-silver uppercase tracking-wider text-xs">{game.result}</span>
+                        <span className="text-gold font-bold">
                           {getCurrencySymbol('stoneworks_dollar')} {Number(game.bet_amount).toFixed(0)}
                         </span>
                       </div>
