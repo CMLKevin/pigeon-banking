@@ -298,56 +298,128 @@ export default function Trading() {
     return (
       <div className="min-h-screen bg-gradient-dark flex items-center justify-center">
         <div className="relative">
-          <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-phantom-accent-primary"></div>
-          <div className="absolute top-0 left-0 animate-ping rounded-full h-16 w-16 border-t-2 border-b-2 border-phantom-accent-primary opacity-20"></div>
+          <div className="animate-spin h-16 w-16 border-4 border-gold/20 border-t-gold"></div>
+          <div className="absolute top-0 left-0 animate-ping h-16 w-16 border-2 border-gold opacity-20"></div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-dark">
+    <div className="min-h-screen bg-gradient-dark relative">
+      {/* Art deco background */}
+      <div className="absolute inset-0 opacity-5">
+        <div className="absolute top-0 left-1/4 w-px h-full bg-gradient-to-b from-gold via-gold/50 to-transparent"></div>
+        <div className="absolute top-0 right-1/4 w-px h-full bg-gradient-to-b from-gold via-gold/50 to-transparent"></div>
+      </div>
+      
       <Navbar />
       
-      {/* Top Stats Bar */}
-      <div className="border-b border-phantom-border bg-phantom-bg-secondary/30 backdrop-blur-sm">
-        <div className="max-w-7xl mx-auto px-4 py-3">
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-            <div className="bg-phantom-bg-tertiary/50 rounded-lg p-3">
-              <div className="text-[10px] text-phantom-text-tertiary uppercase tracking-wide mb-1">Wallet Balance</div>
-              <div className="text-lg font-bold text-phantom-accent-primary">
+      {/* Art Deco Header */}
+      <div className="border-b-2 border-gold/30 bg-noir-dark/90 backdrop-blur-sm relative z-10">
+        <div className="max-w-[1800px] mx-auto px-6 py-6">
+          {/* Title */}
+          <div className="text-center mb-6">
+            <div className="flex items-center justify-center gap-4 mb-3">
+              <div className="h-px w-16 bg-gradient-to-r from-transparent to-gold"></div>
+              <div className="w-12 h-12 border-2 border-gold bg-noir-darker flex items-center justify-center transform rotate-45">
+                <svg className="w-6 h-6 text-gold -rotate-45" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                </svg>
+              </div>
+              <div className="h-px w-16 bg-gradient-to-l from-transparent to-gold"></div>
+            </div>
+            <h1 className="text-4xl font-bold text-gold tracking-widest">TRADING TERMINAL</h1>
+            <p className="text-deco-silver text-xs tracking-wider mt-2">LEVERAGE YOUR POSITIONS • MAXIMIZE RETURNS</p>
+          </div>
+          
+          {/* Stats Grid */}
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
+            <div className="bg-noir-charcoal/50 border border-gold/20 p-3 relative">
+              <div className="absolute top-0 left-0 w-1 h-1 bg-gold"></div>
+              <div className="text-[10px] text-deco-silver/60 uppercase tracking-widest mb-1">Wallet Balance</div>
+              <div className="text-lg font-bold text-gold">
                 {wallet && wallet.agon != null ? `$ ${Number(wallet.agon).toFixed(2)}` : '--'}
               </div>
             </div>
-            <div className="bg-phantom-bg-tertiary/50 rounded-lg p-3">
-              <div className="text-[10px] text-phantom-text-tertiary uppercase tracking-wide mb-1">Total Margin</div>
-              <div className="text-lg font-bold text-phantom-text-primary">
+            <div className="bg-noir-charcoal/50 border border-gold/20 p-3 relative">
+              <div className="absolute top-0 left-0 w-1 h-1 bg-gold"></div>
+              <div className="text-[10px] text-deco-silver/60 uppercase tracking-widest mb-1">Total Margin</div>
+              <div className="text-lg font-bold text-deco-cream">
                 $ {portfolioStats.totalMargin.toFixed(2)}
               </div>
             </div>
-            <div className="bg-phantom-bg-tertiary/50 rounded-lg p-3">
-              <div className="text-[10px] text-phantom-text-tertiary uppercase tracking-wide mb-1">Unrealized P&L</div>
-              <div className={`text-lg font-bold ${portfolioStats.totalUnrealizedPnl >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+            <div className="bg-noir-charcoal/50 border border-gold/20 p-3 relative">
+              <div className="absolute top-0 left-0 w-1 h-1 bg-gold"></div>
+              <div className="text-[10px] text-deco-silver/60 uppercase tracking-widest mb-1">Unrealized P&L</div>
+              <div className={`text-lg font-bold ${portfolioStats.totalUnrealizedPnl >= 0 ? 'text-deco-emerald' : 'text-deco-burgundy'}`}>
                 {portfolioStats.totalUnrealizedPnl >= 0 ? '+' : ''}$ {portfolioStats.totalUnrealizedPnl.toFixed(2)}
               </div>
             </div>
-            <div className="bg-phantom-bg-tertiary/50 rounded-lg p-3">
-              <div className="text-[10px] text-phantom-text-tertiary uppercase tracking-wide mb-1">Total Value</div>
-              <div className="text-lg font-bold text-phantom-accent-primary">
+            <div className="bg-noir-charcoal/50 border border-gold/20 p-3 relative">
+              <div className="absolute top-0 left-0 w-1 h-1 bg-gold"></div>
+              <div className="text-[10px] text-deco-silver/60 uppercase tracking-widest mb-1">Total Value</div>
+              <div className="text-lg font-bold text-gold">
                 $ {portfolioStats.totalValue.toFixed(2)}
               </div>
             </div>
-            <div className="bg-phantom-bg-tertiary/50 rounded-lg p-3">
-              <div className="text-[10px] text-phantom-text-tertiary uppercase tracking-wide mb-1">ROI %</div>
-              <div className={`text-lg font-bold ${portfolioStats.totalPnlPct >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+            <div className="bg-noir-charcoal/50 border border-gold/20 p-3 relative">
+              <div className="absolute top-0 left-0 w-1 h-1 bg-gold"></div>
+              <div className="text-[10px] text-deco-silver/60 uppercase tracking-widest mb-1">ROI %</div>
+              <div className={`text-lg font-bold ${portfolioStats.totalPnlPct >= 0 ? 'text-deco-emerald' : 'text-deco-burgundy'}`}>
                 {portfolioStats.totalPnlPct >= 0 ? '+' : ''}{portfolioStats.totalPnlPct.toFixed(2)}%
               </div>
             </div>
-            <div className="bg-phantom-bg-tertiary/50 rounded-lg p-3">
-              <div className="text-[10px] text-phantom-text-tertiary uppercase tracking-wide mb-1">Open Positions</div>
-              <div className="text-lg font-bold text-phantom-text-primary">
+            <div className="bg-noir-charcoal/50 border border-gold/20 p-3 relative">
+              <div className="absolute bottom-0 right-0 w-1 h-1 bg-gold"></div>
+              <div className="text-[10px] text-deco-silver/60 uppercase tracking-widest mb-1">Open Positions</div>
+              <div className="text-lg font-bold text-deco-cream">
                 {portfolioStats.positionCount}
               </div>
+            </div>
+          </div>
+
+          {/* Asset Selector - Moved to Top for Better UX */}
+          <div className="bg-noir-dark/50 border-2 border-gold/30 p-5 relative">
+            <div className="absolute top-0 left-0 w-3 h-3 border-t-2 border-l-2 border-gold"></div>
+            <div className="absolute top-0 right-0 w-3 h-3 border-t-2 border-r-2 border-gold"></div>
+            <div className="text-sm font-bold text-gold mb-4 flex items-center gap-2 uppercase tracking-wider">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
+              </svg>
+              Select Asset
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-3">
+              {ASSETS.map(a => {
+                const data = prices[a.id];
+                const p = data?.price;
+                const ch = Number(data?.change_24h ?? 0);
+                const active = selectedAsset === a.id;
+                return (
+                  <button
+                    key={a.id}
+                    type="button"
+                    onClick={() => setSelectedAsset(a.id)}
+                    className={`p-4 border-2 transition-all duration-200 relative ${
+                      active
+                        ? 'bg-gradient-gold text-noir-black shadow-gold-glow border-gold scale-105'
+                        : 'bg-noir-charcoal/30 border-gold/20 text-deco-silver hover:bg-noir-charcoal hover:border-gold/40'
+                    }`}
+                  >
+                    {active && (
+                      <>
+                        <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-noir-black"></div>
+                        <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-noir-black"></div>
+                      </>
+                    )}
+                    <div className="text-xs font-bold mb-1 uppercase tracking-wider">{a.symbol}</div>
+                    <div className="text-sm font-semibold mb-1">{p != null ? `$${Number(p).toFixed(2)}` : '--'}</div>
+                    <div className={`text-[11px] font-medium ${active ? 'text-noir-black/80' : ch >= 0 ? 'text-deco-emerald' : 'text-deco-burgundy'}`}>
+                      {ch >= 0 ? '+' : ''}{(isFinite(ch) ? ch : 0).toFixed(2)}%
+                    </div>
+                  </button>
+                );
+              })}
             </div>
           </div>
         </div>
@@ -365,25 +437,30 @@ export default function Trading() {
         {/* Main Grid: Chart Left, Controls Right */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           <div className="lg:col-span-8">
-            {/* TradingView Chart - Matches Right Side Height */}
-            <div className="bg-phantom-bg-secondary/50 border border-phantom-border rounded-2xl p-6 overflow-hidden shadow-lg h-full">
+            {/* Art Deco Chart Container */}
+            <div className="bg-noir-dark/90 border-2 border-gold/30 p-6 overflow-hidden shadow-gold-glow h-full relative">
+              <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-gold"></div>
+              <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-gold"></div>
+              <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-gold"></div>
+              <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-gold"></div>
+              
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
-                  <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${selected.color} flex items-center justify-center text-white font-bold shadow-md`}>
+                  <div className={`w-12 h-12 bg-gradient-to-br ${selected.color} flex items-center justify-center text-white font-bold shadow-md border-2 border-gold-dark`}>
                     {selected.symbol}
                   </div>
                   <div>
-                    <div className="text-xl font-bold text-phantom-text-primary">{selected.name}</div>
-                    <div className="text-sm text-phantom-text-tertiary">{selected.symbol}</div>
+                    <div className="text-xl font-bold text-gold uppercase tracking-wider">{selected.name}</div>
+                    <div className="text-sm text-deco-silver">{selected.symbol}</div>
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className="text-3xl font-bold text-phantom-text-primary">${selectedPrice ? selectedPrice.toFixed(2) : '--'}</div>
-                  <div className={`text-base font-semibold ${((prices[selectedAsset]?.change_24h || 0) >= 0) ? 'text-green-500' : 'text-red-500'}`}>
+                  <div className="text-3xl font-bold text-gold">${selectedPrice ? selectedPrice.toFixed(2) : '--'}</div>
+                  <div className={`text-base font-semibold ${((prices[selectedAsset]?.change_24h || 0) >= 0) ? 'text-deco-emerald' : 'text-deco-burgundy'}`}>
                     {(Number(prices[selectedAsset]?.change_24h ?? 0)).toFixed(2)}% {((prices[selectedAsset]?.change_24h || 0) >= 0) ? '↑' : '↓'}
                   </div>
                   {lastUpdatedAgeSec != null && (
-                    <div className="text-xs text-phantom-text-tertiary mt-1">Updated {lastUpdatedAgeSec}s ago</div>
+                    <div className="text-xs text-deco-silver/60 mt-1">Updated {lastUpdatedAgeSec}s ago</div>
                   )}
                 </div>
               </div>
@@ -395,47 +472,68 @@ export default function Trading() {
             </div>
           </div>
 
-          {/* Right Side: Trading Controls */}
+          {/* Right Side: Art Deco Trading Controls */}
           <div className="lg:col-span-4 space-y-6">
-            {/* Available Balance Card */}
-            <div className="bg-gradient-to-br from-phantom-accent-primary/10 to-phantom-accent-secondary/10 border-2 border-phantom-accent-primary/30 rounded-2xl p-6 shadow-lg">
-              <div className="text-sm text-phantom-text-secondary mb-2 flex items-center gap-2">
+            {/* Art Deco Balance Card */}
+            <div className="bg-gradient-gold p-6 shadow-gold-glow border-2 border-gold-dark relative">
+              <div className="absolute top-0 left-0 w-3 h-3 border-t-2 border-l-2 border-noir-black"></div>
+              <div className="absolute top-0 right-0 w-3 h-3 border-t-2 border-r-2 border-noir-black"></div>
+              <div className="absolute bottom-0 left-0 w-3 h-3 border-b-2 border-l-2 border-noir-black"></div>
+              <div className="absolute bottom-0 right-0 w-3 h-3 border-b-2 border-r-2 border-noir-black"></div>
+              <div className="text-xs text-noir-black/70 mb-2 flex items-center gap-2 font-bold uppercase tracking-widest">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
                 </svg>
                 Available Balance
               </div>
-              <div className="text-4xl font-bold text-phantom-accent-primary mb-1">
+              <div className="text-4xl font-bold text-noir-black mb-1">
                 {wallet && wallet.agon != null ? `$ ${Number(wallet.agon).toFixed(2)}` : '--'}
               </div>
-              <div className="text-xs text-phantom-text-tertiary">Ready to trade</div>
+              <div className="text-xs text-noir-black/60 uppercase tracking-wider">Ready to trade</div>
             </div>
 
-            {/* Trading Form */}
-            <div className="bg-phantom-bg-secondary/50 border border-phantom-border rounded-2xl p-6 shadow-lg">
-              <div className="text-lg font-bold text-phantom-text-primary mb-6 flex items-center gap-2">
+            {/* Art Deco Trading Form */}
+            <div className="bg-noir-dark/90 border-2 border-gold/30 p-6 shadow-card relative">
+              <div className="absolute top-0 left-0 w-3 h-3 border-t-2 border-l-2 border-gold"></div>
+              <div className="absolute top-0 right-0 w-3 h-3 border-t-2 border-r-2 border-gold"></div>
+              <div className="absolute bottom-0 left-0 w-3 h-3 border-b-2 border-l-2 border-gold"></div>
+              <div className="absolute bottom-0 right-0 w-3 h-3 border-b-2 border-r-2 border-gold"></div>
+              
+              <div className="text-lg font-bold text-gold mb-6 flex items-center gap-2 uppercase tracking-wider">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                 </svg>
                 Open Position
               </div>
+              
+              {/* Risk Warning for High Leverage */}
+              {leverage >= 5 && (
+                <div className="mb-4 bg-deco-burgundy/10 border border-deco-burgundy/30 text-deco-burgundy px-4 py-3 text-xs flex items-center gap-2 relative">
+                  <div className="absolute top-0 left-0 w-1 h-1 bg-deco-burgundy"></div>
+                  <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                  <span className="uppercase tracking-wider">High leverage increases risk of liquidation</span>
+                </div>
+              )}
 
               <form onSubmit={handleSubmit} className="space-y-5">
                 {/* Position Type Toggle */}
                 <div>
-                  <label className="block text-sm font-semibold text-phantom-text-primary mb-3">
+                  <label className="block text-sm font-bold text-gold mb-3 uppercase tracking-wider">
                     Position Type
                   </label>
                   <div className="grid grid-cols-2 gap-3">
                     <button
                       type="button"
                       onClick={() => setPositionType('long')}
-                      className={`py-4 px-4 rounded-xl font-bold text-sm transition-all duration-200 ${
+                      className={`py-4 px-4 font-bold text-sm transition-all duration-200 border-2 relative ${
                         positionType === 'long'
-                          ? 'bg-green-500 text-white shadow-lg shadow-green-500/30 scale-105'
-                          : 'bg-phantom-bg-tertiary/50 text-phantom-text-secondary border border-phantom-border hover:bg-green-500/10 hover:border-green-500/30 hover:text-green-400'
+                          ? 'bg-deco-emerald text-white shadow-lg shadow-deco-emerald/30 scale-105 border-deco-emerald'
+                          : 'bg-noir-charcoal/50 text-deco-silver border-gold/20 hover:bg-deco-emerald/10 hover:border-deco-emerald/50'
                       }`}
                     >
+                      {positionType === 'long' && <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-white"></div>}
                       <div className="flex items-center justify-center gap-2">
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
@@ -446,12 +544,13 @@ export default function Trading() {
                     <button
                       type="button"
                       onClick={() => setPositionType('short')}
-                      className={`py-4 px-4 rounded-xl font-bold text-sm transition-all duration-200 ${
+                      className={`py-4 px-4 font-bold text-sm transition-all duration-200 border-2 relative ${
                         positionType === 'short'
-                          ? 'bg-red-500 text-white shadow-lg shadow-red-500/30 scale-105'
-                          : 'bg-phantom-bg-tertiary/50 text-phantom-text-secondary border border-phantom-border hover:bg-red-500/10 hover:border-red-500/30 hover:text-red-400'
+                          ? 'bg-deco-burgundy text-white shadow-lg shadow-deco-burgundy/30 scale-105 border-deco-burgundy'
+                          : 'bg-noir-charcoal/50 text-deco-silver border-gold/20 hover:bg-deco-burgundy/10 hover:border-deco-burgundy/50'
                       }`}
                     >
+                      {positionType === 'short' && <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-white"></div>}
                       <div className="flex items-center justify-center gap-2">
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6" />
@@ -464,8 +563,8 @@ export default function Trading() {
 
                 {/* Leverage Slider */}
                 <div>
-                  <label className="block text-sm font-semibold text-phantom-text-primary mb-3">
-                    Leverage: <span className="text-phantom-accent-primary text-lg">{leverage}x</span>
+                  <label className="block text-sm font-bold text-gold mb-3 uppercase tracking-wider">
+                    Leverage: <span className="text-gold-light text-lg">{leverage}x</span>
                   </label>
                   <div className="space-y-3">
                     <input
@@ -475,14 +574,14 @@ export default function Trading() {
                       step="1"
                       value={leverage}
                       onChange={(e) => setLeverage(Number(e.target.value))}
-                      className="w-full h-3 bg-phantom-bg-tertiary rounded-lg appearance-none cursor-pointer"
+                      className="w-full h-3 bg-noir-charcoal appearance-none cursor-pointer"
                       style={{
-                        background: `linear-gradient(to right, rgb(139, 92, 246) 0%, rgb(139, 92, 246) ${((leverage - 1) / 9) * 100}%, rgb(55, 65, 81) ${((leverage - 1) / 9) * 100}%, rgb(55, 65, 81) 100%)`
+                        background: `linear-gradient(to right, rgb(212, 175, 55) 0%, rgb(212, 175, 55) ${((leverage - 1) / 9) * 100}%, rgb(45, 45, 45) ${((leverage - 1) / 9) * 100}%, rgb(45, 45, 45) 100%)`
                       }}
                     />
-                    <div className="flex justify-between text-xs text-phantom-text-tertiary px-1">
+                    <div className="flex justify-between text-xs text-deco-silver/60 px-1">
                       {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(x => (
-                        <span key={x} className={leverage === x ? 'text-phantom-accent-primary font-bold scale-110' : ''}>{x}x</span>
+                        <span key={x} className={leverage === x ? 'text-gold font-bold scale-110' : ''}>{x}x</span>
                       ))}
                     </div>
                   </div>
@@ -506,7 +605,7 @@ export default function Trading() {
                         type="button"
                         disabled={!wallet || walletAgon <= 0}
                         onClick={() => handleQuickMargin(pct)}
-                        className="flex-1 px-3 py-2 text-xs font-semibold rounded-lg border border-phantom-border text-phantom-text-secondary hover:bg-phantom-accent-primary/10 hover:border-phantom-accent-primary/30 hover:text-phantom-accent-primary disabled:opacity-50 transition-all"
+                        className="flex-1 px-3 py-2 text-xs font-bold border border-gold/30 text-deco-silver hover:bg-gold/20 hover:border-gold hover:text-gold disabled:opacity-50 transition-all uppercase tracking-wider"
                       >
                         {Math.round(pct * 100)}%
                       </button>
@@ -515,32 +614,34 @@ export default function Trading() {
                 </div>
 
               {marginAmount && parseFloat(marginAmount) > 0 && (
-                <div className="mt-4 bg-phantom-bg-tertiary/50 rounded-xl p-4 space-y-2">
+                <div className="mt-4 bg-noir-charcoal/50 border border-gold/20 p-4 space-y-2 relative">
+                  <div className="absolute top-0 left-0 w-1 h-1 bg-gold"></div>
+                  <div className="absolute bottom-0 right-0 w-1 h-1 bg-gold"></div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-phantom-text-tertiary">Commission ({(commissionRate * 100).toFixed(2)}%):</span>
-                    <span className="text-phantom-text-primary font-semibold">$ {(parseFloat(marginAmount) * commissionRate).toFixed(2)}</span>
+                    <span className="text-deco-silver/70 uppercase tracking-wider text-xs">Commission ({(commissionRate * 100).toFixed(2)}%):</span>
+                    <span className="text-deco-cream font-semibold">$ {(parseFloat(marginAmount) * commissionRate).toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-phantom-text-tertiary">Daily Maintenance Fee ({(maintenanceRate * 100).toFixed(2)}%):</span>
-                    <span className="text-phantom-text-primary font-semibold">$ {(parseFloat(marginAmount) * maintenanceRate).toFixed(2)} / day</span>
+                    <span className="text-deco-silver/70 uppercase tracking-wider text-xs">Daily Fee ({(maintenanceRate * 100).toFixed(2)}%):</span>
+                    <span className="text-deco-cream font-semibold">$ {(parseFloat(marginAmount) * maintenanceRate).toFixed(2)} / day</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-phantom-text-tertiary">Net Margin:</span>
-                    <span className="text-phantom-text-primary font-semibold">$ {(parseFloat(marginAmount) * (1 - commissionRate)).toFixed(2)}</span>
+                    <span className="text-deco-silver/70 uppercase tracking-wider text-xs">Net Margin:</span>
+                    <span className="text-deco-cream font-semibold">$ {(parseFloat(marginAmount) * (1 - commissionRate)).toFixed(2)}</span>
                   </div>
-                  <div className="flex justify-between text-sm pt-2 border-t border-phantom-border">
-                    <span className="text-phantom-text-primary font-medium">Position Value:</span>
-                    <span className="text-phantom-accent-primary font-bold">$ {positionValue.toFixed(2)}</span>
+                  <div className="flex justify-between text-sm pt-2 border-t border-gold/20">
+                    <span className="text-gold font-bold uppercase tracking-wider text-xs">Position Value:</span>
+                    <span className="text-gold font-bold">$ {positionValue.toFixed(2)}</span>
                   </div>
                   {(marginNum > 0 && selectedPrice) && (
                     <>
                       <div className="flex justify-between text-sm">
-                        <span className="text-phantom-text-tertiary">Est. Quantity:</span>
-                        <span className="text-phantom-text-primary font-semibold">{estQty.toFixed(6)}</span>
+                        <span className="text-deco-silver/70 uppercase tracking-wider text-xs">Est. Quantity:</span>
+                        <span className="text-deco-cream font-semibold">{estQty.toFixed(6)}</span>
                       </div>
                       <div className="flex justify-between text-sm">
-                        <span className="text-phantom-text-tertiary">Est. Liq. Price:</span>
-                        <span className="text-phantom-text-primary font-semibold">${estLiq.toFixed(2)}</span>
+                        <span className="text-deco-silver/70 uppercase tracking-wider text-xs">Est. Liq. Price:</span>
+                        <span className="text-deco-burgundy font-bold">${estLiq.toFixed(2)}</span>
                       </div>
                     </>
                   )}
@@ -548,7 +649,8 @@ export default function Trading() {
               )}
 
               {error && (
-                <div className="mt-4 bg-red-500/10 border border-red-500/30 text-red-500 px-4 py-3 rounded-xl text-sm flex items-center gap-2">
+                <div className="mt-4 bg-deco-burgundy/10 border border-deco-burgundy/50 text-deco-burgundy px-4 py-3 text-sm flex items-center gap-2 relative">
+                  <div className="absolute top-0 left-0 w-2 h-2 bg-deco-burgundy"></div>
                   <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
@@ -556,7 +658,8 @@ export default function Trading() {
                 </div>
               )}
               {success && (
-                <div className="mt-4 bg-green-500/10 border border-green-500/30 text-green-500 px-4 py-3 rounded-xl text-sm flex items-center gap-2">
+                <div className="mt-4 bg-deco-emerald/10 border border-deco-emerald/50 text-deco-emerald px-4 py-3 text-sm flex items-center gap-2 relative">
+                  <div className="absolute top-0 left-0 w-2 h-2 bg-deco-emerald"></div>
                   <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
@@ -564,72 +667,43 @@ export default function Trading() {
                 </div>
               )}
 
-                <Button type="submit" className="w-full" disabled={isSubmitting || !canSubmit}>
+                <button
+                  type="submit"
+                  disabled={isSubmitting || !canSubmit}
+                  className="w-full py-4 bg-gradient-gold border-2 border-gold text-noir-black font-bold hover:shadow-gold-glow transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed uppercase tracking-wider text-lg"
+                >
                   {isSubmitting ? 'Opening Position...' : 'Open Position'}
-                </Button>
+                </button>
                 {(!isSubmitting && !canSubmit && disabledReason) && (
-                  <div className="mt-2 text-xs text-phantom-text-tertiary text-center">{disabledReason}</div>
+                  <div className="mt-2 text-xs text-deco-silver/60 text-center uppercase tracking-wider">{disabledReason}</div>
                 )}
               </form>
             </div>
           </div>
         </div>
 
-        {/* Asset Selection - Full Width Below */}
+        {/* Art Deco Open Positions - Full Width Below */}
         <div className="mt-8">
-          <div className="bg-phantom-bg-secondary/50 border border-phantom-border rounded-2xl p-6 shadow-lg" style={{minHeight: '200px'}}>
-            <div className="text-sm font-semibold text-phantom-text-primary mb-4 flex items-center gap-2">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
-              </svg>
-              Select Asset
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-3">
-              {ASSETS.map(a => {
-                const data = prices[a.id];
-                const p = data?.price;
-                const ch = Number(data?.change_24h ?? 0);
-                const active = selectedAsset === a.id;
-                return (
-                  <button
-                    key={a.id}
-                    type="button"
-                    onClick={() => setSelectedAsset(a.id)}
-                    className={`p-4 rounded-xl border-2 transition-all duration-200 ${
-                      active
-                        ? 'bg-gradient-phantom text-white shadow-glow border-transparent scale-105'
-                        : 'bg-phantom-bg-tertiary/30 border-phantom-border text-phantom-text-secondary hover:text-phantom-text-primary hover:bg-phantom-bg-tertiary hover:border-phantom-accent-primary/30'
-                    }`}
-                  >
-                    <div className="text-xs font-bold mb-1">{a.symbol}</div>
-                    <div className="text-sm font-semibold mb-1">{p != null ? `$${Number(p).toFixed(2)}` : '--'}</div>
-                    <div className={`text-[11px] font-medium ${active ? 'text-white/80' : ch >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                      {ch >= 0 ? '+' : ''}{(isFinite(ch) ? ch : 0).toFixed(2)}%
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-
-        {/* Open Positions - Full Width Below */}
-        <div className="mt-8">
-          <div className="bg-phantom-bg-secondary/50 border border-phantom-border rounded-2xl p-6 shadow-lg">
+          <div className="bg-noir-dark/90 border-2 border-gold/30 p-6 shadow-card relative">
+            <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-gold"></div>
+            <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-gold"></div>
+            <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-gold"></div>
+            <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-gold"></div>
+            
             <div className="flex items-center justify-between mb-6">
-              <div className="text-lg font-bold text-phantom-text-primary">Your Open Positions</div>
+              <div className="text-lg font-bold text-gold uppercase tracking-wider">Your Open Positions</div>
               <div className="flex gap-2">
                 <button
                   type="button"
                   onClick={() => setPositionsFilter('all')}
-                  className={`px-3 py-1 text-xs rounded-lg border ${positionsFilter === 'all' ? 'bg-gradient-phantom text-white border-transparent' : 'border-phantom-border text-phantom-text-secondary hover:bg-phantom-bg-tertiary'}`}
+                  className={`px-3 py-1 text-xs border font-bold uppercase tracking-wider ${positionsFilter === 'all' ? 'bg-gradient-gold text-noir-black border-gold' : 'border-gold/30 text-deco-silver hover:bg-gold/20'}`}
                 >
                   All
                 </button>
                 <button
                   type="button"
                   onClick={() => setPositionsFilter('selected')}
-                  className={`px-3 py-1 text-xs rounded-lg border ${positionsFilter === 'selected' ? 'bg-gradient-phantom text-white border-transparent' : 'border-phantom-border text-phantom-text-secondary hover:bg-phantom-bg-tertiary'}`}
+                  className={`px-3 py-1 text-xs border font-bold uppercase tracking-wider ${positionsFilter === 'selected' ? 'bg-gradient-gold text-noir-black border-gold' : 'border-gold/30 text-deco-silver hover:bg-gold/20'}`}
                 >
                   {selected?.symbol || 'Selected'}
                 </button>
@@ -637,7 +711,7 @@ export default function Trading() {
             </div>
             <div className="space-y-4">
               {filteredPositions.length === 0 && (
-                <div className="text-phantom-text-tertiary text-sm">No open positions.</div>
+                <div className="text-deco-silver text-sm uppercase tracking-wider">No open positions.</div>
               )}
               {filteredPositions.map((p) => {
                 const val = Number((p.total_value ?? p.margin_agon) || 0);
@@ -646,58 +720,60 @@ export default function Trading() {
                 const pnlAmount = p.unrealized_pnl != null ? Number(p.unrealized_pnl) : null;
                 const assetInfo = ASSETS.find(a => a.id === p.coin_id);
                 return (
-                  <div key={p.id} className="bg-phantom-bg-tertiary/40 rounded-xl p-5 border border-phantom-border/50 hover:border-phantom-accent-primary/30 transition-all">
+                  <div key={p.id} className="bg-noir-charcoal/50 border border-gold/20 p-5 hover:border-gold/40 transition-all relative">
+                    <div className="absolute top-0 left-0 w-1 h-1 bg-gold"></div>
+                    <div className="absolute bottom-0 right-0 w-1 h-1 bg-gold"></div>
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex items-center gap-3">
-                        <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${assetInfo?.color || 'from-gray-500 to-gray-600'} flex items-center justify-center text-white text-sm font-bold`}>
+                        <div className={`w-10 h-10 bg-gradient-to-br ${assetInfo?.color || 'from-gray-500 to-gray-600'} flex items-center justify-center text-white text-sm font-bold border-2 border-gold-dark`}>
                           {assetInfo?.symbol || p.coin_id.slice(0,3).toUpperCase()}
                         </div>
                         <div>
-                          <div className="text-base font-bold text-phantom-text-primary">{assetInfo?.name || p.coin_id}</div>
-                          <div className="text-xs text-phantom-text-tertiary">
+                          <div className="text-base font-bold text-gold uppercase tracking-wider">{assetInfo?.name || p.coin_id}</div>
+                          <div className="text-xs text-deco-silver/70 uppercase tracking-wider">
                             {p.position_type === 'long' ? '📈' : '📉'} {p.position_type.toUpperCase()} • {Number(p.leverage).toFixed(0)}x
                           </div>
                         </div>
                       </div>
-                      <div className={`px-3 py-1.5 rounded-lg text-sm font-bold ${pnlPct == null ? 'bg-phantom-bg-tertiary text-phantom-text-tertiary' : pnlPct >= 0 ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
+                      <div className={`px-3 py-1.5 text-sm font-bold border ${pnlPct == null ? 'bg-noir-darker border-gold/20 text-deco-silver/60' : pnlPct >= 0 ? 'bg-deco-emerald/20 border-deco-emerald text-deco-emerald' : 'bg-deco-burgundy/20 border-deco-burgundy text-deco-burgundy'}`}>
                         {pnlPct == null ? '--' : `${pnlPct >= 0 ? '+' : ''}${pnlPct.toFixed(2)}%`}
                       </div>
                     </div>
                     <div className="grid grid-cols-3 gap-4 mb-4 text-sm">
                       <div>
-                        <div className="text-phantom-text-tertiary mb-1">Entry Price</div>
-                        <div className="text-phantom-text-primary font-semibold">${Number(p.entry_price).toFixed(2)}</div>
+                        <div className="text-deco-silver/60 mb-1 uppercase tracking-wider text-xs">Entry Price</div>
+                        <div className="text-deco-cream font-semibold">${Number(p.entry_price).toFixed(2)}</div>
                       </div>
                       <div>
-                        <div className="text-phantom-text-tertiary mb-1">Current Price</div>
-                        <div className="text-phantom-text-primary font-semibold">{priceNow != null ? `$${priceNow.toFixed(2)}` : '--'}</div>
+                        <div className="text-deco-silver/60 mb-1 uppercase tracking-wider text-xs">Current Price</div>
+                        <div className="text-deco-cream font-semibold">{priceNow != null ? `$${priceNow.toFixed(2)}` : '--'}</div>
                       </div>
                       <div>
-                        <div className="text-phantom-text-tertiary mb-1">Margin</div>
-                        <div className="text-phantom-text-primary font-semibold">$ {Number(p.margin_agon).toFixed(2)}</div>
+                        <div className="text-deco-silver/60 mb-1 uppercase tracking-wider text-xs">Margin</div>
+                        <div className="text-deco-cream font-semibold">$ {Number(p.margin_agon).toFixed(2)}</div>
                       </div>
                       <div>
-                        <div className="text-phantom-text-tertiary mb-1">P&L</div>
-                        <div className={`font-semibold ${pnlAmount == null ? 'text-phantom-text-tertiary' : pnlAmount >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                        <div className="text-deco-silver/60 mb-1 uppercase tracking-wider text-xs">P&L</div>
+                        <div className={`font-semibold ${pnlAmount == null ? 'text-deco-silver/60' : pnlAmount >= 0 ? 'text-deco-emerald' : 'text-deco-burgundy'}`}>
                           {pnlAmount == null ? '--' : `${pnlAmount >= 0 ? '+' : ''}$ ${pnlAmount.toFixed(2)}`}
                         </div>
                       </div>
                       <div>
-                        <div className="text-phantom-text-tertiary mb-1">Daily Fee</div>
+                        <div className="text-deco-silver/60 mb-1 uppercase tracking-wider text-xs">Daily Fee</div>
                         <div className="text-yellow-500 font-semibold">
                           {p.daily_fee != null ? `$ ${Number(p.daily_fee).toFixed(4)}` : '--'}
                         </div>
                       </div>
                       <div>
-                        <div className="text-phantom-text-tertiary mb-1">Total Value</div>
-                        <div className="text-phantom-accent-primary font-bold">$ {val.toFixed(2)}</div>
+                        <div className="text-deco-silver/60 mb-1 uppercase tracking-wider text-xs">Total Value</div>
+                        <div className="text-gold font-bold">$ {val.toFixed(2)}</div>
                       </div>
                     </div>
-                    <div className="flex items-center justify-end pt-4 border-t border-phantom-border">
+                    <div className="flex items-center justify-end pt-4 border-t border-gold/20">
                       <button
                         onClick={() => handleClose(p.id)}
                         disabled={!!closing[p.id]}
-                        className="px-5 py-2.5 text-sm font-semibold rounded-lg bg-red-500/10 border border-red-500/30 text-red-500 hover:bg-red-500/20 hover:border-red-500/50 disabled:opacity-50 transition-all"
+                        className="px-5 py-2.5 text-sm font-bold bg-deco-burgundy/10 border-2 border-deco-burgundy text-deco-burgundy hover:bg-deco-burgundy/20 hover:border-deco-burgundy/70 disabled:opacity-50 transition-all uppercase tracking-wider"
                       >
                         {closing[p.id] ? 'Closing...' : 'Close Position'}
                       </button>
