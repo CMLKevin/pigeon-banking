@@ -5,8 +5,12 @@ modules = ["nodejs-20", "postgresql-16"]
 [nix]
 channel = "stable-23_05"
 
+# Run on boot to ensure fresh dependencies
+onBoot = "npm run install:all"
+
 [deployment]
-build = ["sh", "-c", "npm run install:all && npm run build:prod"]
+# Clean install dependencies before building
+build = ["sh", "-c", "cd server && rm -rf node_modules package-lock.json && cd ../client && rm -rf node_modules package-lock.json && cd .. && npm run install:all && npm run build:prod"]
 run = ["sh", "-c", "npm run start:prod"]
 deploymentTarget = "cloudrun"
 ignorePorts = false
