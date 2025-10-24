@@ -1,9 +1,4 @@
-import YahooFinance from 'yahoo-finance2';
-
-// Create instance with suppressed notices
-const yahooFinance = new YahooFinance({ 
-  suppressNotices: ['yahooSurvey'] 
-});
+import yahooFinance from 'yahoo-finance2';
 
 // Map supported assets to Yahoo Finance symbols
 export const SUPPORTED_STOCKS_AND_ASSETS = {
